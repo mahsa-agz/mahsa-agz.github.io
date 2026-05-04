@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<!--
+  POST TEMPLATE — copy this file, rename to <slug>.html, and fill in:
+    1. <title> + description
+    2. Open Graph + Twitter tags (LinkedIn pulls from these)
+    3. Article JSON-LD (datePublished, dateModified)
+    4. Visible header (title, date, reading time)
+    5. Body content
+  Then add a <li class="post-list__item"> entry to /blog/index.html
+  AND a <url> entry to /sitemap.xml.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Post Title — Mahsa Aghazadeh</title>
+    <meta name="description" content="One-sentence summary of the post (≤ 160 chars)." />
+    <meta name="author" content="Mahsa Aghazadeh" />
+    <link rel="canonical" href="https://mahsa-agz.github.io/blog/post-slug.html" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Mahsa Aghazadeh" />
+    <meta property="og:title" content="Post Title" />
+    <meta property="og:description" content="One-sentence summary of the post." />
+    <meta property="og:url" content="https://mahsa-agz.github.io/blog/post-slug.html" />
+    <meta property="og:image" content="https://mahsa-agz.github.io/assets/og-default.png" />
+    <meta property="article:author" content="Mahsa Aghazadeh" />
+    <meta property="article:published_time" content="2026-05-04" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Post Title" />
+    <meta name="twitter:description" content="One-sentence summary of the post." />
+    <meta name="twitter:image" content="https://mahsa-agz.github.io/assets/og-default.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Post Title",
+        "author": {
+          "@type": "Person",
+          "name": "Mahsa Aghazadeh",
+          "url": "https://mahsa-agz.github.io/"
+        },
+        "datePublished": "2026-05-04",
+        "dateModified": "2026-05-04",
+        "url": "https://mahsa-agz.github.io/blog/post-slug.html",
+        "publisher": {
+          "@type": "Person",
+          "name": "Mahsa Aghazadeh"
+        }
+      }
+    </script>
+
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          if (t === "dark" || t === "light") {
+            document.documentElement.setAttribute("data-theme", t);
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../styles/main.css" />
+    <link rel="stylesheet" href="../styles/post.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav" aria-label="Primary">
+        <a href="../" class="nav__brand">
+          <span class="nav__mark" aria-hidden="true">M</span>
+          <span class="nav__name">Mahsa</span>
+        </a>
+        <ul class="nav__links">
+          <li><a href="../about/">About</a></li>
+          <li><a href="../work/">Work</a></li>
+          <li><a href="../blog/" aria-current="page">Blog</a></li>
+          <li><a href="../#contact">Contact</a></li>
+        </ul>
+        <button class="theme-toggle" type="button" aria-label="Toggle dark mode" data-theme-toggle>
+          <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" fill="currentColor"/>
+            <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+              <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+              <line x1="4.5" y1="4.5" x2="6.6" y2="6.6"/><line x1="17.4" y1="17.4" x2="19.5" y2="19.5"/>
+              <line x1="4.5" y1="19.5" x2="6.6" y2="17.4"/><line x1="17.4" y1="6.6" x2="19.5" y2="4.5"/>
+            </g>
+          </svg>
+          <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="currentColor"/>
+          </svg>
+        </button>
+      </nav>
+    </header>
+
+    <main>
+      <article class="post">
+        <header class="post__header">
+          <p class="post__back"><a href="../blog/">← All writing</a></p>
+          <h1 class="post__title">Post Title</h1>
+          <p class="post__meta">
+            <time datetime="2026-05-04">May 4, 2026</time>
+            · <span>X min read</span>
+          </p>
+        </header>
+
+        <div class="post__body prose">
+          <p class="post__lede">
+            One-sentence framing of why this post exists — the question
+            you're answering.
+          </p>
+
+          <h2>Section heading</h2>
+          <p>Body paragraph.</p>
+
+          <h2>Another section</h2>
+          <p>Body paragraph.</p>
+
+          <h2>Takeaway</h2>
+          <p>What the reader should walk away with.</p>
+        </div>
+
+        <footer class="post__footer">
+          <p>
+            Found this useful? Reach me at
+            <a href="mailto:mahsa.agzdh@gmail.com">mahsa.agzdh@gmail.com</a>
+            or on
+            <a href="https://www.linkedin.com/in/mahsaagz">LinkedIn</a>.
+          </p>
+        </footer>
+
+        <!--
+          ==============================================================
+          COMMENTS — giscus
+          ==============================================================
+          To enable on a real post:
+          1. Open this repo on GitHub → Settings → General → Features
+             → enable Discussions.
+          2. Go to https://giscus.app and configure with this repo:
+             - Mapping: pathname (each post URL = its own thread)
+             - Category: Announcements (or any read-only-by-default one)
+             - Theme: preferred_color_scheme
+          3. Replace the markup below with the snippet giscus generates.
+        -->
+        <section class="post__comments" aria-label="Comments">
+          <h2 class="post__comments-title">Comments</h2>
+          <p class="post__comments-note">
+            Comments will load here. Setup instructions are in the HTML
+            source — see the comment block above this line.
+          </p>
+          <!-- Paste giscus <script> here when ready. -->
+        </section>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p class="signature">Mahsa</p>
+        <p class="site-footer__meta">
+          &copy; <span id="year"></span> Mahsa Aghazadeh · Built with care in Daejeon
+        </p>
+      </div>
+    </footer>
+
+    <script src="../scripts/main.js"></script>
+  </body>
+</html>

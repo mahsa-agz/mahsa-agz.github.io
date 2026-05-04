@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m http.server 8765)",
+      "Bash(curl -s -o /dev/null -w \"home: %{http_code}\\\\n\" http://localhost:8765/)",
+      "Bash(curl -s -o /dev/null -w \"posts: %{http_code}\\\\n\" http://localhost:8765/posts/)",
+      "Bash(curl -s -o /dev/null -w \"css: %{http_code}\\\\n\" http://localhost:8765/styles/main.css)",
+      "Bash(curl -s -o /dev/null -w \"js: %{http_code}\\\\n\" http://localhost:8765/scripts/main.js)",
+      "Bash(pkill -f \"http.server 8765\")",
+      "Bash(python -c ' *)",
+      "Bash(curl -s http://localhost:8765/)",
+      "Bash(curl -s -o /dev/null -w \"portrait: %{http_code}\\\\n\" http://localhost:8765/assets/images/about/profile_photo.jpg)",
+      "Bash(mkdir -p blog about work)",
+      "Bash(git mv *)",
+      "Bash(mv posts/index.html blog/index.html)",
+      "Bash(mv posts/_template.html blog/_template.html)",
+      "Bash(rmdir posts *)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8765__TRACKED_VAR__)",
+      "Bash(python)"
+    ]
+  }
+}

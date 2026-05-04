@@ -1,0 +1,321 @@
+\documentclass[10pt, letterpaper]{article}
+
+% Packages:
+\usepackage[
+    ignoreheadfoot, % set margins without considering header and footer
+    top=2 cm, % seperation between body and page edge from the top
+    bottom=1.5 cm, % seperation between body and page edge from the bottom
+    left=2 cm, % seperation between body and page edge from the left
+    right=2 cm, % seperation between body and page edge from the right
+    footskip=1.0 cm, % seperation between body and footer
+    % showframe % for debugging 
+]{geometry} % for adjusting page geometry
+\usepackage[explicit]{titlesec} % for customizing section titles
+\usepackage{tabularx} % for making tables with fixed width columns
+\usepackage{array} % tabularx requires this
+\usepackage[dvipsnames]{xcolor} % for coloring text
+\definecolor{primaryColor}{RGB}{0, 79, 144} % define primary color
+\usepackage{enumitem} % for customizing lists
+\usepackage{fontawesome5} % for using icons
+\usepackage{amsmath} % for math
+\usepackage[
+    pdftitle={Mahsa Aghazadeh's CV},
+    pdfauthor={Mahsa Aghazadeh},
+    pdfcreator={LaTeX with RenderCV},
+    colorlinks=true,
+    urlcolor=primaryColor
+]{hyperref} % for links, metadata and bookmarks
+\usepackage[pscoord]{eso-pic} % for floating text on the page
+\usepackage{calc} % for calculating lengths
+\usepackage{bookmark} % for bookmarks
+\usepackage{lastpage} % for getting the total number of pages
+\usepackage{changepage} % for one column entries (adjustwidth environment)
+\usepackage{paracol} % for two and three column entries
+\usepackage{ifthen} % for conditional statements
+\usepackage{needspace} % for avoiding page brake right after the section title
+\usepackage{iftex} % check if engine is pdflatex, xetex or luatex
+
+% Ensure that generate pdf is machine readable/ATS parsable:
+\ifPDFTeX
+    \input{glyphtounicode}
+    \pdfgentounicode=1
+    \usepackage[T1]{fontenc}
+    \usepackage[utf8]{inputenc}
+    \usepackage{lmodern}
+\fi
+
+\usepackage[default, type1]{sourcesanspro} 
+
+% Some settings:
+\AtBeginEnvironment{adjustwidth}{\partopsep0pt} % remove space before adjustwidth environment
+\pagestyle{empty} % no header or footer
+\setcounter{secnumdepth}{0} % no section numbering
+\setlength{\parindent}{0pt} % no indentation
+\setlength{\topskip}{0pt} % no top skip
+\setlength{\columnsep}{0.15cm} % set column seperation
+
+
+\titleformat{\section}{
+    % avoid page braking right after the section title
+    \needspace{4\baselineskip}
+    % make the font size of the section title large and color it with the primary color
+    \Large\color{primaryColor}
+}{
+}{
+}{
+    % print bold title, give 0.15 cm space and draw a line of 0.8 pt thickness
+    % from the end of the title to the end of the body
+    \textbf{#1}\hspace{0.15cm}\titlerule[0.8pt]\hspace{-0.1cm}
+}[] % section title formatting
+
+\titlespacing{\section}{
+    % left space:
+    -1pt
+}{
+    % top space:
+    0 cm
+}{
+    % bottom space:
+   0 cm
+} % section title spacing
+
+% \renewcommand\labelitemi{$\vcenter{\hbox{\small$\bullet$}}$} % custom bullet points
+\newenvironment{highlights}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=0.4 cm + 10pt
+    ]
+}{
+    \end{itemize}
+} % new environment for highlights
+
+\newenvironment{highlightsforbulletentries}{
+    \begin{itemize}[
+        topsep=0.10 cm,
+        parsep=0.10 cm,
+        partopsep=0pt,
+        itemsep=0pt,
+        leftmargin=10pt
+    ]
+}{
+    \end{itemize}
+} % new environment for highlights for bullet entries
+
+
+\newenvironment{onecolentry}{
+    \begin{adjustwidth}{
+        0.2 cm + 0.00001 cm
+    }{
+        0.2 cm + 0.00001 cm
+    }
+}{
+    \end{adjustwidth}
+} % new environment for one column entries
+
+\newenvironment{twocolentry}[2][]{
+    \onecolentry
+    \def\secondColumn{#2}
+    \setcolumnwidth{\fill, 3 cm}
+    \begin{paracol}{2}
+}{
+    \switchcolumn \raggedleft \secondColumn
+    \end{paracol}
+    \endonecolentry
+} % new environment for two column entries
+
+\newenvironment{threecolentry}[3][]{
+    \onecolentry
+    \def\thirdColumn{#3}
+    \setcolumnwidth{1 cm, \fill, 4.5 cm}
+    \begin{paracol}{3}
+    {\raggedright #2} \switchcolumn
+}{
+    \switchcolumn \raggedleft \thirdColumn
+    \end{paracol}
+    \endonecolentry
+} % new environment for three column entries
+
+% \newenvironment{header}{
+%     \setlength{\topsep}{0pt}\par\kern\topsep\centering\color{primaryColor}\linespread{1.5}
+% }{
+%     \par\kern\topsep
+% } % new environment for the header
+
+\newenvironment{header}{
+    \setlength{\topsep}{0pt}
+    \setlength{\parskip}{0pt}
+    \setlength{\parindent}{0pt}
+    \vspace*{-1.0cm} % adjust this value until it looks right
+    \centering\color{primaryColor}\linespread{1.2}
+}{
+    \par
+}
+
+% save the original href command in a new command:
+\let\hrefWithoutArrow\href
+
+% new command for external links:
+\renewcommand{\href}[2]{\hrefWithoutArrow{#1}{\ifthenelse{\equal{#2}{}}{ }{#2 }\raisebox{.15ex}{\footnotesize \faExternalLink*}}}
+
+
+\begin{document}
+    \newcommand{\AND}{\unskip
+        \cleaders\copy\ANDbox\hskip\wd\ANDbox
+        \ignorespaces
+    }
+    \newsavebox\ANDbox
+    \sbox\ANDbox{}
+
+    \placelastupdatedtext
+\begin{header}
+    \fontsize{26 pt}{26 pt}
+    \textbf{Mahsa Aghazadeh}
+
+    \vspace{0.2 cm}
+
+    \normalsize
+    \mbox{{\footnotesize\faMapMarker*} Daejeon, South Korea} \hspace{0.4cm}
+    \mbox{\hrefWithoutArrow{mailto:mahsa.agzdh@gmail.com}{{\footnotesize\faEnvelope[regular]} mahsa.agzdh@gmail.com}} \hspace{0.4cm}
+    \mbox{\hrefWithoutArrow{tel:+82-105-938-16-13}{{\footnotesize\faPhone*} +82-10 5938 1613}} \hspace{0.4cm}
+    \mbox{\hrefWithoutArrow{https://www.linkedin.com/in/mahsaagz}{{\footnotesize\faLinkedinIn} mahsaagz}} \hspace{0.4cm}
+    \mbox{\hrefWithoutArrow{https://github.com/mahsaAgz}{{\footnotesize\faGithub} mahsaAgz}}
+\end{header}
+
+
+    \vspace{0.3 cm - 0.3 cm}
+
+
+    \section{Education}
+    
+    \begin{threecolentry}{\textbf{M.Sc.}}{
+        Aug 2023 –- Aug 2025
+    }
+        \textbf{Korea Advanced Institute of Science \& Technology (KAIST)}, Data Science \\
+        \textit{Human Factors and Ergonomics Lab (HFEL)}
+    \end{threecolentry}
+    
+    \vspace{0.2cm}
+    
+    \begin{threecolentry}{\textbf{B.Sc.}}{
+        Aug 2015 –- Aug 2020
+    }
+        \textbf{Amirkabir University of Technology (Tehran Polytechnic)}, Computer Science
+    \end{threecolentry}
+\section{Master’s Research: Mobile Ergonomic Assessment App}
+
+\begin{twocolentry}{
+    HFEL, KAIST, Daejeon, South Korea \\
+    Aug 2023 –- Aug 2025
+}
+    \begin{highlights}
+        \item Designed and conducted a motion capture experiment using multi-angle video to evaluate pose estimation accuracy of MediaPipe and MMPose against ground truth joint data. Computed ergonomic risk scores using anatomical joint projections and validated scoring accuracy. Developed a machine learning model to improve REBA estimation in high-occlusion scenarios. Built and deployed a real-time mobile assessment application.
+    \end{highlights}
+\end{twocolentry}
+
+\section{Experience}
+
+\begin{twocolentry}{
+    Tehran, Iran \\
+    
+    Dec 2021 –- July 2022
+}
+    \textbf{Iranzamin Bank}, Full-stack Developer
+    \begin{highlights}
+        \item Engineered scalable backend systems for core banking, including Pichak (Iran’s national digital cheque system), using .NET Core, SQL Server, and RESTful APIs.
+        \item Developed responsive frontends with JavaScript, jQuery, CSS, and mobile UI components using Flutter.
+    \end{highlights}
+
+\end{twocolentry}
+
+\section{Skills}
+
+\begin{onecolentry}
+    \textbf{Programming Languages:} Python, C++, C\#, Dart
+\end{onecolentry}
+
+\vspace{0.1cm}
+
+\begin{onecolentry}
+    \textbf{Frameworks \& Tools:}  PyTorch, TensorFlow, Pandas, NumPy, Scikit-learn, Statsmodels, .NET Core,  Django, REST APIs, SQL Server, Flutter, JavaScript, jQuery, HTML/CSS, Git, Figma
+\end{onecolentry}
+
+
+\vspace{0.1cm}
+
+\begin{onecolentry}
+    \textbf{Concepts:} Data Analysis, Computer Vision, Machine Learning (ML), Deep Learning (DL), Data Structures \& Algorithms, OOP, HCI, Software Design
+\end{onecolentry}
+
+\vspace{0.1cm}
+
+\begin{onecolentry}
+    \textbf{Soft Skills:} Leadership, Team Collaboration, Problem Solving, Communication, Project Planning
+\end{onecolentry}
+
+\vspace{0.1cm}
+
+\begin{onecolentry}
+    \textbf{Languages:} English (IELTS 8.0), Korean (TOPIK 5), Persian (Native)
+\end{onecolentry}
+\section{Projects}
+
+\begin{onecolentry}
+    \textbf{MoodMate: Knowledge-Based Mental Health App} \hfill \href{https://github.com/mahsaAgz/MoodMate}{GitHub}
+    \begin{highlights}
+        \item Built a rule-based mental health tracking app using Java, JESS, and MySQL. Integrated psychological logic and user feedback to deliver personalized emotional insights and early detection alerts.
+    \end{highlights}
+\end{onecolentry}
+
+\vspace{0.1cm}
+
+\begin{onecolentry}
+    \textbf{Lightweight Ensemble Model for Facial Expression Recognition} \hfill \href{https://github.com/mahsaAgz/EnsembleEFT}{GitHub}
+    \begin{highlights}
+        \item Trained and deployed an ensemble of compact deep learning models (MobileNet, ShuffleNet) for emotion classification. Used Grad-CAM for interpretability and optimized performance for edge deployment.
+    \end{highlights}
+\end{onecolentry}
+
+\vspace{0.1cm}
+
+\begin{onecolentry}
+    \textbf{Cold-Start Music Recommendation System} \hfill \href{https://github.com/mahsaAgz/MusicRecSys}{GitHub}
+    \begin{highlights}
+        \item Adapted contrastive collaborative filtering using co-occurrence and content-based embeddings. Tackled data sparsity with custom synthetic negative sampling strategies.
+    \end{highlights}
+\end{onecolentry}
+
+\vspace{0.1cm}
+
+\begin{onecolentry}
+    \textbf{Music \& Mental Health Statistical Analysis} \hfill \href{https://github.com/mahsaAgz/Music-MentalHealth}{GitHub}
+    \begin{highlights}
+        \item Led a statistical study analyzing correlations between music habits and mental health indicators. Applied ANOVA, regression, and hypothesis testing using Python libraries such as pandas, seaborn, and statsmodels.
+    \end{highlights}
+\end{onecolentry}
+
+
+\section{Awards \& Honors}
+
+\begin{onecolentry}
+    \textbf{Global Korea Scholarship (GKS) – Embassy Track}, Korean Ministry of Education (NIIED) \\
+    Awarded in 2022 as 1 of only 4 recipients nationwide for graduate study in South Korea.
+\end{onecolentry}
+
+\vspace{0.1cm}
+
+\begin{onecolentry}
+    \textbf{Undergraduate Merit-Based Fee-Waiver Scholarship}, Amirkabir University of Technology \\
+    Ranked in the top 0.01\% in Iran's National University Entrance Exam (Konkur) 
+\end{onecolentry}
+
+
+\section{Leadership \& Activities}
+
+\begin{onecolentry}
+    \textbf{Taekwondo (4th Dan):} Assistant coach, team captain, and national medalist in multiple championships (2016–2020).
+\end{onecolentry}
+
+\end{document}

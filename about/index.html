@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About — Mahsa Aghazadeh</title>
+    <meta
+      name="description"
+      content="About Mahsa Aghazadeh — data scientist trained at KAIST and Amirkabir University, currently at 3R Innovation."
+    />
+    <meta name="author" content="Mahsa Aghazadeh" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)" />
+    <link rel="canonical" href="https://mahsa-agz.github.io/about/" />
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content="Mahsa Aghazadeh" />
+    <meta property="og:title" content="About — Mahsa Aghazadeh" />
+    <meta property="og:description" content="About Mahsa Aghazadeh — data scientist." />
+    <meta property="og:url" content="https://mahsa-agz.github.io/about/" />
+    <meta property="og:image" content="https://mahsa-agz.github.io/assets/og-default.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          if (t === "dark" || t === "light") {
+            document.documentElement.setAttribute("data-theme", t);
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../styles/main.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav" aria-label="Primary">
+        <a href="../" class="nav__brand">
+          <span class="nav__mark" aria-hidden="true">M</span>
+          <span class="nav__name">Mahsa</span>
+        </a>
+        <ul class="nav__links">
+          <li><a href="../about/" aria-current="page">About</a></li>
+          <li><a href="../work/">Work</a></li>
+          <li><a href="../blog/">Blog</a></li>
+          <li><a href="../#contact">Contact</a></li>
+        </ul>
+        <button class="theme-toggle" type="button" aria-label="Toggle dark mode" data-theme-toggle>
+          <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" fill="currentColor"/>
+            <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+              <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+              <line x1="4.5" y1="4.5" x2="6.6" y2="6.6"/><line x1="17.4" y1="17.4" x2="19.5" y2="19.5"/>
+              <line x1="4.5" y1="19.5" x2="6.6" y2="17.4"/><line x1="17.4" y1="6.6" x2="19.5" y2="4.5"/>
+            </g>
+          </svg>
+          <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="currentColor"/>
+          </svg>
+        </button>
+      </nav>
+    </header>
+
+    <main>
+      <header class="page-header" data-reveal>
+        <p class="eyebrow"><span class="eyebrow__dot"></span>About</p>
+        <h1 class="page-header__title">A bit about me.</h1>
+        <p class="page-header__lede">
+          Where I come from, what I work on, and what I do when I'm not in
+          front of a terminal.
+        </p>
+      </header>
+
+      <section class="section section--first bio" data-reveal>
+        <div class="prose prose--justified bio__prose">
+          <p>
+            I'm a data scientist trained in
+            <strong>computer science</strong> (B.Sc., Amirkabir University of
+            Technology) and <strong>data science</strong> (M.Sc., KAIST —
+            Human Factors and Ergonomics Lab).
+          </p>
+          <p>
+            My work moves between research and engineering: validating
+            computer-vision pipelines against ground-truth motion capture,
+            building the data infrastructure that turns raw sensor recordings
+            into something a clinician or researcher can act on, and
+            shipping the result as a tool the intended user can actually
+            operate.
+          </p>
+          <p>
+            I'm currently a data scientist at <strong>3R Innovation</strong>
+            in Daejeon, working on the digital-phenotyping pipeline for a
+            pediatric ADHD study. Alongside the technical work, I've started
+            taking on product-side tasks from our project manager — scoping,
+            writing up decisions, and thinking about who the work is
+            actually for. The questions adjacent to building (what to build,
+            for whom, why now) interest me, and I'd like to grow in that
+            direction without leaving the technical work behind.
+          </p>
+          <p>
+            Before research, I shipped backend systems for Iran's national
+            digital cheque infrastructure. I care about clean abstractions,
+            evidence over opinion, and tools that respect the people using
+            them.
+          </p>
+        </div>
+
+        <figure class="bio__photo">
+          <img
+            src="../assets/images/about/kaist_graduation_frame.jpg"
+            alt="Graduation day at KAIST"
+            loading="lazy"
+            draggable="false"
+            data-protect
+          />
+          <figcaption>Graduation day · KAIST · 2025</figcaption>
+        </figure>
+      </section>
+
+      <section class="section" data-reveal>
+        <header class="section__head">
+          <h2 class="section__title">Education</h2>
+        </header>
+
+        <ul class="education">
+          <li class="education__item">
+            <p class="education__when">2023 — 2025</p>
+            <div>
+              <h3 class="education__title">
+                M.Sc., Data Science · <em>KAIST</em>
+              </h3>
+              <p class="education__where">
+                Human Factors and Ergonomics Laboratory · Daejeon, South Korea
+              </p>
+            </div>
+          </li>
+          <li class="education__item">
+            <p class="education__when">2015 — 2020</p>
+            <div>
+              <h3 class="education__title">
+                B.Sc., Computer Science · <em>Amirkabir University of
+                Technology</em>
+              </h3>
+              <p class="education__where">Tehran Polytechnic · Tehran, Iran</p>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <section class="section" data-reveal>
+        <header class="section__head">
+          <h2 class="section__title">Beyond work</h2>
+        </header>
+        <p class="section__lede">
+          Things I do when I'm not in front of a terminal — they shape how I
+          look at problems.
+        </p>
+
+        <div class="tabs" data-tabs>
+          <div class="tabs__list" role="tablist" aria-label="Choose a hobby">
+            <button class="tabs__tab" role="tab" id="beyond-tab-tkd" aria-controls="beyond-panel-tkd" aria-selected="true">Taekwondo</button>
+            <button class="tabs__tab" role="tab" id="beyond-tab-photo" aria-controls="beyond-panel-photo" aria-selected="false" tabindex="-1">Photography</button>
+            <button class="tabs__tab" role="tab" id="beyond-tab-draw" aria-controls="beyond-panel-draw" aria-selected="false" tabindex="-1">Drawing</button>
+          </div>
+
+          <div class="tabs__panel" role="tabpanel" id="beyond-panel-tkd" aria-labelledby="beyond-tab-tkd">
+            <p class="hobby__intro">
+              Fifteen years on the mat, ending as a 4th-dan black belt and
+              team captain at Amirkabir University. National medalist
+              between 2016 and 2020.
+            </p>
+            <figure class="hobby-feature">
+              <img
+                src="../assets/images/taekwondo/Taekwondo_background.png"
+                alt="Illustration evoking taekwondo practice"
+                loading="lazy"
+                draggable="false"
+                data-protect
+              />
+              <figcaption class="hobby-feature__caption">
+                <span class="hobby-feature__stat">15 years</span>
+                <span class="hobby-feature__row">
+                  4th-dan black belt · Team captain, Amirkabir University ·
+                  National medalist, 2016 — 2020
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+
+          <div class="tabs__panel" role="tabpanel" id="beyond-panel-photo" aria-labelledby="beyond-tab-photo" hidden>
+            <p class="hobby__intro">
+              Mostly birds, light, and quiet things — taken on long walks.
+            </p>
+            <div class="gallery">
+              <figure class="gallery__item gallery__item--tall">
+                <img src="../assets/images/photography/light.jpg" alt="Light study" loading="lazy" draggable="false" data-protect />
+              </figure>
+              <figure class="gallery__item">
+                <img src="../assets/images/photography/sky-bird.jpg" alt="Bird in flight" loading="lazy" draggable="false" data-protect />
+              </figure>
+              <figure class="gallery__item">
+                <img src="../assets/images/photography/house.jpg" alt="A house" loading="lazy" draggable="false" data-protect />
+              </figure>
+              <figure class="gallery__item">
+                <img src="../assets/images/photography/book.jpg" alt="A book on a quiet afternoon" loading="lazy" draggable="false" data-protect />
+              </figure>
+            </div>
+          </div>
+
+          <div class="tabs__panel" role="tabpanel" id="beyond-panel-draw" aria-labelledby="beyond-tab-draw" hidden>
+            <p class="hobby__intro">
+              Pencil and ink. A way of looking at things slowly.
+            </p>
+            <div class="gallery">
+              <figure class="gallery__item gallery__item--tall">
+                <img src="../assets/images/drawings/eye.jpg" alt="Pencil drawing of an eye" loading="lazy" draggable="false" data-protect />
+              </figure>
+              <figure class="gallery__item">
+                <img src="../assets/images/drawings/horse.jpg" alt="Pencil drawing of a horse" loading="lazy" draggable="false" data-protect />
+              </figure>
+              <figure class="gallery__item">
+                <img src="../assets/images/drawings/japan.jpg" alt="Drawing inspired by Japan" loading="lazy" draggable="false" data-protect />
+              </figure>
+              <figure class="gallery__item">
+                <img src="../assets/images/drawings/phoenix.jpg" alt="Phoenix drawing" loading="lazy" draggable="false" data-protect />
+              </figure>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" data-reveal>
+        <header class="section__head">
+          <h2 class="section__title">Recognition</h2>
+        </header>
+        <ul class="awards">
+          <li class="award">
+            <p class="award__year">2022</p>
+            <div>
+              <h3 class="award__title">Global Korea Scholarship — Embassy Track</h3>
+              <p class="award__org">Korean Ministry of Education (NIIED)</p>
+              <p class="award__note">
+                One of 4 recipients nationwide for graduate study in South
+                Korea.
+              </p>
+            </div>
+          </li>
+          <li class="award">
+            <p class="award__year">2015</p>
+            <div>
+              <h3 class="award__title">Merit-Based Fee-Waiver Scholarship</h3>
+              <p class="award__org">Amirkabir University of Technology</p>
+              <p class="award__note">
+                Top 0.01% in Iran's National University Entrance Exam (Konkur).
+              </p>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p class="signature">Mahsa</p>
+        <p class="site-footer__meta">
+          &copy; <span id="year"></span> Mahsa Aghazadeh · Built with care in Daejeon
+        </p>
+      </div>
+    </footer>
+
+    <script src="../scripts/main.js"></script>
+  </body>
+</html>
