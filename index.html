@@ -131,6 +131,8 @@
             <span class="pron__ipa">/ˈmɑː.sɑː/</span>
             <span class="pron__sep">·</span>
             <span class="pron__meaning"><em>moonlike</em>, in Persian</span>
+            <span class="pron__sep">·</span>
+            <span class="pron__korean" lang="ko">아가자데 마싸</span>
           </p>
 
           <p class="hero__tagline">
@@ -179,11 +181,13 @@
       <section class="section section--intro" data-reveal>
         <div class="prose prose--justified">
           <p>
-            I'm a data scientist trained in computer science (B.Sc., Amirkabir
-            University of Technology) and data science (M.Sc., KAIST — Human
-            Factors and Ergonomics Lab). My work spans computer vision,
-            applied ML, and the engineering it takes to turn a research
-            artefact into a tool people can actually use.
+            I'm a data scientist working between <strong>research</strong>
+            and <strong>engineering</strong> — computer vision, applied ML,
+            and the kind of full-stack work it takes to ship a research
+            result as a tool the intended user can actually run. Trained at
+            <strong>KAIST</strong> (M.Sc., Human Factors &amp; Ergonomics
+            Lab) and <strong>Amirkabir University of Technology</strong>
+            (B.Sc., Computer Science).
           </p>
           <p class="prose__more">
             <a href="about/">More about me →</a>
@@ -191,37 +195,107 @@
         </div>
       </section>
 
-      <!-- FEATURED WORK -->
+      <!-- AT A GLANCE — research, experience, projects in one gallery -->
       <section class="section" data-reveal>
         <header class="section__head section__head--with-link">
-          <h2 class="section__title">Selected work</h2>
-          <a class="section__head-link" href="work/">All work →</a>
+          <h2 class="section__title">At a glance</h2>
+          <a class="section__head-link" href="work/">Full details →</a>
         </header>
+        <p class="section__lede">
+          A snapshot of recent research, experience, and projects. Click
+          any item for the full story.
+        </p>
 
         <ul class="feature-grid">
           <li class="feature">
-            <p class="feature__kicker">Research · M.Sc. thesis</p>
+            <p class="feature__kicker feature__kicker--research">
+              Research · M.Sc. thesis · under review
+            </p>
             <h3 class="feature__title">
               CV-based pose estimation for ergonomic risk assessment
             </h3>
             <p class="feature__desc">
-              Two studies linking pose-estimation accuracy to ergonomic
-              decision validity, and translating the validated pipeline into
-              a mobile tool non-experts can run without training.
+              MediaPipe and MMPose evaluated against an 8-camera OptiTrack
+              reference. Intraclass correlations of <strong>0.87</strong>
+              (REBA) and <strong>0.92</strong> (RULA) — separating
+              kinematic accuracy from ergonomic-decision validity.
             </p>
             <a class="feature__link" href="work/#research">Read more →</a>
           </li>
+
           <li class="feature">
-            <p class="feature__kicker">Current role</p>
+            <p class="feature__kicker feature__kicker--research">
+              Research · in preparation
+            </p>
             <h3 class="feature__title">
-              Pediatric Digital Sensor Study at 3R Innovation
+              ErgoYar — a mobile ergonomic app for non-experts
             </h3>
             <p class="feature__desc">
-              Building the digital-phenotyping pipeline that turns four
-              sensor modalities, 103 children, and 14,500+ raw files into a
-              dataset clinicians and researchers can analyze.
+              Translating the validated CV pipeline into a Flutter /
+              FastAPI app non-experts can run without training. Pilot
+              study with 10 users: SUS <strong>80.5</strong> (excellent
+              band), SUS–uMARS <em>r</em> = 0.74.
+            </p>
+            <a class="feature__link" href="work/#research">Read more →</a>
+          </li>
+
+          <li class="feature">
+            <p class="feature__kicker feature__kicker--experience">
+              Experience · current
+            </p>
+            <h3 class="feature__title">
+              Data Scientist · 3R Innovation
+            </h3>
+            <p class="feature__desc">
+              Built the digital-phenotyping pipeline for the Pediatric
+              Digital Sensor Study — 103 children, four sensor modalities,
+              ~1,500 features per row. K-SADS ADHD models reach AUC
+              <strong>0.72</strong> (inattention) and Pearson
+              <em>r</em> = <strong>0.54</strong> (hyperactivity).
             </p>
             <a class="feature__link" href="work/#experience">Read more →</a>
+          </li>
+
+          <li class="feature">
+            <p class="feature__kicker feature__kicker--experience">
+              Experience · 2021 — 2022
+            </p>
+            <h3 class="feature__title">
+              Full-stack Developer · Iranzamin Bank
+            </h3>
+            <p class="feature__desc">
+              Built backend systems for core banking — including
+              <strong>Pichak</strong>, Iran's national digital cheque
+              infrastructure — with .NET Core, SQL Server, REST APIs, and
+              Flutter mobile UIs.
+            </p>
+            <a class="feature__link" href="work/#experience">Read more →</a>
+          </li>
+
+          <li class="feature">
+            <p class="feature__kicker feature__kicker--project">
+              Project · deep learning · CV
+            </p>
+            <h3 class="feature__title">Lightweight Ensemble for FER</h3>
+            <p class="feature__desc">
+              Compact ensemble (MobileNet + ShuffleNet) for facial
+              expression recognition. Grad-CAM for interpretability;
+              tuned for edge deployment.
+            </p>
+            <a class="feature__link" href="work/#projects">Read more →</a>
+          </li>
+
+          <li class="feature">
+            <p class="feature__kicker feature__kicker--project">
+              Project · statistics · health
+            </p>
+            <h3 class="feature__title">Music &amp; Mental Health</h3>
+            <p class="feature__desc">
+              Statistical study on the relationship between music habits
+              and mental-health indicators — ANOVA, regression, and
+              hypothesis testing in pandas + statsmodels.
+            </p>
+            <a class="feature__link" href="work/#projects">Read more →</a>
           </li>
         </ul>
       </section>
