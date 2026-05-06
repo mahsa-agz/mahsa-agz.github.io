@@ -16,7 +16,17 @@
       "Bash(mv posts/_template.html blog/_template.html)",
       "Bash(rmdir posts *)",
       "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8765__TRACKED_VAR__)",
-      "Bash(python)"
+      "Bash(python)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8765/)",
+      "Bash(echo \"/ -> $\\(curl -s -o /dev/null -w '%{http_code}' http://localhost:8765/\\)\")",
+      "Bash(echo \"contact-strip removed: $\\(curl -s http://localhost:8765/)",
+      "Bash(curl -s http://localhost:8765/scripts/main.js)",
+      "Bash(echo \"JS still has contextmenu blocker: $\\(curl -s http://localhost:8765/scripts/main.js)",
+      "Bash(echo \"expertise cards: $\\(curl -s http://localhost:8765/)",
+      "Bash(echo \"hero-band markup: $\\(curl -s http://localhost:8765/)",
+      "Bash(echo \"K-SADS / AUC / Pearson removed: $\\(curl -s http://localhost:8765/)",
+      "Bash(echo \"nav-icon count in header \\(expect 4\\): $\\(curl -s http://localhost:8765/)",
+      "Bash(echo \"menu items: $\\(curl -s http://localhost:8765/)"
     ]
   }
 }

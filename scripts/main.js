@@ -54,12 +54,6 @@ if (themeBtn) {
   });
 }
 
-// ===== Image protection (deterrent only — cannot prevent screenshots) =====
-document.querySelectorAll("img[data-protect]").forEach((img) => {
-  img.addEventListener("contextmenu", (e) => e.preventDefault());
-  img.addEventListener("dragstart", (e) => e.preventDefault());
-});
-
 // ===== Tabs (ARIA) =====
 document.querySelectorAll("[data-tabs]").forEach((tabsRoot) => {
   const tabs = Array.from(tabsRoot.querySelectorAll('[role="tab"]'));
