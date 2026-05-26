@@ -1,0 +1,49 @@
+title: Mahsa Aghazadeh
+description: >-
+  Data scientist in Daejeon, South Korea — computer vision, multimodal ML,
+  and end-to-end work from experiment design to a usable result.
+url: https://mahsa-agz.github.io
+baseurl: ""
+author: Mahsa Aghazadeh
+email: mahsa.agzdh@gmail.com
+github_username: mahsa-agz
+linkedin_url: https://www.linkedin.com/in/mahsaagz
+
+# Posts live under /blog/<slug>.html so existing URLs keep working.
+permalink: /blog/:slug.html
+
+# Default layouts so most files don't need to specify one.
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: default
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Files Jekyll should ignore when building the site.
+exclude:
+  - notion/
+  - inspo/
+  - README.md
+  - mahsa_resume.tex
+  - mahsa-agz.github.io.code-workspace
+  - .tmp.driveupload/
+  - Gemfile
+  - Gemfile.lock
+  - vendor/
+  - node_modules/

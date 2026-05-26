@@ -1,601 +1,344 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mahsa Aghazadeh — Data Scientist</title>
-    <meta
-      name="description"
-      content="Mahsa Aghazadeh — data scientist in Daejeon, South Korea. Computer vision, multimodal ML, and end-to-end work from experiment design to a usable result."
-    />
-    <meta name="author" content="Mahsa Aghazadeh" />
-    <meta name="theme-color" content="#c4677a" />
-    <link rel="canonical" href="https://mahsa-agz.github.io/" />
+---
+layout: home
+title: "Mahsa Aghazadeh — Data Scientist"
+description: "Mahsa Aghazadeh — data scientist in Daejeon, South Korea. Computer vision, multimodal ML, and end-to-end work from experiment design to a usable result."
+permalink: /
+---
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-portrait-wrap">
+      <img
+        src="{{ '/assets/images/about/profile_photo.png' | relative_url }}"
+        alt="Mahsa Aghazadeh portrait"
+      />
+    </div>
+    <div class="hero-copy">
+      <p class="role">Data Scientist · 3R Innovation, Korea</p>
+      <h1>Mahsa Aghazadeh</h1>
+      <p class="pronunciation">
+        <span class="pron-ipa">/ˈmɑː.sɑː/</span>
+        <span class="pron-korean" lang="ko">아가자데 마싸</span>
+      </p>
+    </div>
+  </div>
+  <div class="hero-info">
+    <div>
+      <span>Currently</span>
+      <strong>Building a multimodal pipeline for pediatric ADHD screening</strong>
+    </div>
+    <div>
+      <span>Education</span>
+      <strong>M.Sc., KAIST</strong>
+      <small class="hero-info__sub">
+        Human Factors &amp; Ergonomics Lab, 2025
+      </small>
+      <small class="hero-info__sub">
+        Thesis: CV-based ergonomic risk assessment
+      </small>
+    </div>
+  </div>
 
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Mahsa Aghazadeh" />
-    <meta property="og:title" content="Mahsa Aghazadeh — Data Scientist" />
-    <meta
-      property="og:description"
-      content="Data scientist working between research and engineering — computer vision, multimodal ML, and shipping the result."
-    />
-    <meta property="og:url" content="https://mahsa-agz.github.io/" />
-    <meta
-      property="og:image"
-      content="https://mahsa-agz.github.io/assets/og-default.png"
-    />
-    <meta name="twitter:card" content="summary_large_image" />
+  <aside class="hero-socials" aria-label="Connect">
+    <a class="hero-social" href="mailto:{{ site.email }}" aria-label="Email Mahsa">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3.8 5h16.4A1.8 1.8 0 0 1 22 6.8v10.4a1.8 1.8 0 0 1-1.8 1.8H3.8A1.8 1.8 0 0 1 2 17.2V6.8A1.8 1.8 0 0 1 3.8 5Zm.6 2 7.6 5.2L19.6 7H4.4Zm15.6 1.9-7.4 5.05a1.05 1.05 0 0 1-1.2 0L4 8.9V17h16V8.9Z" />
+      </svg>
+    </a>
+    <a class="hero-social" href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 .7A11.3 11.3 0 0 0 8.4 22.7c.57.1.78-.25.78-.55v-2.1c-3.18.69-3.85-1.36-3.85-1.36-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.54-.29-5.21-1.27-5.21-5.64 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.03 0 0 .96-.31 3.14 1.17a10.8 10.8 0 0 1 5.72 0c2.18-1.48 3.14-1.17 3.14-1.17.62 1.58.23 2.74.11 3.03.73.8 1.18 1.82 1.18 3.07 0 4.38-2.68 5.35-5.23 5.63.41.35.77 1.04.77 2.1v3.14c0 .3.21.66.79.55A11.3 11.3 0 0 0 12 .7Z" />
+      </svg>
+    </a>
+    <a class="hero-social" href="{{ site.linkedin_url }}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1-.02-5ZM3 10h4v11H3V10Zm6.2 0H13v1.5h.05c.53-1 1.83-1.95 3.76-1.95 4.02 0 4.76 2.65 4.76 6.1V21h-4v-4.75c0-1.13-.02-2.58-1.58-2.58-1.58 0-1.82 1.23-1.82 2.5V21h-4V10Z" />
+      </svg>
+    </a>
+    <a class="hero-social" href="{{ '/mahsa_resume.pdf' | relative_url }}" download aria-label="Download CV">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z" />
+      </svg>
+    </a>
+  </aside>
+</section>
 
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Person",
-        "name": "Mahsa Aghazadeh",
-        "url": "https://mahsa-agz.github.io/",
-        "email": "mailto:mahsa.agzdh@gmail.com",
-        "jobTitle": "Data Scientist",
-        "alumniOf": [
-          { "@type": "CollegeOrUniversity", "name": "KAIST" },
-          { "@type": "CollegeOrUniversity", "name": "Amirkabir University of Technology" }
-        ],
-        "sameAs": [
-          "https://github.com/mahsa-agz",
-          "https://www.linkedin.com/in/mahsaagz"
-        ]
-      }
-    </script>
+<!-- ABOUT -->
+<section class="about-block" id="about">
+  <div class="about-panel">
+    <div class="about-text">
+      <h2>About</h2>
+      <p>
+        I build multimodal AI tools that translate behavioural
+        and sensor data into practical insights.
+      </p>
+      <p>
+        At <strong>3R Innovation</strong> I work on PDSS, a
+        clinical decision-support platform that helps clinicians
+        identify ADHD-related patterns in children — combining
+        cognitive task data with behavioural sensor signals into
+        interpretable indicators clinicians can act on.
+      </p>
+      <p>
+        My master's at <strong>KAIST's Human Factors and
+        Ergonomics Lab</strong> produced ErgoYar, a
+        computer-vision mobile app for ergonomic assessment in
+        SME workplaces — covering experiment design,
+        motion-capture data collection, pose-estimation
+        evaluation, mobile app build, and usability testing with
+        non-experts.
+      </p>
+      <p>
+        Long term, I'd like to grow into technical program
+        management — the space where research, engineering,
+        product strategy and real-world user needs meet.
+      </p>
+      <a class="about-more" href="{{ '/about/' | relative_url }}">More about me →</a>
+    </div>
+    <div class="about-expertise">
+      <article class="about-skill">
+        <div class="about-skill__icon">▧</div>
+        <h3>Experiment design</h3>
+        <p>Framing the question first — what to measure, how, and what success looks like.</p>
+      </article>
+      <article class="about-skill">
+        <div class="about-skill__icon">⌘</div>
+        <h3>Data &amp; validation</h3>
+        <p>Cleaning, validating and grounding datasets against real ground truth.</p>
+      </article>
+      <article class="about-skill">
+        <div class="about-skill__icon">◒</div>
+        <h3>Analysis &amp; modelling</h3>
+        <p>Statistical modelling and applied ML — robust to assumptions before it ships.</p>
+      </article>
+      <article class="about-skill">
+        <div class="about-skill__icon">♧</div>
+        <h3>Shipping the result</h3>
+        <p>Turning analysis into dashboards, mobile apps, or short reports people can use.</p>
+      </article>
+    </div>
+  </div>
+</section>
 
-    <!-- Apply saved theme before paint to avoid flash -->
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem("theme");
-          if (t === "dark" || t === "light") {
-            document.documentElement.setAttribute("data-theme", t);
-          }
-        } catch (e) {}
-      })();
-    </script>
-
-    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles/home.css" />
-  </head>
-  <body>
-    <header class="site-header" id="top">
-      <div class="header-inner">
-        <a class="logo" href="./">Mahsa<span>.</span></a>
-        <nav class="nav" aria-label="Main navigation">
-          <a href="./">Home</a>
-          <a href="#service">Expertise</a>
-          <a href="#work">Work</a>
-          <a href="#about">About</a>
-          <a href="#blog">Notes</a>
-        </nav>
-        <div class="header-actions">
-          <!-- Language toggle (Korean) coming later -->
-          <button
-            class="theme-toggle"
-            type="button"
-            aria-label="Toggle dark mode"
-            data-theme-toggle
-          >
-            <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="4" fill="currentColor" />
-              <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none">
-                <line x1="12" y1="2" x2="12" y2="5" />
-                <line x1="12" y1="19" x2="12" y2="22" />
-                <line x1="2" y1="12" x2="5" y2="12" />
-                <line x1="19" y1="12" x2="22" y2="12" />
-                <line x1="4.5" y1="4.5" x2="6.6" y2="6.6" />
-                <line x1="17.4" y1="17.4" x2="19.5" y2="19.5" />
-                <line x1="4.5" y1="19.5" x2="6.6" y2="17.4" />
-                <line x1="17.4" y1="6.6" x2="19.5" y2="4.5" />
-              </g>
-            </svg>
-            <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="currentColor" />
-            </svg>
-          </button>
+<!-- PROJECTS -->
+<section class="works section" id="work">
+  <div class="container works-container">
+    <h2>Projects</h2>
+    <div class="work-grid">
+      <article class="project-card">
+        <div class="project-card__image">
+          <img
+            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=760&q=85"
+            alt="Multimodal sensor data and pediatric screening"
+          />
+          <span class="project-badge">3R Innovation · current</span>
         </div>
-        <button class="menu-toggle" aria-label="Open menu">☰</button>
-      </div>
-    </header>
-
-    <main>
-      <!-- HERO -->
-      <section class="hero">
-        <div class="hero-inner">
-          <div class="hero-portrait-wrap">
-            <img
-              class=""
-              src="assets/images/about/profile_photo.png"
-              alt="Mahsa Aghazadeh portrait"
-            />
-          </div>
-          <div class="hero-copy">
-            <p class="role">Data Scientist · 3R Innovation, Korea</p>
-            <h1>Mahsa Aghazadeh</h1>
-            <p class="pronunciation">
-              <span class="pron-ipa">/ˈmɑː.sɑː/</span>
-              <span class="pron-korean" lang="ko">아가자데 마싸</span>
-            </p>
-          </div>
-        </div>
-        <div class="hero-info">
-          <div>
-            <span>Currently</span>
-            <strong>Building a multimodal pipeline for pediatric ADHD screening</strong>
-          </div>
-          <div>
-            <span>Education</span>
-            <strong>M.Sc., KAIST</strong>
-            <small class="hero-info__sub">
-              Human Factors &amp; Ergonomics Lab, 2025
-            </small>
-            <small class="hero-info__sub">
-              Thesis: CV-based ergonomic risk assessment
-            </small>
-          </div>
-        </div>
-
-        <aside class="hero-socials" aria-label="Connect">
-          <a class="hero-social" href="mailto:mahsa.agzdh@gmail.com" aria-label="Email Mahsa">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M3.8 5h16.4A1.8 1.8 0 0 1 22 6.8v10.4a1.8 1.8 0 0 1-1.8 1.8H3.8A1.8 1.8 0 0 1 2 17.2V6.8A1.8 1.8 0 0 1 3.8 5Zm.6 2 7.6 5.2L19.6 7H4.4Zm15.6 1.9-7.4 5.05a1.05 1.05 0 0 1-1.2 0L4 8.9V17h16V8.9Z" />
-            </svg>
-          </a>
-          <a class="hero-social" href="https://github.com/mahsa-agz" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 .7A11.3 11.3 0 0 0 8.4 22.7c.57.1.78-.25.78-.55v-2.1c-3.18.69-3.85-1.36-3.85-1.36-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.54-.29-5.21-1.27-5.21-5.64 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.03 0 0 .96-.31 3.14 1.17a10.8 10.8 0 0 1 5.72 0c2.18-1.48 3.14-1.17 3.14-1.17.62 1.58.23 2.74.11 3.03.73.8 1.18 1.82 1.18 3.07 0 4.38-2.68 5.35-5.23 5.63.41.35.77 1.04.77 2.1v3.14c0 .3.21.66.79.55A11.3 11.3 0 0 0 12 .7Z" />
-            </svg>
-          </a>
-          <a class="hero-social" href="https://www.linkedin.com/in/mahsaagz" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1-.02-5ZM3 10h4v11H3V10Zm6.2 0H13v1.5h.05c.53-1 1.83-1.95 3.76-1.95 4.02 0 4.76 2.65 4.76 6.1V21h-4v-4.75c0-1.13-.02-2.58-1.58-2.58-1.58 0-1.82 1.23-1.82 2.5V21h-4V10Z" />
-            </svg>
-          </a>
-          <a class="hero-social" href="mahsa_resume.pdf" download aria-label="Download CV">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z" />
-            </svg>
-          </a>
-        </aside>
-      </section>
-
-      <!-- EXPERTISE -->
-      <section class="expertise section" id="service">
-        <div class="container">
-          <h2>Expertise</h2>
-          <div class="expertise-grid">
-            <article class="expertise-card">
-              <div class="line-icon">▧</div>
-              <h3>Experiment design</h3>
-              <p>
-                I frame the question first. Defining what to measure, how
-                to measure it, and what success actually looks like — so
-                the analysis afterwards has a chance.
-              </p>
-              <a href="work/#research">See research →</a>
-            </article>
-            <article class="expertise-card">
-              <div class="line-icon">⌘</div>
-              <h3>Data collection &amp; validation</h3>
-              <p>
-                I collect, clean, and validate datasets — including against
-                ground truth — so what comes downstream is reproducible
-                and grounded in the real problem.
-              </p>
-              <a href="work/#experience">See current work →</a>
-            </article>
-            <article class="expertise-card">
-              <div class="line-icon">◒</div>
-              <h3>Analysis &amp; modelling</h3>
-              <p>
-                Exploratory analysis, statistical modelling, and applied
-                ML. I check whether conclusions are robust to assumptions
-                before they leave my desk.
-              </p>
-              <a href="work/#projects">See projects →</a>
-            </article>
-            <article class="expertise-card">
-              <div class="line-icon">♧</div>
-              <h3>Shipping the result</h3>
-              <p>
-                I turn analytical results into things people use —
-                dashboards, mobile apps, or short reports — and care about
-                whether a non-expert can actually pick them up.
-              </p>
-              <a href="work/#research">See ErgoYar →</a>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <!-- WORK -->
-      <section class="works section" id="work">
-        <div class="container works-container">
-          <h2>Work</h2>
-          <div class="work-grid">
-            <article class="project-card">
-              <div class="project-card__image">
-                <img
-                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=760&q=85"
-                  alt="Multimodal sensor data and pediatric screening"
-                />
-                <span class="project-badge">3R Innovation · current</span>
-              </div>
-              <div class="project-body">
-                <h3>PDSS multimodal pipeline</h3>
-                <p>
-                  Building a system that uses sensor data — eye-tracking,
-                  keyboard, stylus, and voice — to help screen children
-                  for ADHD. Turns raw recordings from 103 children into
-                  features clinicians can analyse alongside their
-                  assessments.
-                </p>
-                <div class="project-tags">
-                  <span>Multimodal ML</span>
-                  <span>Sensor Data</span>
-                  <span>ADHD Screening</span>
-                  <span>Python</span>
-                </div>
-                <div class="project-links">
-                  <a href="work/#experience">Read more</a>
-                </div>
-              </div>
-            </article>
-
-            <article class="project-card">
-              <div class="project-card__image">
-                <img
-                  src="https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=760&q=85"
-                  alt="Computer vision ergonomic assessment thesis project"
-                />
-                <span class="project-badge">M.Sc. thesis</span>
-              </div>
-              <div class="project-body">
-                <h3>CV-based ergonomic risk assessment</h3>
-                <p>
-                  Computer-vision mobile app for ergonomic risk
-                  assessment. Validated 3D pose estimation against optical
-                  motion capture, computed automated REBA / RULA scores,
-                  and ran a usability study with non-experts. ICCs of 0.87
-                  (REBA) and 0.92 (RULA); pilot SUS 80.5.
-                </p>
-                <div class="project-tags">
-                  <span>Computer Vision</span>
-                  <span>Pose Estimation</span>
-                  <span>REBA / RULA</span>
-                  <span>Mobile App</span>
-                </div>
-                <div class="project-links">
-                  <a href="work/#research">Read more</a>
-                </div>
-              </div>
-            </article>
-
-            <article class="project-card">
-              <div class="project-card__image">
-                <img
-                  src="https://images.unsplash.com/photo-1555255707-c07966088b7b?auto=format&fit=crop&w=760&q=85"
-                  alt="Facial expression recognition project"
-                />
-              </div>
-              <div class="project-body">
-                <h3>EnsembleEFT</h3>
-                <p>
-                  A small ensemble (MobileNet + ShuffleNet) for facial
-                  expression recognition. Grad-CAM for interpretability,
-                  tuned to run on the edge.
-                </p>
-                <div class="project-tags">
-                  <span>Computer Vision</span>
-                  <span>Ensemble Learning</span>
-                  <span>Edge Deployment</span>
-                </div>
-                <div class="project-links">
-                  <a
-                    href="https://github.com/mahsa-agz/EnsembleEFT"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >GitHub</a
-                  >
-                </div>
-              </div>
-            </article>
-
-            <article class="project-card">
-              <div class="project-card__image">
-                <img
-                  src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=760&q=85"
-                  alt="Mood tracking application project"
-                />
-              </div>
-              <div class="project-body">
-                <h3>MoodMate</h3>
-                <p>
-                  Knowledge-based mental-health app that tracks emotional
-                  patterns, sleep, diet, activity and weather, then uses a
-                  rule-based inference engine to surface personalized
-                  suggestions.
-                </p>
-                <div class="project-tags">
-                  <span>Knowledge Systems</span>
-                  <span>Java</span>
-                  <span>JESS</span>
-                  <span>MySQL</span>
-                </div>
-                <div class="project-links">
-                  <a
-                    href="https://github.com/mahsa-agz/MoodMate"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >GitHub</a
-                  >
-                </div>
-              </div>
-            </article>
-
-            <article class="project-card">
-              <div class="project-card__image">
-                <img
-                  src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=760&q=85"
-                  alt="Music recommendation system project"
-                />
-              </div>
-              <div class="project-body">
-                <h3>MusicRecSys</h3>
-                <p>
-                  Cold-start music recommender using contrastive
-                  collaborative filtering — combining co-occurrence
-                  patterns with song metadata embeddings, and synthetic
-                  negative sampling for sparse data.
-                </p>
-                <div class="project-tags">
-                  <span>Recommenders</span>
-                  <span>Contrastive Learning</span>
-                  <span>Python</span>
-                </div>
-                <div class="project-links">
-                  <a
-                    href="https://github.com/mahsa-agz/MusicRecSys"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >GitHub</a
-                  >
-                </div>
-              </div>
-            </article>
-
-            <article class="project-card">
-              <div class="project-card__image">
-                <img
-                  src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=760&q=85"
-                  alt="Music and mental health analysis project"
-                />
-              </div>
-              <div class="project-body">
-                <h3>Music &amp; Mental Health</h3>
-                <p>
-                  Statistical study on how music habits, listening
-                  contexts, and genre preferences relate to self-reported
-                  anxiety, depression, insomnia and OCD. ANOVA, regression,
-                  and hypothesis testing in pandas + statsmodels.
-                </p>
-                <div class="project-tags">
-                  <span>Statistics</span>
-                  <span>ANOVA</span>
-                  <span>Regression</span>
-                  <span>Health</span>
-                </div>
-                <div class="project-links">
-                  <a
-                    href="https://github.com/mahsa-agz/Music-MentalHealth"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >GitHub</a
-                  >
-                </div>
-              </div>
-            </article>
-          </div>
-          <a
-            class="pill more-work"
-            href="https://github.com/mahsa-agz"
-            target="_blank"
-            rel="noopener noreferrer"
-            >View GitHub</a
-          >
-        </div>
-      </section>
-
-      <!-- ABOUT -->
-      <section class="about-block" id="about">
-        <div class="about-panel">
-          <div class="about-text">
-            <h2>About</h2>
-            <p>
-              I'm a data scientist trained in <strong>computer science</strong>
-              (B.Sc., Amirkabir University of Technology) and <strong>data
-              science</strong> (M.Sc., KAIST — Human Factors &amp; Ergonomics
-              Lab). My work moves between research and engineering:
-              validating models against ground truth, building data pipelines,
-              and shipping the result as a tool the intended user can run.
-            </p>
-            <blockquote>
-              "Good analysis starts before the model — with the right
-              question and the right data."
-            </blockquote>
-            <a class="about-more" href="about/">More about me →</a>
-          </div>
-          <div class="skills">
-            <div class="skill">
-              <div><span>Computer Vision</span><span>92%</span></div>
-              <i style="--v:92%"></i>
-            </div>
-            <div class="skill">
-              <div><span>Applied Machine Learning</span><span>88%</span></div>
-              <i style="--v:88%"></i>
-            </div>
-            <div class="skill">
-              <div><span>Data Engineering</span><span>85%</span></div>
-              <i style="--v:85%"></i>
-            </div>
-          </div>
-          <div class="tool-row">
-            <div class="tool-card"><b>Py</b><span>Python</span></div>
-            <div class="tool-card"><b>PT</b><span>PyTorch</span></div>
-            <div class="tool-card"><b>sk</b><span>scikit-learn</span></div>
-            <div class="tool-card"><b>pd</b><span>pandas</span></div>
-            <div class="tool-card"><b>Fa</b><span>FastAPI</span></div>
-            <div class="tool-card"><b>Fl</b><span>Flutter</span></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- APPROACH (clean, no fake testimonial) -->
-      <section class="approach section">
-        <div class="container approach-container">
-          <h2>How I work</h2>
-          <div class="approach-card">
-            <p>
-              "I ask the question first, get the data right second, and
-              only model what the data can actually answer. Communication
-              of the result — to a clinician, a PM, or a user with no
-              technical background — is part of the work, not an
-              afterthought."
-            </p>
-            <div class="approach-author">
-              <strong>Mahsa Aghazadeh</strong>
-              <span>Data Scientist · 3R Innovation</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- NOTES / BLOG TEASER -->
-      <section class="latest" id="blog">
-        <div class="latest-panel">
-          <div class="latest-head">
-            <h2>Notes</h2>
-            <a class="latest-more" href="blog/">All writing →</a>
-          </div>
-          <!--
-            Newest first. When adding a new note, paste its card ABOVE
-            the others and drop the oldest off the bottom so this
-            section always shows the three most-recent posts.
-          -->
-          <div class="news-grid">
-            <article class="news-card">
-              <img
-                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=760&q=85"
-                alt="Charts and statistical analysis"
-              />
-              <div class="news-overlay">
-                <div class="news-overlay__top">
-                  <span>Classic ML</span>
-                  <small>2026-05-26</small>
-                </div>
-                <h3><a class="news-card__link" href="blog/linear-regression.html">Linear regression, intuitively</a></h3>
-              </div>
-            </article>
-            <article class="news-card">
-              <img
-                src="https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=760&q=85"
-                alt="High-dimensional data being analysed"
-              />
-              <div class="news-overlay">
-                <div class="news-overlay__top">
-                  <span>Classic ML</span>
-                  <small>2026-05-26</small>
-                </div>
-                <h3><a class="news-card__link" href="blog/pca.html">PCA, intuitively</a></h3>
-              </div>
-            </article>
-            <article class="news-card">
-              <img
-                src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=760&q=85"
-                alt="Notebook with code and notes"
-              />
-              <div class="news-overlay">
-                <div class="news-overlay__top">
-                  <span>Tools / Workflow</span>
-                  <small>2026-05-26</small>
-                </div>
-                <h3><a class="news-card__link" href="blog/git.html">Git, in one page</a></h3>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer" id="contact">
-      <div class="footer-inner">
-        <div class="footer-brand">
-          <a class="logo footer-logo" href="./">Mahsa<span>.</span></a>
+        <div class="project-body">
+          <h3>PDSS multimodal pipeline</h3>
           <p>
-            Data scientist based in Daejeon, South Korea. I design
-            experiments, validate the data, run the analysis, and ship
-            the result as something people can actually use.
+            Building a system that uses sensor data — eye-tracking,
+            keyboard, stylus, and voice — to help screen children
+            for ADHD. Turns raw recordings from 103 children into
+            features clinicians can analyse alongside their
+            assessments.
           </p>
-          <div class="socials">
-            <a href="mailto:mahsa.agzdh@gmail.com" aria-label="Email Mahsa">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M3.8 5h16.4A1.8 1.8 0 0 1 22 6.8v10.4a1.8 1.8 0 0 1-1.8 1.8H3.8A1.8 1.8 0 0 1 2 17.2V6.8A1.8 1.8 0 0 1 3.8 5Zm.6 2 7.6 5.2L19.6 7H4.4Zm15.6 1.9-7.4 5.05a1.05 1.05 0 0 1-1.2 0L4 8.9V17h16V8.9Z" />
-              </svg>
-            </a>
-            <a
-              href="https://github.com/mahsa-agz"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub profile"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 .7A11.3 11.3 0 0 0 8.4 22.7c.57.1.78-.25.78-.55v-2.1c-3.18.69-3.85-1.36-3.85-1.36-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.54-.29-5.21-1.27-5.21-5.64 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.03 0 0 .96-.31 3.14 1.17a10.8 10.8 0 0 1 5.72 0c2.18-1.48 3.14-1.17 3.14-1.17.62 1.58.23 2.74.11 3.03.73.8 1.18 1.82 1.18 3.07 0 4.38-2.68 5.35-5.23 5.63.41.35.77 1.04.77 2.1v3.14c0 .3.21.66.79.55A11.3 11.3 0 0 0 12 .7Z" />
-              </svg>
-            </a>
-            <a
-              href="https://www.linkedin.com/in/mahsaagz"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn profile"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4.98 3.5A2.5 2.5 0 1 1 5 8.5a2.5 2.5 0 0 1-.02-5ZM3 10h4v11H3V10Zm6.2 0H13v1.5h.05c.53-1 1.83-1.95 3.76-1.95 4.02 0 4.76 2.65 4.76 6.1V21h-4v-4.75c0-1.13-.02-2.58-1.58-2.58-1.58 0-1.82 1.23-1.82 2.5V21h-4V10Z" />
-              </svg>
-            </a>
+          <div class="project-tags">
+            <span>Multimodal ML</span>
+            <span>Sensor Data</span>
+            <span>ADHD Screening</span>
+            <span>Python</span>
+          </div>
+          <div class="project-links">
+            <a href="{{ '/work/#experience' | relative_url }}">Read more</a>
           </div>
         </div>
-        <div class="footer-actions">
-          <a class="pill dark-pill" href="mahsa_resume.pdf" download
-            >Download CV</a
-          >
-          <a class="pill solid-pill" href="mailto:mahsa.agzdh@gmail.com"
-            >Email Me</a
-          >
-        </div>
-        <div class="copyright">
-          &copy; <span id="year"></span> Mahsa Aghazadeh. Built in Daejeon.
-        </div>
-        <nav class="footer-nav" aria-label="Footer navigation">
-          <a href="./">Home</a>
-          <a href="#service">Expertise</a>
-          <a href="#work">Work</a>
-          <a href="#about">About</a>
-          <a href="#blog">Notes</a>
-          <a href="#contact">Contact</a>
-        </nav>
-      </div>
-    </footer>
+      </article>
 
-    <a class="back-top" href="#top" aria-label="Back to top">↟</a>
-    <script src="scripts/home.js"></script>
-  </body>
-</html>
+      <article class="project-card">
+        <div class="project-card__image">
+          <img
+            src="https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=760&q=85"
+            alt="Computer vision ergonomic assessment thesis project"
+          />
+          <span class="project-badge">M.Sc. thesis</span>
+        </div>
+        <div class="project-body">
+          <h3>CV-based ergonomic risk assessment</h3>
+          <p>
+            Computer-vision mobile app for ergonomic risk
+            assessment. Validated 3D pose estimation against optical
+            motion capture, computed automated REBA / RULA scores,
+            and ran a usability study with non-experts. ICCs of 0.87
+            (REBA) and 0.92 (RULA); pilot SUS 80.5.
+          </p>
+          <div class="project-tags">
+            <span>Computer Vision</span>
+            <span>Pose Estimation</span>
+            <span>REBA / RULA</span>
+            <span>Mobile App</span>
+          </div>
+          <div class="project-links">
+            <a href="{{ '/work/#research' | relative_url }}">Read more</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="project-card">
+        <div class="project-card__image">
+          <img
+            src="https://images.unsplash.com/photo-1555255707-c07966088b7b?auto=format&fit=crop&w=760&q=85"
+            alt="Facial expression recognition project"
+          />
+        </div>
+        <div class="project-body">
+          <h3>EnsembleEFT</h3>
+          <p>
+            A small ensemble (MobileNet + ShuffleNet) for facial
+            expression recognition. Grad-CAM for interpretability,
+            tuned to run on the edge.
+          </p>
+          <div class="project-tags">
+            <span>Computer Vision</span>
+            <span>Ensemble Learning</span>
+            <span>Edge Deployment</span>
+          </div>
+          <div class="project-links">
+            <a href="https://github.com/mahsa-agz/EnsembleEFT" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="project-card">
+        <div class="project-card__image">
+          <img
+            src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=760&q=85"
+            alt="Mood tracking application project"
+          />
+        </div>
+        <div class="project-body">
+          <h3>MoodMate</h3>
+          <p>
+            Knowledge-based mental-health app that tracks emotional
+            patterns, sleep, diet, activity and weather, then uses a
+            rule-based inference engine to surface personalized
+            suggestions.
+          </p>
+          <div class="project-tags">
+            <span>Knowledge Systems</span>
+            <span>Java</span>
+            <span>JESS</span>
+            <span>MySQL</span>
+          </div>
+          <div class="project-links">
+            <a href="https://github.com/mahsa-agz/MoodMate" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="project-card">
+        <div class="project-card__image">
+          <img
+            src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=760&q=85"
+            alt="Music recommendation system project"
+          />
+        </div>
+        <div class="project-body">
+          <h3>MusicRecSys</h3>
+          <p>
+            Cold-start music recommender using contrastive
+            collaborative filtering — combining co-occurrence
+            patterns with song metadata embeddings, and synthetic
+            negative sampling for sparse data.
+          </p>
+          <div class="project-tags">
+            <span>Recommenders</span>
+            <span>Contrastive Learning</span>
+            <span>Python</span>
+          </div>
+          <div class="project-links">
+            <a href="https://github.com/mahsa-agz/MusicRecSys" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="project-card">
+        <div class="project-card__image">
+          <img
+            src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=760&q=85"
+            alt="Music and mental health analysis project"
+          />
+        </div>
+        <div class="project-body">
+          <h3>Music &amp; Mental Health</h3>
+          <p>
+            Statistical study on how music habits, listening
+            contexts, and genre preferences relate to self-reported
+            anxiety, depression, insomnia and OCD. ANOVA, regression,
+            and hypothesis testing in pandas + statsmodels.
+          </p>
+          <div class="project-tags">
+            <span>Statistics</span>
+            <span>ANOVA</span>
+            <span>Regression</span>
+            <span>Health</span>
+          </div>
+          <div class="project-links">
+            <a href="https://github.com/mahsa-agz/Music-MentalHealth" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </div>
+        </div>
+      </article>
+    </div>
+    <a class="pill more-work" href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener noreferrer">View GitHub</a>
+  </div>
+</section>
+
+<!-- APPROACH -->
+<section class="approach section">
+  <div class="container approach-container">
+    <h2>How I work</h2>
+    <div class="approach-card">
+      <p>
+        "I ask the question first, get the data right second, and
+        only model what the data can actually answer. Communication
+        of the result — to a clinician, a PM, or a user with no
+        technical background — is part of the work, not an
+        afterthought."
+      </p>
+      <div class="approach-author">
+        <strong>Mahsa Aghazadeh</strong>
+        <span>Data Scientist · 3R Innovation</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NOTES / BLOG TEASER — auto-pulls the 3 most-recent posts -->
+<section class="latest" id="blog">
+  <div class="latest-panel">
+    <div class="latest-head">
+      <h2>Notes</h2>
+      <a class="latest-more" href="{{ '/blog/' | relative_url }}">All writing →</a>
+    </div>
+    <div class="news-grid">
+      {%- for post in site.posts limit:3 -%}
+        {%- assign cat_label = post.category -%}
+        {%- for cat in site.data.categories -%}
+          {%- if cat.slug == post.category -%}{%- assign cat_label = cat.label -%}{%- endif -%}
+        {%- endfor -%}
+        <article class="news-card">
+          <img
+            src="{{ post.image | default: '/assets/og-default.png' | relative_url }}"
+            alt="{{ post.title }}"
+          />
+          <div class="news-overlay">
+            <div class="news-overlay__top">
+              <span>{{ cat_label }}</span>
+              <small>{{ post.date | date: '%Y-%m-%d' }}</small>
+            </div>
+            <h3><a class="news-card__link" href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
+          </div>
+        </article>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>

@@ -1,106 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Not found — Mahsa Aghazadeh</title>
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem("theme");
-          if (t === "dark" || t === "light") {
-            document.documentElement.setAttribute("data-theme", t);
-          }
-        } catch (e) {}
-      })();
-    </script>
-    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/styles/main.css" />
-  </head>
-  <body>
-    <header class="site-header">
-      <nav class="nav" aria-label="Primary">
-        <a href="/" class="nav__brand">
-          <span class="nav__mark" aria-hidden="true">M</span>
-          <span class="nav__name">Mahsa</span>
-        </a>
-        <ul class="nav__links">
-          <li><a href="/">Home</a></li>
-          <li><a href="/about/">About</a></li>
-          <li><a href="/work/">Work</a></li>
-          <li><a href="/blog/">Blog</a></li>
-          <li><a href="/#contact">Contact</a></li>
-        </ul>
-        <button
-          class="theme-toggle"
-          type="button"
-          aria-label="Toggle dark mode"
-          data-theme-toggle
-        >
-          <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="4" fill="currentColor"/>
-            <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-              <line x1="12" y1="2" x2="12" y2="5"/>
-              <line x1="12" y1="19" x2="12" y2="22"/>
-              <line x1="2" y1="12" x2="5" y2="12"/>
-              <line x1="19" y1="12" x2="22" y2="12"/>
-              <line x1="4.5" y1="4.5" x2="6.6" y2="6.6"/>
-              <line x1="17.4" y1="17.4" x2="19.5" y2="19.5"/>
-              <line x1="4.5" y1="19.5" x2="6.6" y2="17.4"/>
-              <line x1="17.4" y1="6.6" x2="19.5" y2="4.5"/>
-            </g>
-          </svg>
-          <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="currentColor"/>
-          </svg>
-        </button>
-      </nav>
-    </header>
-
-    <main>
-      <section class="hero">
-        <div class="hero__content">
-          <p class="eyebrow"><span class="eyebrow__dot"></span>Error 404</p>
-          <h1 class="hero__title">
-            <span class="hero__first">Page</span>
-            <span class="hero__last">not found</span>
-          </h1>
-          <p class="hero__tagline">
-            That link points nowhere — it may have moved, or never existed.
-          </p>
-          <div class="hero__cta">
-            <a class="btn btn--primary" href="/">Back home</a>
-            <a class="btn btn--ghost" href="/blog/">Read blog</a>
-          </div>
-        </div>
-      </section>
-    </main>
-
-        <footer class="site-footer" id="contact">
-      <div class="site-footer__inner">
-        <div class="site-footer__brand">
-          <p class="signature">Mahsa</p>
-          <p class="site-footer__meta">
-            &copy; <span id="year"></span> Mahsa Aghazadeh · Built with care in Daejeon
-          </p>
-        </div>
-        <div class="site-footer__contact">
-          <p class="site-footer__contact-label">Get in touch</p>
-          <ul class="site-footer__contact-list">
-            <li><a href="mailto:mahsa.agzdh@gmail.com">mahsa.agzdh@gmail.com</a></li>
-            <li><a href="https://github.com/mahsaAgz">GitHub</a></li>
-            <li><a href="https://www.linkedin.com/in/mahsaagz">LinkedIn</a></li>
-            <li><a href="/mahsa_resume.pdf">CV (PDF)</a></li>
-          </ul>
-        </div>
-      </div>
-    </footer>
-    <script src="/scripts/main.js"></script>
-  </body>
-</html>
+---
+title: "Page not found"
+description: "The page you're looking for doesn't exist."
+permalink: /404.html
+---
+<section class="hero">
+  <div class="hero__content">
+    <p class="eyebrow"><span class="eyebrow__dot"></span>Error 404</p>
+    <h1 class="hero__title">
+      <span class="hero__first">Page</span>
+      <span class="hero__last">not found</span>
+    </h1>
+    <p class="hero__tagline">
+      That link points nowhere — it may have moved, or never existed.
+    </p>
+    <div class="hero__cta">
+      <a class="btn btn--primary" href="{{ '/' | relative_url }}">Back home</a>
+      <a class="btn btn--ghost" href="{{ '/blog/' | relative_url }}">Read blog</a>
+    </div>
+  </div>
+</section>

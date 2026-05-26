@@ -1,0 +1,12 @@
+# Blog post categories — the chip filter on /blog/ is generated from this list.
+# `slug` is what each post puts in its front-matter `category:` field.
+- { slug: foundations,    label: Foundations,            full: "Foundations (Statistics and Math)" }
+- { slug: eda,            label: EDA,                    full: "Exploratory Data Analysis (EDA)" }
+- { slug: feature-eng,    label: Feature Engineering,    full: "Feature Engineering and Data Preparation" }
+- { slug: stats-methods,  label: Statistical Methods,    full: "Statistical Methods" }
+- { slug: classic-ml,     label: Classic ML,             full: "Classic Machine Learning" }
+- { slug: deep-learning,  label: Deep Learning,          full: "Deep Learning" }
+- { slug: evaluation,     label: Model Evaluation,       full: "Model Evaluation" }
+- { slug: databases,      label: "Databases / SQL",      full: "Databases / SQL" }
+- { slug: tools,          label: "Tools / Workflow",     full: "Tools / Workflow" }
+- { slug: other,          label: Other,                  full: "Other" }

@@ -1,108 +1,101 @@
 # mahsa-agz.github.io
 
-Personal site, served at <https://mahsa-agz.github.io>.
+Personal site, served at <https://mahsa-agz.github.io>. Built with Jekyll on GitHub Pages.
 
 ## Structure
 
 ```
 .
-├── index.html              # Home — short hero, currently strip, featured + contact
-├── about/index.html        # Long-form bio + education + beyond work + recognition
-├── work/index.html         # Research + experience + selected projects + toolkit
-├── blog/
-│   ├── index.html          # Blog index — lists all posts
-│   └── _template.html      # Copy this to start a new post
-├── 404.html                # Custom not-found page
+├── _config.yml             # Site config, permalinks, plugins
+├── _data/
+│   ├── nav.yml             # Nav items (edit here — propagates to every page)
+│   └── categories.yml      # Blog categories + chip labels
+├── _includes/
+│   ├── site-nav.html       # Editorial nav (subpages)
+│   ├── site-footer.html    # Editorial footer (subpages)
+│   ├── home-nav.html       # Homepage nav (Oswald wordmark style)
+│   └── home-footer.html    # Homepage footer
+├── _layouts/
+│   ├── default.html        # Subpage shell (head + nav + footer)
+│   ├── post.html           # Blog post shell (extends default)
+│   └── home.html           # Homepage shell (different design system)
+├── _posts/
+│   └── YYYY-MM-DD-slug.md  # One markdown file per blog post
+├── index.html              # Home — uses layout: home
+├── about/index.html        # About page
+├── work/index.html         # Projects page
+├── blog/index.html         # Blog index with category-chip filter
+├── 404.html
 ├── styles/
-│   ├── main.css            # Site-wide design tokens + layout
+│   ├── home.css            # Homepage design system (Oswald + Roboto)
+│   ├── main.css            # Editorial design system (Fraunces + Inter)
 │   └── post.css            # Long-form article styles
-├── scripts/main.js         # Theme toggle, tabs, scroll progress, image protect
-├── assets/
-│   ├── images/about/       # Profile + about photos
-│   ├── images/taekwondo/
-│   ├── images/drawings/
-│   ├── images/photography/
-│   └── favicon.svg
-├── sitemap.xml             # Add new post URLs here
-├── robots.txt
-└── mahsa_resume.tex        # CV source (compile to mahsa_resume.pdf)
+├── scripts/main.js         # Theme toggle, tabs, scroll progress, filter
+└── assets/                 # Images, favicon, OG default
 ```
-
-## Page architecture
-
-- `/` — landing: hero, currently, featured work, blog teaser, contact.
-- `/about/` — bio, education, beyond work (taekwondo / photography / drawing), recognition.
-- `/work/` — research, experience, selected projects, toolkit.
-- `/blog/` — single unified feed of writing. New posts land here.
-- `/blog/<slug>.html` — individual posts, each with comments placeholder.
 
 ## Local preview
 
 ```bash
-python -m http.server 8000
-# then visit http://localhost:8000
+bundle install               # one time
+bundle exec jekyll serve     # then visit http://localhost:4000
 ```
 
-## Adding a new post
+If Ruby isn't installed, the site still builds fine on GitHub Pages after a push — you just won't see it locally first.
 
-1. Copy `blog/_template.html` to `blog/<slug>.html` (e.g. `blog/pca.html`).
-2. Fill in: `<title>`, description, Open Graph tags, JSON-LD dates, visible header, body.
-3. Add a `<li class="note">` entry to the Notes section in `index.html`
-   (under `notes-panel-all` and `notes-panel-site`). For LinkedIn-only
-   posts, add the entry under `notes-panel-all` and `notes-panel-linkedin`
-   with an `https://linkedin.com/...` URL.
-4. Add a `<li class="post-list__item">` entry to `blog/index.html`.
-5. Add a `<url>` block to `sitemap.xml`.
-6. Commit & push — GitHub Pages publishes automatically.
+## Adding a new blog post
+
+1. Create `_posts/YYYY-MM-DD-<slug>.md` (date in the filename, hyphens in the slug).
+2. Add front matter:
+
+   ```yaml
+   ---
+   title: "PCA, intuitively"
+   date: 2026-05-26
+   category: classic-ml           # see _data/categories.yml for slugs
+   read_time: 9                   # minutes (optional)
+   excerpt: "Short summary for the blog index card."
+   lede: "Italic first line shown above the body."
+   description: "SEO / Open Graph description."
+   image: /assets/img/pca-cover.jpg   # cover for the homepage Notes teaser
+   ---
+   ```
+
+3. Write the body in markdown. Inline HTML (figures, SVGs) works too.
+4. `git add . && git commit -m "..." && git push` — GitHub Pages rebuilds.
+
+That's it. The post automatically:
+- Lands at `/blog/<slug>.html` (permalink rule in `_config.yml`)
+- Appears at the top of `/blog/` (sorted newest-first)
+- Is picked up by the category filter chip matching its `category:`
+- Shows in the homepage Notes teaser if it's one of the 3 most recent
+- Is included in the auto-generated `/sitemap.xml`
+
+## Editing the navigation
+
+Both the header nav and the footer nav read from `_data/nav.yml`. Edit it once and every page on the site updates.
+
+## Categories
+
+Add or rename categories in `_data/categories.yml`. Each entry needs:
+- `slug` — what posts put in their `category:` field
+- `label` — short text for the chip on `/blog/`
+- `full` — long name shown on each post card
 
 ## Comments (giscus)
 
-The post template includes a comments placeholder. To enable real comments
-(stored in this repo's GitHub Discussions, free, no ads):
-
-1. Repo → Settings → General → Features → enable **Discussions**.
-2. Go to <https://giscus.app> and configure with this repo:
-   - **Mapping:** pathname (each post URL becomes its own thread)
-   - **Category:** Announcements (or another read-only-by-default category)
-   - **Theme:** `preferred_color_scheme` (auto-matches light/dark mode)
-3. Copy the generated `<script>` snippet.
-4. In `blog/_template.html`, replace the placeholder inside
-   `<section class="post__comments">` with that snippet.
-5. From now on, every new post copied from the template gets comments.
+If you want comments on posts, add the giscus `<script>` to `_layouts/post.html` right after the `<footer class="post__footer">`. Setup: enable Discussions on this repo, configure at <https://giscus.app>, paste the generated snippet. It then shows on every post automatically.
 
 ## Sharing a post on LinkedIn
 
-LinkedIn reads the Open Graph tags in the post `<head>`. Once a post is live,
-paste its full URL into a LinkedIn post and the preview card renders
-automatically. If the preview looks stale, refresh with the
-[LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/).
+LinkedIn reads the Open Graph tags generated by `jekyll-seo-tag`. Paste a full post URL into LinkedIn and the preview card renders. If it looks stale, refresh with the [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/).
 
-**Don't iframe LinkedIn embeds** — they're heavy and break when LinkedIn
-changes their embed code. The Notes section's "LinkedIn" tab is meant to
-hold link cards back to the LinkedIn post, not embedded iframes.
+## Image protection
 
-## Image protection — what it does and doesn't do
-
-Photos in the hero portrait and the Beyond-work galleries carry
-`data-protect`. The CSS + JS deterrents do:
-
-- Disable the right-click "Save image as…" menu on those images.
-- Disable drag-to-save (dragging an image out of the page).
-- Disable text selection / long-press image actions on mobile.
-
-The deterrents do **NOT**:
-
-- Prevent screenshots (no website on Earth can — it's an OS-level action).
-- Prevent DevTools / "View source" extraction (anyone with a browser can).
-- Prevent download via the browser's network inspector.
-
-If you have photos you genuinely don't want anyone to save, the only
-reliable options are: (a) don't put them on a public site, (b) watermark
-them before uploading, or (c) upload only low-resolution versions so any
-saved copy is too small to use.
+Photos in the hero portrait and Beyond-work galleries carry `data-protect`. This disables right-click save, drag-to-save, and long-press actions — but **not** screenshots, DevTools, or network inspector. If you genuinely don't want a photo saved: don't put it on a public site, watermark it, or upload only a low-res version.
 
 ## Notes
 
-- One CV PDF lives at `mahsa_resume.pdf` (linked from the hero "Download CV"
-  button — generate it from `mahsa_resume.tex`).
+- CV PDF lives at `mahsa_resume.pdf` (linked from the hero — generate from `mahsa_resume.tex`).
 - Default social preview image is `assets/og-default.png` (1200×630).
+- The `notion/` and `inspo/` folders are excluded from the Jekyll build (see `_config.yml`).

@@ -1,0 +1,31 @@
+{%- comment -%}
+  Editorial footer — used by default + post layouts.
+  Brand · Nav (from _data/nav.yml) · Contact (from _config.yml site vars).
+{%- endcomment -%}
+<footer class="site-footer" id="contact">
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <p class="signature">Mahsa</p>
+      <p class="site-footer__meta">
+        &copy; <span id="year"></span> Mahsa Aghazadeh · Built with care in Daejeon
+      </p>
+    </div>
+    <div class="site-footer__nav">
+      <p class="site-footer__nav-label">Navigate</p>
+      <ul class="site-footer__nav-list">
+        {%- for item in site.data.nav.items -%}
+          <li><a href="{{ item.url | relative_url }}">{{ item.label }}</a></li>
+        {%- endfor -%}
+      </ul>
+    </div>
+    <div class="site-footer__contact">
+      <p class="site-footer__contact-label">Get in touch</p>
+      <ul class="site-footer__contact-list">
+        <li><a href="mailto:{{ site.email }}">{{ site.email }}</a></li>
+        <li><a href="https://github.com/{{ site.github_username }}">GitHub</a></li>
+        <li><a href="{{ site.linkedin_url }}">LinkedIn</a></li>
+        <li><a href="{{ '/mahsa_resume.pdf' | relative_url }}">CV (PDF)</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,31 @@
+---
+layout: default
+---
+<article class="post">
+  <header class="post__header">
+    <p class="post__back"><a href="{{ '/blog/' | relative_url }}">← All writing</a></p>
+    <h1 class="post__title">{{ page.title }}</h1>
+    <p class="post__meta">
+      <time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: '%B %-d, %Y' }}</time>
+      {%- if page.read_time -%}
+        · <span>{{ page.read_time }} min read</span>
+      {%- endif -%}
+    </p>
+  </header>
+
+  <div class="post__body prose">
+    {%- if page.lede -%}
+      <p class="post__lede">{{ page.lede }}</p>
+    {%- endif -%}
+    {{ content }}
+  </div>
+
+  <footer class="post__footer">
+    <p>
+      Spot something off, or want me to expand a section? Reach me at
+      <a href="mailto:{{ site.email }}">{{ site.email }}</a>
+      or on
+      <a href="{{ site.linkedin_url }}">LinkedIn</a>.
+    </p>
+  </footer>
+</article>

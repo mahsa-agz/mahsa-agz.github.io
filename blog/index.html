@@ -1,172 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blog — Mahsa Aghazadeh</title>
-    <meta
-      name="description"
-      content="Notes, explainers, and references on data science, machine learning, and computer vision by Mahsa Aghazadeh."
-    />
-    <meta name="author" content="Mahsa Aghazadeh" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)" />
-    <link rel="canonical" href="https://mahsa-agz.github.io/blog/" />
+---
+title: Notes
+description: "Notes, explainers, and references on data science, machine learning, and computer vision by Mahsa Aghazadeh."
+permalink: /blog/
+---
+<header class="page-header" data-reveal>
+  <p class="eyebrow"><span class="eyebrow__dot"></span>Blog</p>
+  <h1 class="page-header__title">Notes</h1>
+</header>
 
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Mahsa Aghazadeh" />
-    <meta property="og:title" content="Blog — Mahsa Aghazadeh" />
-    <meta property="og:description" content="Notes and explainers on data science, ML, and computer vision." />
-    <meta property="og:url" content="https://mahsa-agz.github.io/blog/" />
-    <meta property="og:image" content="https://mahsa-agz.github.io/assets/og-default.png" />
-    <meta name="twitter:card" content="summary_large_image" />
+<section class="section section--first" data-reveal>
+  <div class="post-filter" data-filter="notes" role="toolbar" aria-label="Filter notes by category">
+    <button class="post-filter__chip is-active" type="button" data-filter-value="all" aria-pressed="true">All</button>
+    {%- for cat in site.data.categories -%}
+      <button class="post-filter__chip" type="button" data-filter-value="{{ cat.slug }}" aria-pressed="false">{{ cat.label }}</button>
+    {%- endfor -%}
+  </div>
 
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem("theme");
-          if (t === "dark" || t === "light") {
-            document.documentElement.setAttribute("data-theme", t);
-          }
-        } catch (e) {}
-      })();
-    </script>
-
-    <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="../styles/main.css" />
-    <link rel="stylesheet" href="../styles/post.css" />
-  </head>
-  <body>
-    <header class="site-header">
-      <nav class="nav" aria-label="Primary">
-        <a href="../" class="nav__brand">
-          <span class="nav__mark" aria-hidden="true">M</span>
-          <span class="nav__name">Mahsa</span>
-        </a>
-        <ul class="nav__links">
-          <li><a href="../">Home</a></li>
-          <li><a href="../about/">About</a></li>
-          <li><a href="../work/">Work</a></li>
-          <li><a href="../blog/" aria-current="page">Blog</a></li>
-          <li><a href="../#contact">Contact</a></li>
-        </ul>
-        <button class="theme-toggle" type="button" aria-label="Toggle dark mode" data-theme-toggle>
-          <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="4" fill="currentColor"/>
-            <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-              <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
-              <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
-              <line x1="4.5" y1="4.5" x2="6.6" y2="6.6"/><line x1="17.4" y1="17.4" x2="19.5" y2="19.5"/>
-              <line x1="4.5" y1="19.5" x2="6.6" y2="17.4"/><line x1="17.4" y1="6.6" x2="19.5" y2="4.5"/>
-            </g>
-          </svg>
-          <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="currentColor"/>
-          </svg>
-        </button>
-      </nav>
-    </header>
-
-    <main>
-      <header class="page-header" data-reveal>
-        <p class="eyebrow"><span class="eyebrow__dot"></span>Blog</p>
-        <h1 class="page-header__title">Notes</h1>
-      </header>
-
-      <section class="section section--first" data-reveal>
-        <div class="post-filter" data-filter="notes" role="toolbar" aria-label="Filter notes by category">
-          <button class="post-filter__chip is-active" type="button" data-filter-value="all" aria-pressed="true">All</button>
-          <button class="post-filter__chip" type="button" data-filter-value="foundations"   aria-pressed="false">Foundations</button>
-          <button class="post-filter__chip" type="button" data-filter-value="eda"           aria-pressed="false">EDA</button>
-          <button class="post-filter__chip" type="button" data-filter-value="feature-eng"   aria-pressed="false">Feature Engineering</button>
-          <button class="post-filter__chip" type="button" data-filter-value="stats-methods" aria-pressed="false">Statistical Methods</button>
-          <button class="post-filter__chip" type="button" data-filter-value="classic-ml"    aria-pressed="false">Classic ML</button>
-          <button class="post-filter__chip" type="button" data-filter-value="deep-learning" aria-pressed="false">Deep Learning</button>
-          <button class="post-filter__chip" type="button" data-filter-value="evaluation"    aria-pressed="false">Model Evaluation</button>
-          <button class="post-filter__chip" type="button" data-filter-value="databases"     aria-pressed="false">Databases / SQL</button>
-          <button class="post-filter__chip" type="button" data-filter-value="tools"         aria-pressed="false">Tools / Workflow</button>
-          <button class="post-filter__chip" type="button" data-filter-value="other"         aria-pressed="false">Other</button>
+  <ul class="post-list" data-filterable="notes">
+    {%- for post in site.posts -%}
+      {%- assign cat_full = post.category -%}
+      {%- for cat in site.data.categories -%}
+        {%- if cat.slug == post.category -%}{%- assign cat_full = cat.full -%}{%- endif -%}
+      {%- endfor -%}
+      <li class="post-list__item" data-category="{{ post.category }}" data-date="{{ post.date | date: '%Y-%m-%d' }}">
+        <p class="post-list__meta">{{ post.date | date: '%Y-%m-%d' }}{% if post.read_time %} · {{ post.read_time }} min read{% endif %}</p>
+        <div>
+          <a class="post-list__title" href="{{ post.url | relative_url }}">
+            {{ post.title }}
+          </a>
+          <p class="post-list__excerpt">{{ post.excerpt }}</p>
+          <p class="post-list__category">{{ cat_full }}</p>
         </div>
-
-        <!--
-          Posts are sorted newest first (manual). When adding a new
-          post, paste it ABOVE the others and set data-category to one
-          of the chip slugs above.
-        -->
-        <ul class="post-list" data-filterable="notes">
-          <li class="post-list__item" data-category="classic-ml" data-date="2026-05-26">
-            <p class="post-list__meta">2026-05-26 · 9 min read</p>
-            <div>
-              <a class="post-list__title" href="../blog/pca.html">
-                PCA, intuitively
-              </a>
-              <p class="post-list__excerpt">
-                Why we need it, how it finds the directions that
-                matter, picking how many to keep, and where it breaks.
-              </p>
-              <p class="post-list__category">Classic Machine Learning</p>
-            </div>
-          </li>
-          <li class="post-list__item" data-category="classic-ml" data-date="2026-05-26">
-            <p class="post-list__meta">2026-05-26 · 10 min read</p>
-            <div>
-              <a class="post-list__title" href="../blog/linear-regression.html">
-                Linear regression, intuitively
-              </a>
-              <p class="post-list__excerpt">
-                Residuals, R², adjusted R², F and the p-value — built up
-                visually from the simplest mouse-weight example.
-              </p>
-              <p class="post-list__category">Classic Machine Learning</p>
-            </div>
-          </li>
-          <li class="post-list__item" data-category="tools" data-date="2026-05-26">
-            <p class="post-list__meta">2026-05-26 · 8 min read</p>
-            <div>
-              <a class="post-list__title" href="../blog/git.html">
-                Git, in one page
-              </a>
-              <p class="post-list__excerpt">
-                The mental model, the everyday loop, branching vs.
-                rebasing, and a cheat sheet sorted by how often you'll
-                actually use each command.
-              </p>
-              <p class="post-list__category">Tools / Workflow</p>
-            </div>
-          </li>
-          <li class="post-list__empty" data-filter-empty hidden>
-            No notes in this category yet — check back soon.
-          </li>
-        </ul>
-      </section>
-    </main>
-
-        <footer class="site-footer" id="contact">
-      <div class="site-footer__inner">
-        <div class="site-footer__brand">
-          <p class="signature">Mahsa</p>
-          <p class="site-footer__meta">
-            &copy; <span id="year"></span> Mahsa Aghazadeh · Built with care in Daejeon
-          </p>
-        </div>
-        <div class="site-footer__contact">
-          <p class="site-footer__contact-label">Get in touch</p>
-          <ul class="site-footer__contact-list">
-            <li><a href="mailto:mahsa.agzdh@gmail.com">mahsa.agzdh@gmail.com</a></li>
-            <li><a href="https://github.com/mahsaAgz">GitHub</a></li>
-            <li><a href="https://www.linkedin.com/in/mahsaagz">LinkedIn</a></li>
-            <li><a href="../mahsa_resume.pdf">CV (PDF)</a></li>
-          </ul>
-        </div>
-      </div>
-    </footer>
-
-    <script src="../scripts/main.js"></script>
-  </body>
-</html>
+      </li>
+    {%- endfor -%}
+    <li class="post-list__empty" data-filter-empty hidden>
+      No notes in this category yet — check back soon.
+    </li>
+  </ul>
+</section>

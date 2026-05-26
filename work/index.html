@@ -1,431 +1,336 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Work — Mahsa Aghazadeh</title>
-    <meta
-      name="description"
-      content="Research, experience, and selected projects by Mahsa Aghazadeh."
-    />
-    <meta name="author" content="Mahsa Aghazadeh" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)" />
-    <link rel="canonical" href="https://mahsa-agz.github.io/work/" />
+---
+title: Projects
+description: "Research, experience, and selected projects by Mahsa Aghazadeh — computer vision, multimodal ML, and applied data science."
+permalink: /work/
+---
+<header class="page-header" data-reveal>
+  <p class="eyebrow"><span class="eyebrow__dot"></span>Projects</p>
+  <h1 class="page-header__title">Research, experience, and selected projects.</h1>
+  <p class="page-header__lede">
+    A timeline of what I've worked on, the questions each piece tried
+    to answer, and the artefacts that came out the other side.
+  </p>
+</header>
 
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Mahsa Aghazadeh" />
-    <meta property="og:title" content="Work — Mahsa Aghazadeh" />
-    <meta property="og:description" content="Research, experience, and selected projects." />
-    <meta property="og:url" content="https://mahsa-agz.github.io/work/" />
-    <meta property="og:image" content="https://mahsa-agz.github.io/assets/og-default.png" />
-    <meta name="twitter:card" content="summary_large_image" />
+<section id="research" class="section section--first" data-reveal>
+  <header class="section__head">
+    <h2 class="section__title">Research</h2>
+  </header>
+  <p class="section__lede">
+    Two studies from my M.Sc. at KAIST's Human Factors and Ergonomics
+    Lab, bridging pose-estimation accuracy and the deployable tool
+    that a non-expert user actually operates.
+  </p>
 
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem("theme");
-          if (t === "dark" || t === "light") {
-            document.documentElement.setAttribute("data-theme", t);
-          }
-        } catch (e) {}
-      })();
-    </script>
+  <article class="entry">
+    <div class="entry__meta">
+      <p class="entry__role">Paper 1 · under review</p>
+      <p class="entry__where">HFEL, KAIST</p>
+      <p class="entry__when">2024 — 2025</p>
+    </div>
+    <div class="entry__body">
+      <h3 class="entry__title">
+        CV-based monocular 3D pose estimation for ergonomic risk
+        assessment
+      </h3>
+      <p class="entry__lede">
+        When is an off-the-shelf pose model accurate enough to score
+        ergonomic risk — and when does kinematic error change the
+        decision?
+      </p>
+      <ul class="entry__list">
+        <li>
+          Compared MediaPipe and MMPose against an 8-camera OptiTrack
+          reference across three camera views (front, 45°, side) and
+          a range of static and dynamic tasks.
+        </li>
+        <li>
+          Separated <em>kinematic fidelity</em> (joint positions and
+          angles) from <em>ergonomic-decision robustness</em> — the
+          degree to which kinematic errors actually change REBA / RULA
+          risk classification.
+        </li>
+        <li>
+          MediaPipe outperformed MMPose overall; 45° was its best
+          view; intraclass correlations of 0.87 (REBA) and 0.92 (RULA)
+          against the reference.
+        </li>
+        <li>
+          Authors: Aghazadeh &amp; Xiong. Submitted to
+          <em>Ergonomics</em>, revision in progress.
+        </li>
+      </ul>
+    </div>
+  </article>
 
-    <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="../styles/main.css" />
-  </head>
-  <body>
-    <header class="site-header">
-      <nav class="nav" aria-label="Primary">
-        <a href="../" class="nav__brand">
-          <span class="nav__mark" aria-hidden="true">M</span>
-          <span class="nav__name">Mahsa</span>
-        </a>
-        <ul class="nav__links">
-          <li><a href="../">Home</a></li>
-          <li><a href="../about/">About</a></li>
-          <li><a href="../work/" aria-current="page">Work</a></li>
-          <li><a href="../blog/">Blog</a></li>
-          <li><a href="../#contact">Contact</a></li>
-        </ul>
-        <button class="theme-toggle" type="button" aria-label="Toggle dark mode" data-theme-toggle>
-          <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="4" fill="currentColor"/>
-            <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-              <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
-              <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
-              <line x1="4.5" y1="4.5" x2="6.6" y2="6.6"/><line x1="17.4" y1="17.4" x2="19.5" y2="19.5"/>
-              <line x1="4.5" y1="19.5" x2="6.6" y2="17.4"/><line x1="17.4" y1="6.6" x2="19.5" y2="4.5"/>
-            </g>
-          </svg>
-          <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="currentColor"/>
-          </svg>
-        </button>
-      </nav>
-    </header>
+  <article class="entry">
+    <div class="entry__meta">
+      <p class="entry__role">Paper 2 · in preparation</p>
+      <p class="entry__where">HFEL, KAIST</p>
+      <p class="entry__when">2024 — 2025</p>
+    </div>
+    <div class="entry__body">
+      <h3 class="entry__title">
+        ErgoYar — a mobile ergonomic-assessment app for non-experts
+      </h3>
+      <p class="entry__lede">
+        Translating a validated CV pipeline into a mobile tool an SME
+        worker or supervisor can run without training.
+      </p>
+      <ul class="entry__list">
+        <li>
+          Built a Flutter front-end and FastAPI / Supabase backend
+          that turn a smartphone video into per-frame REBA / RULA
+          scoring with an annotated pose overlay.
+        </li>
+        <li>
+          Designed the interface around progressive disclosure
+          (overview → body part → joint detail) and body-part-specific
+          feedback rather than a single composite score, so the
+          density of per-joint output stays interpretable on a small
+          screen.
+        </li>
+        <li>
+          Pilot usability study with 10 non-expert users: SUS
+          <strong>80.5</strong> (excellent band, ~90th percentile),
+          uMARS &gt; 3.5 across all six dimensions, SUS–uMARS Pearson
+          <em>r</em> = 0.74.
+        </li>
+        <li>
+          All ten participants completed the seven-task protocol
+          without facilitator intervention.
+        </li>
+      </ul>
+    </div>
+  </article>
+</section>
 
-    <main>
-      <header class="page-header" data-reveal>
-        <p class="eyebrow"><span class="eyebrow__dot"></span>Work</p>
-        <h1 class="page-header__title">Research, experience, and selected projects.</h1>
-        <p class="page-header__lede">
-          A timeline of what I've worked on, the questions each piece tried
-          to answer, and the artefacts that came out the other side.
-        </p>
-      </header>
+<section id="experience" class="section" data-reveal>
+  <header class="section__head">
+    <h2 class="section__title">Experience</h2>
+  </header>
 
-      <section id="research" class="section section--first" data-reveal>
-        <header class="section__head">
-          <h2 class="section__title">Research</h2>
-        </header>
-        <p class="section__lede">
-          Two studies from my M.Sc. at KAIST's Human Factors and Ergonomics
-          Lab, bridging pose-estimation accuracy and the deployable tool
-          that a non-expert user actually operates.
-        </p>
+  <article class="entry">
+    <div class="entry__meta">
+      <p class="entry__role">Data Scientist</p>
+      <p class="entry__where">3R Innovation · Daejeon</p>
+      <p class="entry__when">2025 — present</p>
+    </div>
+    <div class="entry__body">
+      <h3 class="entry__title">
+        Pediatric Digital Sensor Study (PDSS)
+      </h3>
+      <p class="entry__lede">
+        Building the digital-phenotyping pipeline that turns raw
+        sensor recordings from 103 children into a dataset clinicians
+        and researchers can analyze.
+      </p>
+      <ul class="entry__list">
+        <li>
+          Designed and built the per-(child × task) feature pipeline:
+          four sensor modalities (eye-tracking, keyboard, stylus,
+          voice), ~30 tasks per child, 14,500+ raw files, ~1,500
+          features per row.
+        </li>
+        <li>
+          Chose session-level windowing over fixed 15s / 60s windows
+          after a quality-check pass showed the latter would drop
+          roughly half the tasks; this preserved 100% task coverage
+          across modalities.
+        </li>
+        <li>
+          Diagnosed and patched three blocking bugs in a partner
+          lab's feature extractor without modifying their code, using
+          in-memory wrappers — kept their version control intact and
+          made every patch explicit.
+        </li>
+        <li>
+          Trained K-SADS ADHD models on the resulting features:
+          inattention classification reached AUC 0.72 (LogReg on VST
+          core features); hyperactivity classification reached F2
+          0.65 (LogReg on AST + VST + Flanker core); hyperactivity
+          severity regression reached Pearson <em>r</em> = 0.54
+          (ElasticNet on aggregate features).
+        </li>
+        <li>
+          Working alongside our project manager on product-side
+          tasks — scoping, sizing, and writing up decisions — to
+          learn the part of the work that lives upstream of the code.
+        </li>
+      </ul>
+    </div>
+  </article>
 
-        <article class="entry">
-          <div class="entry__meta">
-            <p class="entry__role">Paper 1 · under review</p>
-            <p class="entry__where">HFEL, KAIST</p>
-            <p class="entry__when">2024 — 2025</p>
-          </div>
-          <div class="entry__body">
-            <h3 class="entry__title">
-              CV-based monocular 3D pose estimation for ergonomic risk
-              assessment
-            </h3>
-            <p class="entry__lede">
-              When is an off-the-shelf pose model accurate enough to score
-              ergonomic risk — and when does kinematic error change the
-              decision?
-            </p>
-            <ul class="entry__list">
-              <li>
-                Compared MediaPipe and MMPose against an 8-camera OptiTrack
-                reference across three camera views (front, 45°, side) and
-                a range of static and dynamic tasks.
-              </li>
-              <li>
-                Separated <em>kinematic fidelity</em> (joint positions and
-                angles) from <em>ergonomic-decision robustness</em> — the
-                degree to which kinematic errors actually change REBA / RULA
-                risk classification.
-              </li>
-              <li>
-                MediaPipe outperformed MMPose overall; 45° was its best
-                view; intraclass correlations of 0.87 (REBA) and 0.92 (RULA)
-                against the reference.
-              </li>
-              <li>
-                Authors: Aghazadeh &amp; Xiong. Submitted to
-                <em>Ergonomics</em>, revision in progress.
-              </li>
-            </ul>
-          </div>
-        </article>
+  <article class="entry">
+    <div class="entry__meta">
+      <p class="entry__role">Full-stack Developer</p>
+      <p class="entry__where">Iranzamin Bank · Tehran</p>
+      <p class="entry__when">Dec 2021 — Jul 2022</p>
+    </div>
+    <div class="entry__body">
+      <h3 class="entry__title">Core banking &amp; national infrastructure</h3>
+      <ul class="entry__list">
+        <li>
+          Built backend systems for core banking — including
+          <strong>Pichak</strong>, Iran's national digital cheque
+          system — with .NET Core, SQL Server, and REST APIs.
+        </li>
+        <li>
+          Developed responsive web frontends and Flutter mobile UIs.
+        </li>
+      </ul>
+    </div>
+  </article>
+</section>
 
-        <article class="entry">
-          <div class="entry__meta">
-            <p class="entry__role">Paper 2 · in preparation</p>
-            <p class="entry__where">HFEL, KAIST</p>
-            <p class="entry__when">2024 — 2025</p>
-          </div>
-          <div class="entry__body">
-            <h3 class="entry__title">
-              ErgoYar — a mobile ergonomic-assessment app for non-experts
-            </h3>
-            <p class="entry__lede">
-              Translating a validated CV pipeline into a mobile tool an SME
-              worker or supervisor can run without training.
-            </p>
-            <ul class="entry__list">
-              <li>
-                Built a Flutter front-end and FastAPI / Supabase backend
-                that turn a smartphone video into per-frame REBA / RULA
-                scoring with an annotated pose overlay.
-              </li>
-              <li>
-                Designed the interface around progressive disclosure
-                (overview → body part → joint detail) and body-part-specific
-                feedback rather than a single composite score, so the
-                density of per-joint output stays interpretable on a small
-                screen.
-              </li>
-              <li>
-                Pilot usability study with 10 non-expert users: SUS
-                <strong>80.5</strong> (excellent band, ~90th percentile),
-                uMARS &gt; 3.5 across all six dimensions, SUS–uMARS Pearson
-                <em>r</em> = 0.74.
-              </li>
-              <li>
-                All ten participants completed the seven-task protocol
-                without facilitator intervention.
-              </li>
-            </ul>
-          </div>
-        </article>
-      </section>
+<section id="projects" class="section" data-reveal>
+  <header class="section__head">
+    <h2 class="section__title">Selected projects</h2>
+  </header>
+  <p class="section__lede">
+    Side projects covering knowledge systems, deep learning,
+    recommenders, and applied statistics.
+  </p>
 
-      <section id="experience" class="section" data-reveal>
-        <header class="section__head">
-          <h2 class="section__title">Experience</h2>
-        </header>
-
-        <article class="entry">
-          <div class="entry__meta">
-            <p class="entry__role">Data Scientist</p>
-            <p class="entry__where">3R Innovation · Daejeon</p>
-            <p class="entry__when">2025 — present</p>
-          </div>
-          <div class="entry__body">
-            <h3 class="entry__title">
-              Pediatric Digital Sensor Study (PDSS)
-            </h3>
-            <p class="entry__lede">
-              Building the digital-phenotyping pipeline that turns raw
-              sensor recordings from 103 children into a dataset clinicians
-              and researchers can analyze.
-            </p>
-            <ul class="entry__list">
-              <li>
-                Designed and built the per-(child × task) feature pipeline:
-                four sensor modalities (eye-tracking, keyboard, stylus,
-                voice), ~30 tasks per child, 14,500+ raw files, ~1,500
-                features per row.
-              </li>
-              <li>
-                Chose session-level windowing over fixed 15s / 60s windows
-                after a quality-check pass showed the latter would drop
-                roughly half the tasks; this preserved 100% task coverage
-                across modalities.
-              </li>
-              <li>
-                Diagnosed and patched three blocking bugs in a partner
-                lab's feature extractor without modifying their code, using
-                in-memory wrappers — kept their version control intact and
-                made every patch explicit.
-              </li>
-              <li>
-                Trained K-SADS ADHD models on the resulting features:
-                inattention classification reached AUC 0.72 (LogReg on VST
-                core features); hyperactivity classification reached F2
-                0.65 (LogReg on AST + VST + Flanker core); hyperactivity
-                severity regression reached Pearson <em>r</em> = 0.54
-                (ElasticNet on aggregate features).
-              </li>
-              <li>
-                Working alongside our project manager on product-side
-                tasks — scoping, sizing, and writing up decisions — to
-                learn the part of the work that lives upstream of the code.
-              </li>
-            </ul>
-          </div>
-        </article>
-
-        <article class="entry">
-          <div class="entry__meta">
-            <p class="entry__role">Full-stack Developer</p>
-            <p class="entry__where">Iranzamin Bank · Tehran</p>
-            <p class="entry__when">Dec 2021 — Jul 2022</p>
-          </div>
-          <div class="entry__body">
-            <h3 class="entry__title">Core banking &amp; national infrastructure</h3>
-            <ul class="entry__list">
-              <li>
-                Built backend systems for core banking — including
-                <strong>Pichak</strong>, Iran's national digital cheque
-                system — with .NET Core, SQL Server, and REST APIs.
-              </li>
-              <li>
-                Developed responsive web frontends and Flutter mobile UIs.
-              </li>
-            </ul>
-          </div>
-        </article>
-      </section>
-
-      <section id="projects" class="section" data-reveal>
-        <header class="section__head">
-          <h2 class="section__title">Selected projects</h2>
-        </header>
-        <p class="section__lede">
-          Side projects covering knowledge systems, deep learning,
-          recommenders, and applied statistics.
-        </p>
-
-        <ul class="work-grid">
-          <li class="work">
-            <div class="work__visual" aria-hidden="true">
-              <svg viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="34" fill="none" stroke="currentColor" stroke-width="1.2"/>
-                <circle cx="60" cy="60" r="22" fill="none" stroke="currentColor" stroke-width="1.2"/>
-                <circle cx="60" cy="60" r="10" fill="currentColor"/>
-              </svg>
-            </div>
-            <div class="work__body">
-              <p class="work__tag">Knowledge systems · Java · JESS</p>
-              <h3 class="work__title">MoodMate</h3>
-              <p class="work__desc">
-                Rule-based mental-health tracker that combines psychological
-                logic with user feedback to surface personalized insights
-                and early-detection alerts.
-              </p>
-              <a class="work__link" href="https://github.com/mahsaAgz/MoodMate">View on GitHub <span aria-hidden="true">→</span></a>
-            </div>
-          </li>
-
-          <li class="work">
-            <div class="work__visual" aria-hidden="true">
-              <svg viewBox="0 0 120 120">
-                <rect x="18" y="18" width="84" height="84" fill="none" stroke="currentColor" stroke-width="1.2"/>
-                <rect x="34" y="34" width="52" height="52" fill="none" stroke="currentColor" stroke-width="1.2"/>
-                <rect x="50" y="50" width="20" height="20" fill="currentColor"/>
-              </svg>
-            </div>
-            <div class="work__body">
-              <p class="work__tag">Deep learning · Edge · CV</p>
-              <h3 class="work__title">Lightweight Ensemble for FER</h3>
-              <p class="work__desc">
-                Compact ensemble (MobileNet + ShuffleNet) for facial
-                expression recognition. Grad-CAM for interpretability;
-                tuned for edge deployment.
-              </p>
-              <a class="work__link" href="https://github.com/mahsaAgz/EnsembleEFT">View on GitHub <span aria-hidden="true">→</span></a>
-            </div>
-          </li>
-
-          <li class="work">
-            <div class="work__visual" aria-hidden="true">
-              <svg viewBox="0 0 120 120">
-                <path d="M20 80 Q40 30 60 60 T100 40" fill="none" stroke="currentColor" stroke-width="1.4"/>
-                <circle cx="20" cy="80" r="3" fill="currentColor"/>
-                <circle cx="60" cy="60" r="3" fill="currentColor"/>
-                <circle cx="100" cy="40" r="3" fill="currentColor"/>
-              </svg>
-            </div>
-            <div class="work__body">
-              <p class="work__tag">Recommenders · Contrastive learning</p>
-              <h3 class="work__title">Cold-Start Music Recommender</h3>
-              <p class="work__desc">
-                Contrastive collaborative filtering with co-occurrence and
-                content-based embeddings. Custom synthetic negative sampling
-                handles severe data sparsity.
-              </p>
-              <a class="work__link" href="https://github.com/mahsaAgz/MusicRecSys">View on GitHub <span aria-hidden="true">→</span></a>
-            </div>
-          </li>
-
-          <li class="work">
-            <div class="work__visual" aria-hidden="true">
-              <svg viewBox="0 0 120 120">
-                <line x1="20" y1="100" x2="100" y2="100" stroke="currentColor" stroke-width="1.2"/>
-                <rect x="28" y="60" width="12" height="40" fill="currentColor" opacity="0.25"/>
-                <rect x="48" y="40" width="12" height="60" fill="currentColor" opacity="0.55"/>
-                <rect x="68" y="50" width="12" height="50" fill="currentColor" opacity="0.85"/>
-                <rect x="88" y="30" width="12" height="70" fill="currentColor"/>
-              </svg>
-            </div>
-            <div class="work__body">
-              <p class="work__tag">Statistics · Health</p>
-              <h3 class="work__title">Music &amp; Mental Health</h3>
-              <p class="work__desc">
-                Statistical study on the relationship between music habits
-                and mental-health indicators — ANOVA, regression, and
-                hypothesis testing in pandas + statsmodels.
-              </p>
-              <a class="work__link" href="https://github.com/mahsaAgz/Music-MentalHealth">View on GitHub <span aria-hidden="true">→</span></a>
-            </div>
-          </li>
-        </ul>
-      </section>
-
-      <section id="toolkit" class="section" data-reveal>
-        <header class="section__head">
-          <h2 class="section__title">Toolkit</h2>
-        </header>
-
-        <dl class="toolkit">
-          <div class="toolkit__row">
-            <dt>Languages</dt>
-            <dd>
-              <span class="chip">Python</span>
-              <span class="chip">C++</span>
-              <span class="chip">C#</span>
-              <span class="chip">Dart</span>
-            </dd>
-          </div>
-          <div class="toolkit__row">
-            <dt>ML &amp; data</dt>
-            <dd>
-              <span class="chip">PyTorch</span>
-              <span class="chip">TensorFlow</span>
-              <span class="chip">scikit-learn</span>
-              <span class="chip">pandas</span>
-              <span class="chip">NumPy</span>
-              <span class="chip">Statsmodels</span>
-            </dd>
-          </div>
-          <div class="toolkit__row">
-            <dt>Engineering</dt>
-            <dd>
-              <span class="chip">.NET Core</span>
-              <span class="chip">Django</span>
-              <span class="chip">FastAPI</span>
-              <span class="chip">SQL Server</span>
-              <span class="chip">Supabase</span>
-              <span class="chip">Flutter</span>
-              <span class="chip">JavaScript</span>
-              <span class="chip">Git</span>
-              <span class="chip">Figma</span>
-            </dd>
-          </div>
-          <div class="toolkit__row">
-            <dt>Concepts</dt>
-            <dd>
-              <span class="chip chip--soft">Computer vision</span>
-              <span class="chip chip--soft">ML / DL</span>
-              <span class="chip chip--soft">Data analysis</span>
-              <span class="chip chip--soft">HCI</span>
-              <span class="chip chip--soft">Software design</span>
-            </dd>
-          </div>
-          <div class="toolkit__row">
-            <dt>Spoken</dt>
-            <dd>English (IELTS 8.0) · Korean (TOPIK 5) · Persian (native)</dd>
-          </div>
-        </dl>
-      </section>
-    </main>
-
-        <footer class="site-footer" id="contact">
-      <div class="site-footer__inner">
-        <div class="site-footer__brand">
-          <p class="signature">Mahsa</p>
-          <p class="site-footer__meta">
-            &copy; <span id="year"></span> Mahsa Aghazadeh · Built with care in Daejeon
-          </p>
-        </div>
-        <div class="site-footer__contact">
-          <p class="site-footer__contact-label">Get in touch</p>
-          <ul class="site-footer__contact-list">
-            <li><a href="mailto:mahsa.agzdh@gmail.com">mahsa.agzdh@gmail.com</a></li>
-            <li><a href="https://github.com/mahsaAgz">GitHub</a></li>
-            <li><a href="https://www.linkedin.com/in/mahsaagz">LinkedIn</a></li>
-            <li><a href="../mahsa_resume.pdf">CV (PDF)</a></li>
-          </ul>
-        </div>
+  <ul class="work-grid">
+    <li class="work">
+      <div class="work__visual" aria-hidden="true">
+        <svg viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="34" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="60" cy="60" r="22" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="60" cy="60" r="10" fill="currentColor"/>
+        </svg>
       </div>
-    </footer>
+      <div class="work__body">
+        <p class="work__tag">Knowledge systems · Java · JESS</p>
+        <h3 class="work__title">MoodMate</h3>
+        <p class="work__desc">
+          Rule-based mental-health tracker that combines psychological
+          logic with user feedback to surface personalized insights
+          and early-detection alerts.
+        </p>
+        <a class="work__link" href="https://github.com/mahsaAgz/MoodMate">View on GitHub <span aria-hidden="true">→</span></a>
+      </div>
+    </li>
 
-    <script src="../scripts/main.js"></script>
-  </body>
-</html>
+    <li class="work">
+      <div class="work__visual" aria-hidden="true">
+        <svg viewBox="0 0 120 120">
+          <rect x="18" y="18" width="84" height="84" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="34" y="34" width="52" height="52" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="50" y="50" width="20" height="20" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="work__body">
+        <p class="work__tag">Deep learning · Edge · CV</p>
+        <h3 class="work__title">Lightweight Ensemble for FER</h3>
+        <p class="work__desc">
+          Compact ensemble (MobileNet + ShuffleNet) for facial
+          expression recognition. Grad-CAM for interpretability;
+          tuned for edge deployment.
+        </p>
+        <a class="work__link" href="https://github.com/mahsaAgz/EnsembleEFT">View on GitHub <span aria-hidden="true">→</span></a>
+      </div>
+    </li>
+
+    <li class="work">
+      <div class="work__visual" aria-hidden="true">
+        <svg viewBox="0 0 120 120">
+          <path d="M20 80 Q40 30 60 60 T100 40" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <circle cx="20" cy="80" r="3" fill="currentColor"/>
+          <circle cx="60" cy="60" r="3" fill="currentColor"/>
+          <circle cx="100" cy="40" r="3" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="work__body">
+        <p class="work__tag">Recommenders · Contrastive learning</p>
+        <h3 class="work__title">Cold-Start Music Recommender</h3>
+        <p class="work__desc">
+          Contrastive collaborative filtering with co-occurrence and
+          content-based embeddings. Custom synthetic negative sampling
+          handles severe data sparsity.
+        </p>
+        <a class="work__link" href="https://github.com/mahsaAgz/MusicRecSys">View on GitHub <span aria-hidden="true">→</span></a>
+      </div>
+    </li>
+
+    <li class="work">
+      <div class="work__visual" aria-hidden="true">
+        <svg viewBox="0 0 120 120">
+          <line x1="20" y1="100" x2="100" y2="100" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="28" y="60" width="12" height="40" fill="currentColor" opacity="0.25"/>
+          <rect x="48" y="40" width="12" height="60" fill="currentColor" opacity="0.55"/>
+          <rect x="68" y="50" width="12" height="50" fill="currentColor" opacity="0.85"/>
+          <rect x="88" y="30" width="12" height="70" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="work__body">
+        <p class="work__tag">Statistics · Health</p>
+        <h3 class="work__title">Music &amp; Mental Health</h3>
+        <p class="work__desc">
+          Statistical study on the relationship between music habits
+          and mental-health indicators — ANOVA, regression, and
+          hypothesis testing in pandas + statsmodels.
+        </p>
+        <a class="work__link" href="https://github.com/mahsaAgz/Music-MentalHealth">View on GitHub <span aria-hidden="true">→</span></a>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<section id="toolkit" class="section" data-reveal>
+  <header class="section__head">
+    <h2 class="section__title">Toolkit</h2>
+  </header>
+
+  <dl class="toolkit">
+    <div class="toolkit__row">
+      <dt>Languages</dt>
+      <dd>
+        <span class="chip">Python</span>
+        <span class="chip">C++</span>
+        <span class="chip">C#</span>
+        <span class="chip">Dart</span>
+      </dd>
+    </div>
+    <div class="toolkit__row">
+      <dt>ML &amp; data</dt>
+      <dd>
+        <span class="chip">PyTorch</span>
+        <span class="chip">TensorFlow</span>
+        <span class="chip">scikit-learn</span>
+        <span class="chip">pandas</span>
+        <span class="chip">NumPy</span>
+        <span class="chip">Statsmodels</span>
+      </dd>
+    </div>
+    <div class="toolkit__row">
+      <dt>Engineering</dt>
+      <dd>
+        <span class="chip">.NET Core</span>
+        <span class="chip">Django</span>
+        <span class="chip">FastAPI</span>
+        <span class="chip">SQL Server</span>
+        <span class="chip">Supabase</span>
+        <span class="chip">Flutter</span>
+        <span class="chip">JavaScript</span>
+        <span class="chip">Git</span>
+        <span class="chip">Figma</span>
+      </dd>
+    </div>
+    <div class="toolkit__row">
+      <dt>Concepts</dt>
+      <dd>
+        <span class="chip chip--soft">Computer vision</span>
+        <span class="chip chip--soft">ML / DL</span>
+        <span class="chip chip--soft">Data analysis</span>
+        <span class="chip chip--soft">HCI</span>
+        <span class="chip chip--soft">Software design</span>
+      </dd>
+    </div>
+    <div class="toolkit__row">
+      <dt>Spoken</dt>
+      <dd>English (IELTS 8.0) · Korean (TOPIK 5) · Persian (native)</dd>
+    </div>
+  </dl>
+</section>

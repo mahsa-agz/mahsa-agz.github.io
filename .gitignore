@@ -8,3 +8,11 @@ notion/
 *.tmp
 .tmp*/
 .claude/
+
+# Jekyll build output and local-only bundler files
+_site/
+.jekyll-cache/
+.sass-cache/
+.bundle/
+vendor/
+Gemfile.lock

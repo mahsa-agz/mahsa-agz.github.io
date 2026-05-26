@@ -1,0 +1,8 @@
+# Shared navigation — used by header AND footer of every page.
+# Edit here once; both navs across the whole site update.
+items:
+  - { label: Home,     url: "/" }
+  - { label: About,    url: "/about/" }
+  - { label: Projects, url: "/work/" }
+  - { label: Blog,     url: "/blog/" }
+  - { label: Contact,  url: "#contact" }

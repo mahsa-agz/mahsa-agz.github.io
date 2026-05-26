@@ -1803,6 +1803,41 @@ main {
 }
 .site-footer__contact-list a:hover { color: var(--rose); }
 
+.site-footer__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 10rem;
+}
+.site-footer__nav-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin: 0 0 var(--sp-1);
+}
+.site-footer__nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+}
+.site-footer__nav-list a {
+  color: var(--ink);
+  font-weight: 500;
+}
+.site-footer__nav-list a:hover { color: var(--rose); }
+
+@media (min-width: 720px) {
+  .site-footer__inner {
+    grid-template-columns: 1fr auto auto;
+  }
+}
+
 /* =============================================================
    SCROLL REVEAL
    ============================================================= */
