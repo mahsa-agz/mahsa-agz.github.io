@@ -845,7 +845,7 @@ img { max-width: 100%; display: block; }
    FOOTER (always dark)
    ============================================================= */
 .footer {
-  background: #0f1419;
+  background: #18222e;
   color: #fff;
   padding: 58px 0 50px;
 }
@@ -872,7 +872,7 @@ img { max-width: 100%; display: block; }
 }
 .socials a {
   width: 32px; height: 32px;
-  background: #582617;
+  background: #ffffff;
   color: var(--orange);
   display: grid; place-items: center;
   border-radius: 4px;
