@@ -213,7 +213,7 @@
   margin: var(--sp-2) 0 0;
   color: var(--ink-soft);
   font-size: var(--fs-sm);
-  max-width: 60ch;
+  /* max-width: 60ch; */
   line-height: 1.55;
 }
 
