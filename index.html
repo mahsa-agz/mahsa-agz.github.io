@@ -67,7 +67,10 @@ permalink: /
 <section class="about-block" id="about">
   <div class="about-panel">
     <div class="about-text">
-      <h2>About</h2>
+      <div class="about-text-head">
+        <h2>About</h2>
+        <a class="about-more" href="{{ '/about/' | relative_url }}">more →</a>
+      </div>
       <p>
         I build multimodal AI tools that translate behavioural
         and sensor data into practical insights.
@@ -93,7 +96,6 @@ permalink: /
         management — the space where research, engineering,
         product strategy and real-world user needs meet.
       </p>
-      <a class="about-more" href="{{ '/about/' | relative_url }}">More about me →</a>
     </div>
     <div class="about-expertise">
       <article class="about-skill">
@@ -125,7 +127,7 @@ permalink: /
   <div class="container works-container">
     <div class="works-head">
       <h2>Projects</h2>
-      <a class="works-more" href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener noreferrer">View GitHub →</a>
+      <a class="works-more" href="{{ '/work/' | relative_url }}">more →</a>
     </div>
     <div class="work-grid">
       <article class="project-card">
@@ -319,7 +321,7 @@ permalink: /
   <div class="latest-panel">
     <div class="latest-head">
       <h2>Blog</h2>
-      <a class="latest-more" href="{{ '/blog/' | relative_url }}">All writing →</a>
+      <a class="latest-more" href="{{ '/blog/' | relative_url }}">more →</a>
     </div>
     <div class="news-grid">
       {%- for post in site.posts limit:3 -%}

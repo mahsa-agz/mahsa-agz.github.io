@@ -5,7 +5,6 @@ permalink: /blog/
 ---
 <header class="page-header" data-reveal>
   <p class="eyebrow"><span class="eyebrow__dot"></span>Blog</p>
-  <h1 class="page-header__title">Notes &amp; recommendations</h1>
 </header>
 
 <section class="section section--first" data-reveal>
@@ -58,6 +57,18 @@ permalink: /blog/
               <a class="rec-item__title" href="{{ rec.url }}" target="_blank" rel="noopener noreferrer">{{ rec.title }}</a>
               {%- if rec.source -%}<p class="rec-item__source">{{ rec.source }}</p>{%- endif -%}
               {%- if rec.why -%}<p class="rec-item__why">{{ rec.why }}</p>{%- endif -%}
+              {%- if rec.embed -%}
+                <div class="rec-item__embed">
+                  <iframe
+                    src="{{ rec.embed }}"
+                    title="Embedded player: {{ rec.title }}"
+                    loading="lazy"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen></iframe>
+                </div>
+              {%- endif -%}
             </div>
           </li>
         {%- else -%}

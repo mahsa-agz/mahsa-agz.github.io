@@ -514,6 +514,21 @@ img { max-width: 100%; display: block; }
    ============================================================= */
 .about-block { padding: 90px 0 82px; }
 
+/* About column head — h2 + small "more →" link inline */
+.about-text-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.about-text-head h2 { margin: 0; }
+.about-text-head .about-more {
+  margin: 0;
+  white-space: nowrap;
+}
+
 /* Projects section head — small "View GitHub" link next to the title */
 .works-head {
   display: flex;
