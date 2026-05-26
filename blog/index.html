@@ -85,24 +85,69 @@
       </header>
 
       <section class="section section--first" data-reveal>
-        <ul class="post-list">
-          <li class="post-list__empty">
-            First posts coming soon — PCA, linear regression, REBA scoring.
-          </li>
-          <!--
-            Real entry once a post exists:
+        <div class="post-filter" data-filter="notes" role="toolbar" aria-label="Filter notes by category">
+          <button class="post-filter__chip is-active" type="button" data-filter-value="all" aria-pressed="true">All</button>
+          <button class="post-filter__chip" type="button" data-filter-value="foundations"   aria-pressed="false">Foundations</button>
+          <button class="post-filter__chip" type="button" data-filter-value="eda"           aria-pressed="false">EDA</button>
+          <button class="post-filter__chip" type="button" data-filter-value="feature-eng"   aria-pressed="false">Feature Engineering</button>
+          <button class="post-filter__chip" type="button" data-filter-value="stats-methods" aria-pressed="false">Statistical Methods</button>
+          <button class="post-filter__chip" type="button" data-filter-value="classic-ml"    aria-pressed="false">Classic ML</button>
+          <button class="post-filter__chip" type="button" data-filter-value="deep-learning" aria-pressed="false">Deep Learning</button>
+          <button class="post-filter__chip" type="button" data-filter-value="evaluation"    aria-pressed="false">Model Evaluation</button>
+          <button class="post-filter__chip" type="button" data-filter-value="databases"     aria-pressed="false">Databases / SQL</button>
+          <button class="post-filter__chip" type="button" data-filter-value="tools"         aria-pressed="false">Tools / Workflow</button>
+          <button class="post-filter__chip" type="button" data-filter-value="other"         aria-pressed="false">Other</button>
+        </div>
 
-            <li class="post-list__item">
-              <a class="post-list__title" href="../blog/pca/">
+        <!--
+          Posts are sorted newest first (manual). When adding a new
+          post, paste it ABOVE the others and set data-category to one
+          of the chip slugs above.
+        -->
+        <ul class="post-list" data-filterable="notes">
+          <li class="post-list__item" data-category="classic-ml" data-date="2026-05-26">
+            <p class="post-list__meta">2026-05-26 · 9 min read</p>
+            <div>
+              <a class="post-list__title" href="../blog/pca.html">
                 PCA, intuitively
               </a>
-              <p class="post-list__meta">2026-05-10 · 6 min read</p>
               <p class="post-list__excerpt">
-                What principal components actually represent — without the
-                mystery.
+                Why we need it, how it finds the directions that
+                matter, picking how many to keep, and where it breaks.
               </p>
-            </li>
-          -->
+              <p class="post-list__category">Classic Machine Learning</p>
+            </div>
+          </li>
+          <li class="post-list__item" data-category="classic-ml" data-date="2026-05-26">
+            <p class="post-list__meta">2026-05-26 · 10 min read</p>
+            <div>
+              <a class="post-list__title" href="../blog/linear-regression.html">
+                Linear regression, intuitively
+              </a>
+              <p class="post-list__excerpt">
+                Residuals, R², adjusted R², F and the p-value — built up
+                visually from the simplest mouse-weight example.
+              </p>
+              <p class="post-list__category">Classic Machine Learning</p>
+            </div>
+          </li>
+          <li class="post-list__item" data-category="tools" data-date="2026-05-26">
+            <p class="post-list__meta">2026-05-26 · 8 min read</p>
+            <div>
+              <a class="post-list__title" href="../blog/git.html">
+                Git, in one page
+              </a>
+              <p class="post-list__excerpt">
+                The mental model, the everyday loop, branching vs.
+                rebasing, and a cheat sheet sorted by how often you'll
+                actually use each command.
+              </p>
+              <p class="post-list__category">Tools / Workflow</p>
+            </div>
+          </li>
+          <li class="post-list__empty" data-filter-empty hidden>
+            No notes in this category yet — check back soon.
+          </li>
         </ul>
       </section>
     </main>

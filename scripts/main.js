@@ -54,6 +54,38 @@ if (themeBtn) {
   });
 }
 
+// ===== Category filter (used on /blog/) =====
+document.querySelectorAll("[data-filter]").forEach((filter) => {
+  const group = filter.getAttribute("data-filter");
+  const chips = Array.from(filter.querySelectorAll("[data-filter-value]"));
+  const list = document.querySelector(`[data-filterable="${group}"]`);
+  if (!list) return;
+  const items = Array.from(list.querySelectorAll("[data-category]"));
+  const empty = list.querySelector("[data-filter-empty]");
+
+  const apply = (value) => {
+    let shown = 0;
+    items.forEach((item) => {
+      const match =
+        value === "all" || item.getAttribute("data-category") === value;
+      item.hidden = !match;
+      if (match) shown++;
+    });
+    if (empty) empty.hidden = shown !== 0;
+  };
+
+  chips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      chips.forEach((c) => {
+        const on = c === chip;
+        c.classList.toggle("is-active", on);
+        c.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      apply(chip.getAttribute("data-filter-value"));
+    });
+  });
+});
+
 // ===== Tabs (ARIA) =====
 document.querySelectorAll("[data-tabs]").forEach((tabsRoot) => {
   const tabs = Array.from(tabsRoot.querySelectorAll('[role="tab"]'));

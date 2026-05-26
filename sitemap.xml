@@ -20,11 +20,19 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <!-- Add one <url> block per published post:
   <url>
     <loc>https://mahsa-agz.github.io/blog/pca.html</loc>
-    <lastmod>2026-05-10</lastmod>
+    <lastmod>2026-05-26</lastmod>
     <priority>0.7</priority>
   </url>
-  -->
+  <url>
+    <loc>https://mahsa-agz.github.io/blog/linear-regression.html</loc>
+    <lastmod>2026-05-26</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://mahsa-agz.github.io/blog/git.html</loc>
+    <lastmod>2026-05-26</lastmod>
+    <priority>0.7</priority>
+  </url>
 </urlset>

@@ -754,6 +754,29 @@ img { max-width: 100%; display: block; }
   overflow: hidden;
 }
 
+/* SVG cover (used when a card doesn't have a photo yet) */
+.news-card .news-cover {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* Stretched link — makes the entire card clickable while
+   keeping the <article> semantics. */
+.news-card__link {
+  color: inherit;
+  position: static;
+}
+.news-card__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+.news-card:hover .news-card__link { color: #fff; }
+.news-card:focus-within { outline: 2px solid var(--orange); outline-offset: 3px; }
+
 /* =============================================================
    FOOTER (always dark)
    ============================================================= */
