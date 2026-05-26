@@ -48,12 +48,13 @@
   </head>
   <body>
     {% include home-nav.html %}
+    {%- comment -%} home-nav is the Oswald-style nav used only on the homepage {%- endcomment -%}
 
     <main>
       {{ content }}
     </main>
 
-    {% include home-footer.html %}
+    {% include footer.html %}
 
     <script src="{{ '/scripts/main.js' | relative_url }}"></script>
   </body>

@@ -26,8 +26,20 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
+    {%- comment -%}
+      home.css loaded FIRST (only for the .footer + .pill + .socials styles
+      that the unified footer needs). main.css and post.css load after so
+      the editorial nav, body typography, and tokens win on every shared
+      selector.
+    {%- endcomment -%}
+    <link rel="stylesheet" href="{{ '/styles/home.css' | relative_url }}" />
     <link rel="stylesheet" href="{{ '/styles/main.css' | relative_url }}" />
     <link rel="stylesheet" href="{{ '/styles/post.css' | relative_url }}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     {% include site-nav.html %}
@@ -36,7 +48,7 @@
       {{ content }}
     </main>
 
-    {% include site-footer.html %}
+    {% include footer.html %}
 
     <script src="{{ '/scripts/main.js' | relative_url }}"></script>
   </body>

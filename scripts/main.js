@@ -1,3 +1,17 @@
+// ===== "Back to top" / Home anchor =====
+// Any link with href="#top" smooth-scrolls to the very top of the page.
+// Used by the homepage Home nav link and the back-to-top button.
+document.querySelectorAll('a[href="#top"]').forEach((link) => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Clear any leftover hash from previous clicks.
+    if (location.hash) {
+      history.replaceState(null, "", location.pathname + location.search);
+    }
+  });
+});
+
 // ===== Year =====
 const yearEl = document.getElementById("year");
 if (yearEl) yearEl.textContent = new Date().getFullYear();

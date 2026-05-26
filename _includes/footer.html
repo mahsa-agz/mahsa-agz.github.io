@@ -1,6 +1,8 @@
 {%- comment -%}
-  Homepage footer — dark style with brand + socials + footer-nav.
-  Nav items come from _data/nav.yml; on the homepage they're anchor jumps.
+  Universal footer — same on the homepage AND every subpage.
+  Nav items pull from _data/nav.yml. On the homepage they jump to
+  in-page section anchors (#about / #work / #blog / #top); on every
+  other page they're full URLs.
 {%- endcomment -%}
 <footer class="footer" id="contact">
   <div class="footer-inner">
@@ -39,14 +41,21 @@
     <nav class="footer-nav" aria-label="Footer navigation">
       {%- for item in site.data.nav.items -%}
         {%- assign target = item.url -%}
-        {%- case item.label -%}
-          {%- when "About"    -%}{%- assign target = "#about"   -%}
-          {%- when "Projects" -%}{%- assign target = "#work"    -%}
-          {%- when "Blog"     -%}{%- assign target = "#blog"    -%}
-          {%- when "Contact"  -%}{%- assign target = "#contact" -%}
-          {%- when "Home"     -%}{%- assign target = "#top"     -%}
-        {%- endcase -%}
-        <a href="{{ target }}">{{ item.label }}</a>
+        {%- if page.url == "/" -%}
+          {%- case item.label -%}
+            {%- when "Home"     -%}{%- assign target = "#top"     -%}
+            {%- when "About"    -%}{%- assign target = "#about"   -%}
+            {%- when "Projects" -%}{%- assign target = "#work"    -%}
+            {%- when "Blog"     -%}{%- assign target = "#blog"    -%}
+            {%- when "Contact"  -%}{%- assign target = "#contact" -%}
+          {%- endcase -%}
+        {%- endif -%}
+        {%- assign first_char = target | slice: 0, 1 -%}
+        {%- if first_char == "#" -%}
+          <a href="{{ target }}">{{ item.label }}</a>
+        {%- else -%}
+          <a href="{{ target | relative_url }}">{{ item.label }}</a>
+        {%- endif -%}
       {%- endfor -%}
     </nav>
   </div>

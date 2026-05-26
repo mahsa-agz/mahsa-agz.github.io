@@ -100,8 +100,15 @@ permalink: /about/
   <div class="tabs" data-tabs>
     <div class="tabs__list" role="tablist" aria-label="Choose a hobby">
       <button class="tabs__tab" role="tab" id="beyond-tab-tkd" aria-controls="beyond-panel-tkd" aria-selected="true">Taekwondo</button>
+      {%- comment -%}
+        Photography and Drawing tabs are disabled for now. To bring
+        them back, uncomment the two <button> tags below and the two
+        <div class="tabs__panel"> blocks further down.
+      {%- endcomment -%}
+      {% comment %}
       <button class="tabs__tab" role="tab" id="beyond-tab-photo" aria-controls="beyond-panel-photo" aria-selected="false" tabindex="-1">Photography</button>
       <button class="tabs__tab" role="tab" id="beyond-tab-draw" aria-controls="beyond-panel-draw" aria-selected="false" tabindex="-1">Drawing</button>
+      {% endcomment %}
     </div>
 
     <div class="tabs__panel" role="tabpanel" id="beyond-panel-tkd" aria-labelledby="beyond-tab-tkd">
@@ -128,6 +135,7 @@ permalink: /about/
       </figure>
     </div>
 
+    {% comment %}
     <div class="tabs__panel" role="tabpanel" id="beyond-panel-photo" aria-labelledby="beyond-tab-photo" hidden>
       <p class="hobby__intro">
         Mostly birds, light, and quiet things — taken on long walks.
@@ -167,6 +175,7 @@ permalink: /about/
         </figure>
       </div>
     </div>
+    {% endcomment %}
   </div>
 </section>
 
