@@ -410,7 +410,7 @@ img { max-width: 100%; display: block; }
 }
 .project-card {
   background: var(--card);
-  border: 1px solid var(--line);
+  /* border: 1px solid var(--line); */
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
