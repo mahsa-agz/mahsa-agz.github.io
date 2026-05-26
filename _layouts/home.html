@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#c4677a" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)" />
 
     {%- seo -%}
 
@@ -26,7 +27,6 @@
       }
     </script>
 
-    <!-- Apply saved theme before paint to avoid flash -->
     <script>
       (function () {
         try {
@@ -42,20 +42,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Oswald:wght@300;400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
+    <!-- home.css first (homepage body sections), then main.css overrides nav/footer/tokens for editorial consistency -->
     <link rel="stylesheet" href="{{ '/styles/home.css' | relative_url }}" />
+    <link rel="stylesheet" href="{{ '/styles/main.css' | relative_url }}" />
+    <link rel="stylesheet" href="{{ '/styles/post.css' | relative_url }}" />
   </head>
   <body>
-    {% include home-nav.html %}
+    {% include site-nav.html %}
 
     <main>
       {{ content }}
     </main>
 
-    {% include home-footer.html %}
+    {% include site-footer.html %}
 
-    <script src="{{ '/scripts/home.js' | relative_url }}"></script>
+    <script src="{{ '/scripts/main.js' | relative_url }}"></script>
   </body>
 </html>
