@@ -1,0 +1,44 @@
+{%- comment -%}
+  Homepage header — Oswald wordmark style (matches home.css).
+  Item labels come from _data/nav.yml; on the homepage they jump to
+  in-page sections (Section anchors), not to the subpage URLs.
+{%- endcomment -%}
+<header class="site-header" id="top">
+  <div class="header-inner">
+    <a class="logo" href="{{ '/' | relative_url }}">Mahsa<span>.</span></a>
+    <nav class="nav" aria-label="Main navigation">
+      {%- for item in site.data.nav.items -%}
+        {%- assign target = item.url -%}
+        {%- case item.label -%}
+          {%- when "About"    -%}{%- assign target = "#about"   -%}
+          {%- when "Projects" -%}{%- assign target = "#work"    -%}
+          {%- when "Blog"     -%}{%- assign target = "#blog"    -%}
+          {%- when "Contact"  -%}{%- assign target = "#contact" -%}
+          {%- when "Home"     -%}{%- assign target = "#top"     -%}
+        {%- endcase -%}
+        <a href="{{ target }}">{{ item.label }}</a>
+      {%- endfor -%}
+    </nav>
+    <div class="header-actions">
+      <button class="theme-toggle" type="button" aria-label="Toggle dark mode" data-theme-toggle>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4" fill="currentColor" />
+          <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none">
+            <line x1="12" y1="2" x2="12" y2="5" />
+            <line x1="12" y1="19" x2="12" y2="22" />
+            <line x1="2" y1="12" x2="5" y2="12" />
+            <line x1="19" y1="12" x2="22" y2="12" />
+            <line x1="4.5" y1="4.5" x2="6.6" y2="6.6" />
+            <line x1="17.4" y1="17.4" x2="19.5" y2="19.5" />
+            <line x1="4.5" y1="19.5" x2="6.6" y2="17.4" />
+            <line x1="17.4" y1="6.6" x2="19.5" y2="4.5" />
+          </g>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="currentColor" />
+        </svg>
+      </button>
+    </div>
+    <button class="menu-toggle" aria-label="Open menu">☰</button>
+  </div>
+</header>
