@@ -233,15 +233,22 @@
   display: block;
 }
 
-/* Type colour dots — same vocabulary as the category chips. */
-.rec-item[data-rec-type="video"]    { --rec-color: #c4677a; }
-.rec-item[data-rec-type="book"]     { --rec-color: #b8954a; }
-.rec-item[data-rec-type="article"]  { --rec-color: #4a7fb0; }
-.rec-item[data-rec-type="podcast"]  { --rec-color: #5a9c7a; }
-.rec-item[data-rec-type="course"]   { --rec-color: #8d6cae; }
-.rec-item[data-rec-type="paper"]    { --rec-color: #8a6a52; }
-.rec-item[data-rec-type="talk"]     { --rec-color: #b06a8d; }
-.rec-item[data-rec-type="other"]    { --rec-color: #9aa3ad; }
+/* Type colour dots — same vocabulary as the rec-type chips. */
+.rec-item[data-category="video"]    { --rec-color: #c4677a; }
+.rec-item[data-category="book"]     { --rec-color: #b8954a; }
+.rec-item[data-category="movie"]    { --rec-color: #b06a8d; }
+.rec-item[data-category="paper"]    { --rec-color: #8a6a52; }
+.rec-item[data-category="people"]   { --rec-color: #5a9c7a; }
+.rec-item[data-category="website"]  { --rec-color: #4a7fb0; }
+.rec-item[data-category="other"]    { --rec-color: #9aa3ad; }
+
+/* Chip dot colours for the rec-type filter (same palette). */
+.post-filter__chip[data-filter-value="video"]   { --cat-color: #c4677a; }
+.post-filter__chip[data-filter-value="book"]    { --cat-color: #b8954a; }
+.post-filter__chip[data-filter-value="movie"]   { --cat-color: #b06a8d; }
+.post-filter__chip[data-filter-value="paper"]   { --cat-color: #8a6a52; }
+.post-filter__chip[data-filter-value="people"]  { --cat-color: #5a9c7a; }
+.post-filter__chip[data-filter-value="website"] { --cat-color: #4a7fb0; }
 
 @media (max-width: 600px) {
   .rec-item {

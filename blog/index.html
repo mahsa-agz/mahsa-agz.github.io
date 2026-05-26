@@ -29,7 +29,7 @@ permalink: /blog/
             {%- if cat.slug == post.category -%}{%- assign cat_full = cat.full -%}{%- endif -%}
           {%- endfor -%}
           <li class="post-list__item" data-category="{{ post.category }}" data-date="{{ post.date | date: '%Y-%m-%d' }}">
-            <p class="post-list__meta">{{ post.date | date: '%Y-%m-%d' }}{% if post.read_time %} · {{ post.read_time }} min read{% endif %}</p>
+            <p class="post-list__meta">{{ post.date | date: '%Y-%m-%d' }}</p>
             <div>
               <a class="post-list__title" href="{{ post.url | relative_url }}">
                 {{ post.title }}
@@ -47,12 +47,24 @@ permalink: /blog/
 
     <div class="tabs__panel" role="tabpanel" id="blog-panel-recs" aria-labelledby="blog-tab-recs" hidden>
       <p class="rec-intro">
-        Things I came across that taught me something — videos, books, articles, talks. Add yours by editing <code>_data/recommendations.yml</code>.
+        Random things that I think worth sharing
       </p>
-      <ul class="rec-list">
+
+      <div class="post-filter" data-filter="recs" role="toolbar" aria-label="Filter recommendations by type">
+        <button class="post-filter__chip is-active" type="button" data-filter-value="all" aria-pressed="true">All</button>
+        {%- for t in site.data.rec_types -%}
+          <button class="post-filter__chip" type="button" data-filter-value="{{ t.slug }}" aria-pressed="false">{{ t.label }}</button>
+        {%- endfor -%}
+      </div>
+
+      <ul class="rec-list" data-filterable="recs">
         {%- for rec in site.data.recommendations -%}
-          <li class="rec-item" data-rec-type="{{ rec.type }}">
-            <span class="rec-item__type">{{ rec.type }}</span>
+          {%- assign type_label = rec.type -%}
+          {%- for t in site.data.rec_types -%}
+            {%- if t.slug == rec.type -%}{%- assign type_label = t.label -%}{%- endif -%}
+          {%- endfor -%}
+          <li class="rec-item" data-category="{{ rec.type }}">
+            <span class="rec-item__type">{{ type_label }}</span>
             <div class="rec-item__body">
               <a class="rec-item__title" href="{{ rec.url }}" target="_blank" rel="noopener noreferrer">{{ rec.title }}</a>
               {%- if rec.source -%}<p class="rec-item__source">{{ rec.source }}</p>{%- endif -%}
@@ -74,6 +86,9 @@ permalink: /blog/
         {%- else -%}
           <li class="post-list__empty">Nothing here yet — coming soon.</li>
         {%- endfor -%}
+        <li class="post-list__empty" data-filter-empty hidden>
+          No recommendations of this type yet.
+        </li>
       </ul>
     </div>
   </div>

@@ -1,0 +1,10 @@
+# Recommendation type chips on /blog/ → Random recommendations tab.
+# `slug` matches the `type:` field in _data/recommendations.yml.
+# Reorder, rename, or add freely.
+- { slug: video,   label: Video }
+- { slug: book,    label: Book }
+- { slug: movie,   label: Movie }
+- { slug: paper,   label: Paper }
+- { slug: people,  label: People }
+- { slug: website, label: Website }
+- { slug: other,   label: Other }

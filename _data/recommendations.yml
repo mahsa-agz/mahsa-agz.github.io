@@ -4,12 +4,30 @@
 # Fields:
 #   title       — required, what the link is called
 #   url         — required, where it goes
-#   type        — required, one of: video, book, article, podcast, course, paper, talk, other
-#                 (drives the small badge colour on the card)
-#   source      — optional, e.g. "YouTube · StatQuest", "Hardcover · Cal Newport"
+#   type        — required, one of: video, book, movie, paper, people, website, other
+#                 (matches the slugs in _data/rec_types.yml; drives the badge colour)
+#   source      — optional, e.g. "IMDb · 2009", "Matt Haig · 2020", "Wikipedia"
 #   why         — optional, one or two short sentences explaining why you liked it
 #   embed       — optional, an iframe-able URL (e.g. https://www.youtube.com/embed/<id>).
 #                 If set, the card shows a small embedded player instead of just the link.
+
+- title: "Mr. Nobody"
+  url: https://www.imdb.com/title/tt0485947/
+  type: movie
+  source: "IMDb · 2009, dir. Jaco Van Dormael"
+  why: "Edit me — a sentence or two on what stuck with you."
+
+- title: "Maryam Mirzakhani"
+  url: https://en.wikipedia.org/wiki/Maryam_Mirzakhani
+  type: people
+  source: "Mathematician · Fields Medal 2014"
+  why: "Edit me — why she's worth knowing about."
+
+- title: "The Midnight Library"
+  url: https://en.wikipedia.org/wiki/The_Midnight_Library
+  type: book
+  source: "Matt Haig · 2020"
+  why: "Edit me — why the book stayed with you."
 
 - title: "The Colosseum Wasn't Built for Entertainment"
   url: https://youtu.be/UJj58txYaTU?si=JCN_66doAUuUm_XR
