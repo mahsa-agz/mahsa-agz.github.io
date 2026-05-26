@@ -512,7 +512,28 @@ img { max-width: 100%; display: block; }
 /* =============================================================
    ABOUT PANEL (rounded surface with text + skills + tools)
    ============================================================= */
-.about-block { padding: 0 0 82px; }
+.about-block { padding: 90px 0 82px; }
+
+/* Projects section head — small "View GitHub" link next to the title */
+.works-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.works-head h2 { margin-bottom: 0; }
+.works-more {
+  font-family: Oswald, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--orange);
+  border-bottom: 2px solid var(--orange);
+  padding-bottom: 5px;
+  white-space: nowrap;
+}
+.works-more:hover { color: var(--orange-dark); border-bottom-color: var(--orange-dark); }
 .about-panel {
   width: 1010px; max-width: 88%;
   margin: 0 auto;

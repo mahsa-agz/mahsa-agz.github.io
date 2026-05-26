@@ -5,36 +5,65 @@ permalink: /blog/
 ---
 <header class="page-header" data-reveal>
   <p class="eyebrow"><span class="eyebrow__dot"></span>Blog</p>
-  <h1 class="page-header__title">Notes</h1>
+  <h1 class="page-header__title">Notes &amp; recommendations</h1>
 </header>
 
 <section class="section section--first" data-reveal>
-  <div class="post-filter" data-filter="notes" role="toolbar" aria-label="Filter notes by category">
-    <button class="post-filter__chip is-active" type="button" data-filter-value="all" aria-pressed="true">All</button>
-    {%- for cat in site.data.categories -%}
-      <button class="post-filter__chip" type="button" data-filter-value="{{ cat.slug }}" aria-pressed="false">{{ cat.label }}</button>
-    {%- endfor -%}
-  </div>
+  <div class="tabs" data-tabs>
+    <div class="tabs__list" role="tablist" aria-label="Blog view">
+      <button class="tabs__tab" role="tab" id="blog-tab-notes" aria-controls="blog-panel-notes" aria-selected="true">Notes</button>
+      <button class="tabs__tab" role="tab" id="blog-tab-recs"  aria-controls="blog-panel-recs"  aria-selected="false" tabindex="-1">Random recommendations</button>
+    </div>
 
-  <ul class="post-list" data-filterable="notes">
-    {%- for post in site.posts -%}
-      {%- assign cat_full = post.category -%}
-      {%- for cat in site.data.categories -%}
-        {%- if cat.slug == post.category -%}{%- assign cat_full = cat.full -%}{%- endif -%}
-      {%- endfor -%}
-      <li class="post-list__item" data-category="{{ post.category }}" data-date="{{ post.date | date: '%Y-%m-%d' }}">
-        <p class="post-list__meta">{{ post.date | date: '%Y-%m-%d' }}{% if post.read_time %} · {{ post.read_time }} min read{% endif %}</p>
-        <div>
-          <a class="post-list__title" href="{{ post.url | relative_url }}">
-            {{ post.title }}
-          </a>
-          <p class="post-list__excerpt">{{ post.excerpt }}</p>
-          <p class="post-list__category">{{ cat_full }}</p>
-        </div>
-      </li>
-    {%- endfor -%}
-    <li class="post-list__empty" data-filter-empty hidden>
-      No notes in this category yet — check back soon.
-    </li>
-  </ul>
+    <div class="tabs__panel" role="tabpanel" id="blog-panel-notes" aria-labelledby="blog-tab-notes">
+      <div class="post-filter" data-filter="notes" role="toolbar" aria-label="Filter notes by category">
+        <button class="post-filter__chip is-active" type="button" data-filter-value="all" aria-pressed="true">All</button>
+        {%- for cat in site.data.categories -%}
+          <button class="post-filter__chip" type="button" data-filter-value="{{ cat.slug }}" aria-pressed="false">{{ cat.label }}</button>
+        {%- endfor -%}
+      </div>
+
+      <ul class="post-list" data-filterable="notes">
+        {%- for post in site.posts -%}
+          {%- assign cat_full = post.category -%}
+          {%- for cat in site.data.categories -%}
+            {%- if cat.slug == post.category -%}{%- assign cat_full = cat.full -%}{%- endif -%}
+          {%- endfor -%}
+          <li class="post-list__item" data-category="{{ post.category }}" data-date="{{ post.date | date: '%Y-%m-%d' }}">
+            <p class="post-list__meta">{{ post.date | date: '%Y-%m-%d' }}{% if post.read_time %} · {{ post.read_time }} min read{% endif %}</p>
+            <div>
+              <a class="post-list__title" href="{{ post.url | relative_url }}">
+                {{ post.title }}
+              </a>
+              <p class="post-list__excerpt">{{ post.excerpt }}</p>
+              <p class="post-list__category">{{ cat_full }}</p>
+            </div>
+          </li>
+        {%- endfor -%}
+        <li class="post-list__empty" data-filter-empty hidden>
+          No notes in this category yet — check back soon.
+        </li>
+      </ul>
+    </div>
+
+    <div class="tabs__panel" role="tabpanel" id="blog-panel-recs" aria-labelledby="blog-tab-recs" hidden>
+      <p class="rec-intro">
+        Things I came across that taught me something — videos, books, articles, talks. Add yours by editing <code>_data/recommendations.yml</code>.
+      </p>
+      <ul class="rec-list">
+        {%- for rec in site.data.recommendations -%}
+          <li class="rec-item" data-rec-type="{{ rec.type }}">
+            <span class="rec-item__type">{{ rec.type }}</span>
+            <div class="rec-item__body">
+              <a class="rec-item__title" href="{{ rec.url }}" target="_blank" rel="noopener noreferrer">{{ rec.title }}</a>
+              {%- if rec.source -%}<p class="rec-item__source">{{ rec.source }}</p>{%- endif -%}
+              {%- if rec.why -%}<p class="rec-item__why">{{ rec.why }}</p>{%- endif -%}
+            </div>
+          </li>
+        {%- else -%}
+          <li class="post-list__empty">Nothing here yet — coming soon.</li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
 </section>

@@ -155,6 +155,85 @@
 .post-filter__chip[data-filter-value="tools"]         { --cat-color: #6b7280; }
 .post-filter__chip[data-filter-value="other"]         { --cat-color: #9aa3ad; }
 
+/* ---------- Random recommendations list ---------- */
+.rec-intro {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: var(--fs-sm);
+  max-width: 60ch;
+  margin: 0 0 var(--sp-5);
+}
+
+.rec-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rec-item {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: var(--sp-4);
+  padding: var(--sp-4) 0;
+  border-bottom: 1px solid var(--hairline);
+  align-items: baseline;
+}
+
+.rec-item__type {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rec-color, var(--ink-soft));
+  font-weight: 600;
+}
+
+.rec-item__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  display: inline-block;
+  margin-bottom: var(--sp-1);
+}
+
+.rec-item__title:hover { color: var(--rose); }
+
+.rec-item__source {
+  margin: 0 0 var(--sp-1);
+  font-size: var(--fs-xs);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.rec-item__why {
+  margin: var(--sp-2) 0 0;
+  color: var(--ink-soft);
+  font-size: var(--fs-sm);
+  max-width: 60ch;
+  line-height: 1.55;
+}
+
+/* Type colour dots — same vocabulary as the category chips. */
+.rec-item[data-rec-type="video"]    { --rec-color: #c4677a; }
+.rec-item[data-rec-type="book"]     { --rec-color: #b8954a; }
+.rec-item[data-rec-type="article"]  { --rec-color: #4a7fb0; }
+.rec-item[data-rec-type="podcast"]  { --rec-color: #5a9c7a; }
+.rec-item[data-rec-type="course"]   { --rec-color: #8d6cae; }
+.rec-item[data-rec-type="paper"]    { --rec-color: #8a6a52; }
+.rec-item[data-rec-type="talk"]     { --rec-color: #b06a8d; }
+.rec-item[data-rec-type="other"]    { --rec-color: #9aa3ad; }
+
+@media (max-width: 600px) {
+  .rec-item {
+    grid-template-columns: 1fr;
+    gap: var(--sp-1);
+  }
+}
+
 .post-list__item .post-list__title {
   font-family: var(--font-display);
   font-size: var(--fs-lg);

@@ -1,0 +1,16 @@
+# Random recommendations shown on /blog/ under the "Random recommendations" tab.
+# Add as many as you want, newest at the top.
+#
+# Fields:
+#   title       — required, what the link is called
+#   url         — required, where it goes
+#   type        — required, one of: video, book, article, podcast, course, paper, talk, other
+#                 (drives the small badge colour on the card)
+#   source      — optional, e.g. "YouTube · StatQuest", "Hardcover · Cal Newport"
+#   why         — optional, one or two short sentences explaining why you liked it
+
+- title: "(fill in the video title)"
+  url: https://youtu.be/UJj58txYaTU?si=JCN_66doAUuUm_XR
+  type: video
+  source: YouTube
+  why: "Edit me — explain in a sentence why this one's worth watching."
