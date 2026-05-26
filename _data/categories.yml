@@ -1,4 +1,4 @@
-# Blog post categories — the chip filter on /blog/ is generated from this list.
+# Blog post categories ,  the chip filter on /blog/ is generated from this list.
 # `slug` is what each post puts in its front-matter `category:` field.
 - { slug: foundations,    label: Foundations,            full: "Foundations (Statistics and Math)" }
 - { slug: eda,            label: EDA,                    full: "Exploratory Data Analysis (EDA)" }

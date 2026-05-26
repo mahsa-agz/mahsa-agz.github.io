@@ -1,11 +1,11 @@
 source "https://rubygems.org"
 
-# GitHub Pages uses a pinned set of gem versions — using this metagem
+# GitHub Pages uses a pinned set of gem versions ,  using this metagem
 # locks our local preview to the same versions that build the live site.
 # See: https://pages.github.com/versions/
 gem "github-pages", group: :jekyll_plugins
 
-# Plugins enabled in _config.yml — included via github-pages, listed here
+# Plugins enabled in _config.yml ,  included via github-pages, listed here
 # for clarity.
 group :jekyll_plugins do
   gem "jekyll-sitemap"

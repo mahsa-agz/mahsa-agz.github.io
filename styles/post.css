@@ -1,5 +1,5 @@
 /* =============================================================
-   POST LAYOUT — extends main.css
+   POST LAYOUT ,  extends main.css
    Editorial reading experience: Fraunces display, Inter body,
    tight measure, generous whitespace, terracotta accents.
    ============================================================= */
@@ -132,7 +132,7 @@
   outline-offset: 2px;
 }
 
-/* Category dot colors — used by both chips and post meta rows */
+/* Category dot colors ,  used by both chips and post meta rows */
 [data-category="foundations"]    { --cat-color: #c4677a; }
 [data-category="eda"]            { --cat-color: #b27249; }
 [data-category="feature-eng"]    { --cat-color: #b8954a; }
@@ -180,6 +180,8 @@
   align-items: baseline;
 }
 
+.rec-item[hidden] { display: none; }
+
 .rec-item__type {
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
@@ -217,7 +219,7 @@
   line-height: 1.55;
 }
 
-/* Embedded player (YouTube / Vimeo / etc.) — small, 16:9, responsive. */
+/* Embedded player (YouTube / Vimeo / etc.) ,  small, 16:9, responsive. */
 .rec-item__embed {
   margin: var(--sp-3) 0 0;
   max-width: 360px;
@@ -233,7 +235,7 @@
   display: block;
 }
 
-/* Type colour dots — same vocabulary as the rec-type chips. */
+/* Type colour dots ,  same vocabulary as the rec-type chips. */
 .rec-item[data-category="video"]    { --rec-color: #c4677a; }
 .rec-item[data-category="book"]     { --rec-color: #b8954a; }
 .rec-item[data-category="movie"]    { --rec-color: #b06a8d; }

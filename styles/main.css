@@ -20,11 +20,11 @@
   --accent-2: #2a4a78;
   --accent-soft: #e6ecf3;
 
-  --rose: #c4677a;          /* dusty rose — replaces terracotta, no brown */
+  --rose: #c4677a;          /* dusty rose ,  replaces terracotta, no brown */
   --rose-2: #b14e63;
   --rose-soft: #fbe9ec;
 
-  --gold: #b8954a;          /* third category color — projects */
+  --gold: #b8954a;          /* third category color ,  projects */
 
   /* Type */
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
@@ -286,7 +286,7 @@ main {
 }
 
 /* =============================================================
-   HERO  — content + portrait, asymmetric
+   HERO  ,  content + portrait, asymmetric
    ============================================================= */
 .hero {
   padding: var(--sp-7) 0 var(--sp-2);
@@ -339,7 +339,7 @@ main {
   align-self: flex-start;
 }
 
-/* Pronunciation block — small, single line: IPA · Korean */
+/* Pronunciation block ,  small, single line: IPA · Korean */
 .hero__pronunciation {
   display: flex; flex-wrap: wrap; align-items: center;
   gap: var(--sp-2);
@@ -433,7 +433,7 @@ main {
   width: 100%; height: 100%; object-fit: cover;
 }
 
-/* Hero meta — the introduction itself: Currently / Working on / Also /
+/* Hero meta ,  the introduction itself: Currently / Working on / Also /
    Education + a "More about me" link as the final element. */
 .hero__meta {
   display: flex;
@@ -583,7 +583,7 @@ main {
 }
 .prose__more a { font-weight: 500; }
 
-/* Justified prose — applied to body paragraphs only */
+/* Justified prose ,  applied to body paragraphs only */
 .prose--justified p {
   text-align: justify;
   text-justify: inter-word;
@@ -669,7 +669,7 @@ main {
 }
 
 /* =============================================================
-   FEATURE GRID (home — selected work / blog teasers)
+   FEATURE GRID (home ,  selected work / blog teasers)
    ============================================================= */
 .feature-grid {
   list-style: none; margin: 0; padding: 0;
@@ -739,7 +739,7 @@ main {
 .feature__link:hover { color: var(--rose); }
 
 /* =============================================================
-   HERO BAND — full-width solid color behind the hero
+   HERO BAND ,  full-width solid color behind the hero
    Navy in light mode, slightly different navy in dark mode.
    ============================================================= */
 .hero-band {
@@ -793,7 +793,7 @@ main {
 }
 
 /* =============================================================
-   HERO — centered variant (Calvino-style: portrait + name + role)
+   HERO ,  centered variant (Calvino-style: portrait + name + role)
    ============================================================= */
 .hero--centered {
   grid-template-columns: auto 1fr;
@@ -860,7 +860,7 @@ main {
 }
 
 /* =============================================================
-   CONTACT STRIP — four label/value cards under hero
+   CONTACT STRIP ,  four label/value cards under hero
    ============================================================= */
 .contact-strip {
   max-width: var(--max-width);
@@ -908,7 +908,7 @@ main {
 .info-card__value:hover { color: var(--rose); }
 
 /* =============================================================
-   EXPERTISE GRID — "What I do" 2×2 cards
+   EXPERTISE GRID ,  "What I do" 2×2 cards
    ============================================================= */
 .expertise-grid {
   list-style: none;
@@ -971,7 +971,7 @@ main {
 .expertise-card__link:hover { color: var(--accent); }
 
 /* =============================================================
-   WORK TILES — "Selected work" 2×2 visual tiles
+   WORK TILES ,  "Selected work" 2×2 visual tiles
    ============================================================= */
 .work-tiles {
   list-style: none;
@@ -1052,7 +1052,7 @@ main {
 }
 
 /* =============================================================
-   ABOUT PANEL — split layout: text + currently + toolkit
+   ABOUT PANEL ,  split layout: text + currently + toolkit
    ============================================================= */
 .about-panel {
   background: var(--surface);
@@ -1171,7 +1171,7 @@ main {
 }
 
 /* =============================================================
-   COLUMNS — At-a-glance gallery (research / experience / projects)
+   COLUMNS ,  At-a-glance gallery (research / experience / projects)
    ============================================================= */
 .columns {
   display: grid;
@@ -1388,7 +1388,7 @@ main {
 }
 
 /* =============================================================
-   BEYOND WORK — hobbies tabs + gallery
+   BEYOND WORK ,  hobbies tabs + gallery
    ============================================================= */
 .hobby__intro {
   font-family: var(--font-display);
@@ -1436,7 +1436,7 @@ main {
   grid-row: span 2;
 }
 
-/* Hobby feature — single banner image with overlay caption
+/* Hobby feature ,  single banner image with overlay caption
    (used when there isn't a gallery, e.g. taekwondo background) */
 .hobby-feature {
   position: relative;

@@ -3,7 +3,7 @@ title: "Linear regression, intuitively"
 date: 2026-05-26
 category: classic-ml
 read_time: 10
-excerpt: "Residuals, R², adjusted R², F and the p-value — built up visually from the simplest mouse-weight example."
+excerpt: "Residuals, R², adjusted R², F and the p-value ,  built up visually from the simplest mouse-weight example."
 lede: "The simplest way to use one number to predict another. Once you see how it works on two variables, the rest of regression is the same idea with more dimensions."
 description: "A visual walk through linear regression: residuals, the best line, R², adjusted R², and how F and p-value decide if the fit is real."
 image: https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=760&q=85
@@ -11,11 +11,11 @@ image: https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit
 
 ## The setup
 
-Suppose we have a small dataset of mice. For each mouse we know its **weight** and its **size**. We'd like to use weight to predict size for a new mouse — something like `size = a × weight + b`. The job is to find the values of `a` (slope) and `b` (intercept) that fit the data best.
+Suppose we have a small dataset of mice. For each mouse we know its **weight** and its **size**. We'd like to use weight to predict size for a new mouse ,  something like `size = a × weight + b`. The job is to find the values of `a` (slope) and `b` (intercept) that fit the data best.
 
 ## What does "best line" actually mean?
 
-Pick any line through the data. For each point, measure the vertical distance to the line. That distance is called a **residual** — what's left over after the line "explains" the point. A line that fits well has small residuals; a line that fits badly has big ones.
+Pick any line through the data. For each point, measure the vertical distance to the line. That distance is called a **residual** ,  what's left over after the line "explains" the point. A line that fits well has small residuals; a line that fits badly has big ones.
 
 To turn "small residuals" into a single number we can optimize, we square each residual and add them up. The result is the **sum of squared residuals**, usually written `SS(fit)`. Squaring keeps positive and negative misses from cancelling, and punishes big misses more than small ones.
 
@@ -42,12 +42,12 @@ To turn "small residuals" into a single number we can optimize, we square each r
     <circle class="fig-dot" cx="390" cy="110" r="4"/>
     <text class="fig-muted-mono" x="240" y="20" text-anchor="middle">each dashed segment = a residual</text>
   </svg>
-  <figcaption>Square each residual, add them up. That total — <code>SS(fit)</code> — is the line's "badness."</figcaption>
+  <figcaption>Square each residual, add them up. That total ,  <code>SS(fit)</code> ,  is the line's "badness."</figcaption>
 </figure>
 
 ## Finding the best line
 
-Rotate the line a little. `SS(fit)` changes. Rotate further — it changes again. If we try many rotations and plot `SS(fit)` against the rotation, we see a U-shape. The bottom of the U is the rotation we want.
+Rotate the line a little. `SS(fit)` changes. Rotate further ,  it changes again. If we try many rotations and plot `SS(fit)` against the rotation, we see a U-shape. The bottom of the U is the rotation we want.
 
 <figure class="figure">
   <svg viewBox="0 0 480 220" role="img" aria-label="U-shaped curve of sum of squared residuals against line rotation, with the minimum marked.">
@@ -65,16 +65,16 @@ Rotate the line a little. `SS(fit)` changes. Rotate further — it changes again
     <circle class="fig-dot-muted" cx="420" cy="60"  r="3.5"/>
     <text class="fig-accent-text" x="255" y="195" text-anchor="middle">the best line</text>
   </svg>
-  <figcaption>Software finds this minimum in closed form — no rotating needed — but the picture is the point: <em>least squares</em>.</figcaption>
+  <figcaption>Software finds this minimum in closed form ,  no rotating needed ,  but the picture is the point: <em>least squares</em>.</figcaption>
 </figure>
 
 ## How good is the fit? Meet R²
 
-Knowing the slope and intercept isn't enough. A non-zero slope means weight does help predict size — but *how much*?
+Knowing the slope and intercept isn't enough. A non-zero slope means weight does help predict size ,  but *how much*?
 
 The trick is to compare our line to the simplest possible model: just the **mean** of size, ignoring weight entirely. If our line is barely better than the mean, weight isn't really helping. If our line is dramatically better, weight matters.
 
-We measure the mean model's badness the same way — squared distances from each point to the horizontal mean line. Call this `SS(mean)`. (It's just the total variance of size, before scaling.)
+We measure the mean model's badness the same way ,  squared distances from each point to the horizontal mean line. Call this `SS(mean)`. (It's just the total variance of size, before scaling.)
 
 <figure class="figure">
   <svg viewBox="0 0 720 240" role="img" aria-label="Side-by-side panels. Left: points around a horizontal mean line with big dashed residuals. Right: same points around a tilted fitted line with smaller residuals.">
@@ -126,7 +126,7 @@ R² is the fraction of variance in size that weight explains. If R² = 0.6, that
 
 ## R² extremes
 
-At one extreme, the line passes exactly through every point: `SS(fit) = 0`, so R² = 1 — weight explains everything. At the other extreme, the best line is flat: `SS(fit) = SS(mean)`, so R² = 0 — weight explains nothing.
+At one extreme, the line passes exactly through every point: `SS(fit) = 0`, so R² = 1 ,  weight explains everything. At the other extreme, the best line is flat: `SS(fit) = SS(mean)`, so R² = 0 ,  weight explains nothing.
 
 <figure class="figure">
   <svg viewBox="0 0 720 240" role="img" aria-label="Two panels comparing R² extremes. Left: random scatter with horizontal best-fit line, R² near zero. Right: points lying perfectly on a tilted line, R² equal to one.">
@@ -156,14 +156,14 @@ At one extreme, the line passes exactly through every point: `SS(fit) = 0`, so R
     <circle class="fig-dot" cx="650" cy="87"  r="4"/>
     <circle class="fig-dot" cx="685" cy="72"  r="4"/>
   </svg>
-  <figcaption>Most real data lands somewhere between these two — and R² tells you where.</figcaption>
+  <figcaption>Most real data lands somewhere between these two ,  and R² tells you where.</figcaption>
 </figure>
 
 ## More predictors: the adjusted R² trap
 
-What if we also have tail length, and want to use both weight and tail to predict size? The model becomes a plane (`size = a × weight + b × tail + c`). The math is the same — minimize the sum of squared residuals.
+What if we also have tail length, and want to use both weight and tail to predict size? The model becomes a plane (`size = a × weight + b × tail + c`). The math is the same ,  minimize the sum of squared residuals.
 
-There's a subtle issue: **adding any predictor can only push R² up, never down**. Even pure noise will improve R² a little by chance. So a higher R² doesn't always mean a better model — it might just mean a more complex one.
+There's a subtle issue: **adding any predictor can only push R² up, never down**. Even pure noise will improve R² a little by chance. So a higher R² doesn't always mean a better model ,  it might just mean a more complex one.
 
 **Adjusted R²** corrects for this. It penalizes extra parameters and only rises when a new predictor genuinely earns its keep.
 
@@ -195,13 +195,13 @@ F  =  ( SS(mean) − SS(fit) ) / ( d_fit − d_mean )
 
 The numerator is "improvement per extra parameter." The denominator is "remaining error per remaining degree of freedom." Big F = the line is doing a lot of explaining for what it cost in parameters.
 
-> With only two data points, `n − d_fit = 2 − 2 = 0` and F isn't defined. A line through two points is always perfect — but it tells you nothing about whether the relationship is real.
+> With only two data points, `n − d_fit = 2 − 2 = 0` and F isn't defined. A line through two points is always perfect ,  but it tells you nothing about whether the relationship is real.
 
 ## From F to p-value
 
 To know whether our F is unusually big, we compare it to the distribution of F values you'd get from data with no real relationship at all. Conceptually: generate millions of random datasets, fit a line to each, record F, plot the histogram. That's the "null distribution" of F.
 
-The **p-value** is the fraction of those random Fs that are bigger than the F we observed. A small p-value (say below 0.05) means "this F would be rare if there were no real relationship" — the slope is probably real, not noise.
+The **p-value** is the fraction of those random Fs that are bigger than the F we observed. A small p-value (say below 0.05) means "this F would be rare if there were no real relationship" ,  the slope is probably real, not noise.
 
 <figure class="figure">
   <svg viewBox="0 0 520 240" role="img" aria-label="Histogram of F values under the null hypothesis. Most of the area is on the left; the right tail past our observed F is shaded and labelled p-value.">
@@ -235,6 +235,6 @@ Linear regression rests on three nested ideas:
 
 1. **Find the line** by minimising the sum of squared residuals.
 2. **Judge the fit** with R²; penalise complexity with adjusted R².
-3. **Trust the fit** with the F-statistic and its p-value — is the improvement over the mean more than chance would produce?
+3. **Trust the fit** with the F-statistic and its p-value ,  is the improvement over the mean more than chance would produce?
 
-Multiple regression, regularised regression, generalised linear models — they're all refinements of one of these three steps.
+Multiple regression, regularised regression, generalised linear models ,  they're all refinements of one of these three steps.

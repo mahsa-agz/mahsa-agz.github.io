@@ -1,33 +1,34 @@
 # Random recommendations shown on /blog/ under the "Random recommendations" tab.
-# Add as many as you want, newest at the top.
+# Order in this file = display order on the page. Currently sorted OLDEST first
+# (top of file) to NEWEST (bottom of file). Reorder freely.
 #
 # Fields:
-#   title       — required, what the link is called
-#   url         — required, where it goes
-#   type        — required, one of: video, book, movie, paper, people, website, other
-#                 (matches the slugs in _data/rec_types.yml; drives the badge colour)
-#   source      — optional, e.g. "IMDb · 2009", "Matt Haig · 2020", "Wikipedia"
-#   why         — optional, one or two short sentences explaining why you liked it
-#   embed       — optional, an iframe-able URL (e.g. https://www.youtube.com/embed/<id>).
-#                 If set, the card shows a small embedded player instead of just the link.
-
-- title: "Mr. Nobody"
-  url: https://www.imdb.com/title/tt0485947/
-  type: movie
-  source: "IMDb · 2009, dir. Jaco Van Dormael"
-  why: "Edit me — a sentence or two on what stuck with you."
-
-- title: "Maryam Mirzakhani"
-  url: https://en.wikipedia.org/wiki/Maryam_Mirzakhani
-  type: people
-  source: "Mathematician · Fields Medal 2014"
-  why: "Edit me — why she's worth knowing about."
+#   title    : required, what the link is called
+#   url      : required, where it goes
+#   type     : required, one of: video, book, movie, paper, people, website, other
+#              (matches the slugs in _data/rec_types.yml; drives the badge colour)
+#   source   : optional, e.g. "IMDb · 2009", "Matt Haig · 2020", "Wikipedia"
+#   why      : optional, one or two short sentences explaining why you liked it
+#   embed    : optional, an iframe-able URL (e.g. https://www.youtube.com/embed/<id>).
+#              If set, the card shows a small embedded player instead of just the link.
 
 - title: "The Midnight Library"
   url: https://en.wikipedia.org/wiki/The_Midnight_Library
   type: book
   source: "Matt Haig · 2020"
-  why: "Edit me — why the book stayed with you."
+  why: "Nora Seed dies and wakes up in a library between life and death, where every book is a version of her life she could have lived if she had made different choices. She tries them on one by one, learning that 'better' is not quite the right question to ask of a life."
+
+- title: "Mr. Nobody"
+  url: https://www.imdb.com/title/tt0485947/
+  type: movie
+  source: "IMDb · 2009, dir. Jaco Van Dormael"
+  why: "Nemo Nobody, the last mortal human in a world of immortality, looks back at the lives that branched off every time he could have chosen differently: about love, family, regret. A philosophical sci-fi meditation on possibility and how every choice spawns a parallel self."
+
+- title: "Maryam Mirzakhani"
+  url: https://en.wikipedia.org/wiki/Maryam_Mirzakhani
+  type: people
+  source: "Mathematician · Fields Medal 2014"
+  why: "Iranian mathematician whose work on the moduli spaces of Riemann surfaces and the dynamics of geodesic flows shaped modern geometry and dynamical systems. In 2014 she became the first woman to win the Fields Medal. Her legacy still opens doors for women in mathematics."
 
 - title: "The Colosseum Wasn't Built for Entertainment"
   url: https://youtu.be/UJj58txYaTU?si=JCN_66doAUuUm_XR
