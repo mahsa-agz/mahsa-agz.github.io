@@ -1,0 +1,6 @@
+# Korean lesson types — drives the chip filter on /korean/.
+# `slug` matches the `type:` field in each _korean/*.md lesson.
+- { slug: grammar, label: Grammar, full: "Grammar" }
+- { slug: vocab,   label: Vocab,   full: "Vocabulary" }
+- { slug: phrase,  label: Phrases, full: "Phrases & Expressions" }
+- { slug: note,    label: Notes,   full: "Notes & Culture" }

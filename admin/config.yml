@@ -1,0 +1,98 @@
+# Decap CMS configuration.
+# Docs: https://decapcms.org/docs/configuration-options/
+# Edit this file to add new fields or new collections.
+
+backend:
+  name: github
+  repo: mahsa-agz/mahsa-agz.github.io
+  branch: main
+  # OAuth proxy (Cloudflare Worker). Fill in once you deploy the worker.
+  # See OAUTH-SETUP notes for the recipe.
+  base_url: https://decap-oauth.mahsa-agzdh.workers.dev
+  auth_endpoint: auth
+
+# Uncomment when running `npx decap-server` locally to bypass GitHub auth.
+# local_backend: true
+
+# Images uploaded through the editor land here.
+media_folder: "assets/images/korean"
+public_folder: "/assets/images/korean"
+
+# Commits go straight to main (no editorial workflow / PR dance).
+publish_mode: simple
+
+# Sidebar grouping in the admin UI.
+collections:
+  # ---------------------------------------------------------------------------
+  # Korean lessons → one markdown file per lesson in _korean/.
+  # ---------------------------------------------------------------------------
+  - name: korean
+    label: "Korean lessons"
+    label_singular: "Korean lesson"
+    folder: "_korean"
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    summary: "{{title}} — {{type}} ({{level}})"
+    sortable_fields: [date, title, type, level]
+    view_filters:
+      - { label: Grammar, field: type, pattern: grammar }
+      - { label: Vocab,   field: type, pattern: vocab }
+      - { label: Phrases, field: type, pattern: phrase }
+      - { label: Notes,   field: type, pattern: note }
+    fields:
+      - { label: Title, name: title, widget: string }
+      - label: Type
+        name: type
+        widget: select
+        default: grammar
+        options:
+          - { label: Grammar, value: grammar }
+          - { label: Vocab,   value: vocab }
+          - { label: Phrases, value: phrase }
+          - { label: Notes,   value: note }
+      - label: Level
+        name: level
+        widget: select
+        default: beginner
+        options:
+          - { label: Beginner,     value: beginner }
+          - { label: Intermediate, value: intermediate }
+          - { label: Advanced,     value: advanced }
+      - { label: Date, name: date, widget: datetime }
+      - { label: Excerpt, name: excerpt, widget: text, required: false, hint: "One-line summary shown on the /korean/ index card." }
+      - { label: Body, name: body, widget: markdown }
+
+  # ---------------------------------------------------------------------------
+  # Random recommendations → edits the existing _data/recommendations.yml.
+  # The whole file opens as one form; the list widget lets you add / reorder / delete.
+  # ---------------------------------------------------------------------------
+  - name: recommendations
+    label: "Random recommendations"
+    files:
+      - file: "_data/recommendations.yml"
+        name: recs
+        label: "All recommendations"
+        fields:
+          - label: "Items"
+            name: items
+            widget: list
+            summary: "{{fields.title}} · {{fields.type}}"
+            fields:
+              - { label: Title, name: title, widget: string }
+              - { label: URL, name: url, widget: string }
+              - label: Type
+                name: type
+                widget: select
+                options:
+                  - { label: Video,   value: video }
+                  - { label: Book,    value: book }
+                  - { label: Movie,   value: movie }
+                  - { label: Paper,   value: paper }
+                  - { label: People,  value: people }
+                  - { label: Website, value: website }
+                  - { label: Other,   value: other }
+              - { label: Source, name: source, widget: string, required: false, hint: 'e.g. "Matt Haig · 2020"' }
+              - { label: Why, name: why, widget: text, required: false, hint: "Why you liked it (1-2 sentences)." }
+              - { label: Embed URL, name: embed, widget: string, required: false, hint: "Optional iframe URL, e.g. https://www.youtube.com/embed/<id>" }

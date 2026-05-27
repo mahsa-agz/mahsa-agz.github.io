@@ -1,0 +1,4 @@
+# Korean lesson levels — shown as a small badge on each lesson card.
+- { slug: beginner,     label: Beginner }
+- { slug: intermediate, label: Intermediate }
+- { slug: advanced,     label: Advanced }

@@ -2,7 +2,7 @@
 # Order in this file = display order on the page. Currently sorted OLDEST first
 # (top of file) to NEWEST (bottom of file). Reorder freely.
 #
-# Fields:
+# Fields per item:
 #   title    : required, what the link is called
 #   url      : required, where it goes
 #   type     : required, one of: video, book, movie, paper, people, website, other
@@ -12,27 +12,28 @@
 #   embed    : optional, an iframe-able URL (e.g. https://www.youtube.com/embed/<id>).
 #              If set, the card shows a small embedded player instead of just the link.
 
-- title: "The Midnight Library"
-  url: https://en.wikipedia.org/wiki/The_Midnight_Library
-  type: book
-  source: "Matt Haig · 2020"
-  why: "Nora Seed dies and wakes up in a library between life and death, where every book is a version of her life she could have lived if she had made different choices. She tries them on one by one, learning that 'better' is not quite the right question to ask of a life."
+items:
+  - title: "The Midnight Library"
+    url: https://en.wikipedia.org/wiki/The_Midnight_Library
+    type: book
+    source: "Matt Haig · 2020"
+    why: "Nora Seed dies and wakes up in a library between life and death, where every book is a version of her life she could have lived if she had made different choices. She tries them on one by one, learning that 'better' is not quite the right question to ask of a life."
 
-- title: "Mr. Nobody"
-  url: https://www.imdb.com/title/tt0485947/
-  type: movie
-  source: "IMDb · 2009, dir. Jaco Van Dormael"
-  why: "Nemo Nobody, the last mortal human in a world of immortality, looks back at the lives that branched off every time he could have chosen differently: about love, family, regret. A philosophical sci-fi meditation on possibility and how every choice spawns a parallel self."
+  - title: "Mr. Nobody"
+    url: https://www.imdb.com/title/tt0485947/
+    type: movie
+    source: "IMDb · 2009, dir. Jaco Van Dormael"
+    why: "Nemo Nobody, the last mortal human in a world of immortality, looks back at the lives that branched off every time he could have chosen differently: about love, family, regret. A philosophical sci-fi meditation on possibility and how every choice spawns a parallel self."
 
-- title: "Maryam Mirzakhani"
-  url: https://en.wikipedia.org/wiki/Maryam_Mirzakhani
-  type: people
-  source: "Mathematician · Fields Medal 2014"
-  why: "Iranian mathematician whose work on the moduli spaces of Riemann surfaces and the dynamics of geodesic flows shaped modern geometry and dynamical systems. In 2014 she became the first woman to win the Fields Medal. Her legacy still opens doors for women in mathematics."
+  - title: "Maryam Mirzakhani"
+    url: https://en.wikipedia.org/wiki/Maryam_Mirzakhani
+    type: people
+    source: "Mathematician · Fields Medal 2014"
+    why: "Iranian mathematician whose work on the moduli spaces of Riemann surfaces and the dynamics of geodesic flows shaped modern geometry and dynamical systems. In 2014 she became the first woman to win the Fields Medal. Her legacy still opens doors for women in mathematics."
 
-- title: "The Colosseum Wasn't Built for Entertainment"
-  url: https://youtu.be/UJj58txYaTU?si=JCN_66doAUuUm_XR
-  embed: https://www.youtube.com/embed/UJj58txYaTU?si=o4KxHUq8Syi3yvie
-  type: video
-  source: YouTube
-  why: "Entertainment is never just entertainment, sometimes it is the most elegant way to distract a society."
+  - title: "The Colosseum Wasn't Built for Entertainment"
+    url: https://youtu.be/UJj58txYaTU?si=JCN_66doAUuUm_XR
+    embed: https://www.youtube.com/embed/UJj58txYaTU?si=o4KxHUq8Syi3yvie
+    type: video
+    source: YouTube
+    why: "Entertainment is never just entertainment, sometimes it is the most elegant way to distract a society."

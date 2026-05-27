@@ -58,7 +58,7 @@ permalink: /blog/
       </div>
 
       <ul class="rec-list" data-filterable="recs">
-        {%- for rec in site.data.recommendations -%}
+        {%- for rec in site.data.recommendations.items -%}
           {%- assign type_label = rec.type -%}
           {%- for t in site.data.rec_types -%}
             {%- if t.slug == rec.type -%}{%- assign type_label = t.label -%}{%- endif -%}

@@ -12,6 +12,12 @@ linkedin_url: https://www.linkedin.com/in/mahsaagz
 # Posts live under /blog/<slug>.html so existing URLs keep working.
 permalink: /blog/:slug.html
 
+# Custom collections.
+collections:
+  korean:
+    output: true
+    permalink: /korean/:slug.html
+
 # Default layouts so most files don't need to specify one.
 defaults:
   - scope:
@@ -19,6 +25,11 @@ defaults:
       type: posts
     values:
       layout: post
+  - scope:
+      path: ""
+      type: korean
+    values:
+      layout: korean
   - scope:
       path: ""
       type: pages
