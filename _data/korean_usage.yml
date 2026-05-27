@@ -1,0 +1,9 @@
+# Locked list of "register" values for the usage filter.
+# Each Korean item can carry multiple usage values in its `usage: [...]` array.
+- { slug: daily,    label: Daily,    note: "Everyday conversation" }
+- { slug: formal,   label: Formal,   note: "Polite / honorific" }
+- { slug: business, label: Business, note: "Workplace, meetings" }
+- { slug: news,     label: News,     note: "Written / broadcast media" }
+- { slug: slang,    label: Slang,    note: "Informal, casual" }
+- { slug: idiom,    label: Idiom,    note: "Fixed expression" }
+- { slug: literary, label: Literary, note: "Books / written-only" }

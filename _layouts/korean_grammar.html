@@ -1,0 +1,29 @@
+---
+layout: default
+---
+<article class="post kr-page">
+  <header class="post__header">
+    <p class="post__back"><a href="{{ '/blog/korean/grammar/' | relative_url }}">← All grammar</a></p>
+    <h1 class="post__title">{{ page.title }}</h1>
+    <p class="post__meta">
+      {%- if page.level -%}<span class="kr-badge kr-badge--level">{{ page.level | capitalize }}</span>{%- endif -%}
+      {%- for topic in page.topics -%}
+        <span class="kr-badge">{{ topic }}</span>
+      {%- endfor -%}
+      {%- for u in page.usage -%}
+        <span class="kr-badge kr-badge--usage">{{ u }}</span>
+      {%- endfor -%}
+    </p>
+  </header>
+
+  <div class="post__body prose">
+    {{ content }}
+  </div>
+
+  <footer class="post__footer">
+    <p>
+      Spot an error or want me to expand a section? Reach me at
+      <a href="mailto:{{ site.email }}">{{ site.email }}</a>.
+    </p>
+  </footer>
+</article>

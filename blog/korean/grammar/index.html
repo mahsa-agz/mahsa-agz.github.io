@@ -1,0 +1,82 @@
+---
+title: "Korean grammar"
+description: "Explainers for Korean particles, conjugations, and the rules that hide in plain sight."
+permalink: /blog/korean/grammar/
+---
+{%- assign all_topics = "" | split: "," -%}
+{%- for g in site.korean_grammar -%}
+  {%- for t in g.topics -%}
+    {%- unless all_topics contains t -%}{%- assign all_topics = all_topics | push: t -%}{%- endunless -%}
+  {%- endfor -%}
+{%- endfor -%}
+{%- assign all_topics = all_topics | sort -%}
+
+<header class="page-header" data-reveal>
+  <p class="eyebrow"><a href="{{ '/blog/korean/' | relative_url }}">Korean</a> · <span>Grammar</span></p>
+  <h1 class="page-header__title">Grammar</h1>
+  <p class="page-header__lede">
+    Particles, conjugations, sentence patterns.
+  </p>
+</header>
+
+<section class="section section--first" data-reveal>
+  <div class="kr-controls">
+    <div class="kr-filters" data-kr-filters>
+      <div class="kr-filter-row" data-kr-row="level">
+        <span class="kr-filter-row__label">Level</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for l in site.data.korean_levels -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ l.slug }}">{{ l.label }}</button>
+        {%- endfor -%}
+      </div>
+
+      {%- if all_topics.size > 0 -%}
+      <div class="kr-filter-row" data-kr-row="topic">
+        <span class="kr-filter-row__label">Topic</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for t in all_topics -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ t }}">{{ t }}</button>
+        {%- endfor -%}
+      </div>
+      {%- endif -%}
+
+      <div class="kr-filter-row" data-kr-row="usage">
+        <span class="kr-filter-row__label">Usage</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for u in site.data.korean_usage -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ u.slug }}">{{ u.label }}</button>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    <p class="kr-count" data-kr-count></p>
+  </div>
+
+  {%- assign topics = site.korean_grammar | sort: 'order' -%}
+  <ul class="kr-grid kr-grid--prose" data-kr-grid>
+    {%- for g in topics -%}
+      {%- assign topics_csv = g.topics | join: "," -%}
+      {%- assign usage_csv = g.usage | join: "," -%}
+      <li class="kr-card kr-card--link"
+          data-kr-item
+          data-level="{{ g.level }}"
+          data-topics="{{ topics_csv }}"
+          data-usage="{{ usage_csv }}"
+          data-search="{{ g.title | downcase }}">
+        <a href="{{ g.url | relative_url }}" class="kr-card__linkbox">
+          <h3 class="kr-card__title">{{ g.title }}</h3>
+          {%- if g.excerpt and g.excerpt != "" -%}
+            <p class="kr-card__excerpt">{{ g.excerpt }}</p>
+          {%- endif -%}
+          <div class="kr-card__badges">
+            {%- if g.level -%}<span class="kr-badge kr-badge--level">{{ g.level }}</span>{%- endif -%}
+            {%- for u in g.usage -%}<span class="kr-badge kr-badge--usage">{{ u }}</span>{%- endfor -%}
+            {%- for t in g.topics -%}<span class="kr-badge">{{ t }}</span>{%- endfor -%}
+          </div>
+        </a>
+      </li>
+    {%- endfor -%}
+  </ul>
+
+  <p class="kr-empty" data-kr-empty hidden>No grammar topics match these filters yet.</p>
+</section>

@@ -1,0 +1,12 @@
+# Parts of speech used by vocab cards & the POS filter chip row.
+# `slug` matches the `pos:` field in each _korean_vocab/*.md item.
+- { slug: verb,         label: Verb,         hangul: "동사"     }
+- { slug: noun,         label: Noun,         hangul: "명사"     }
+- { slug: adjective,    label: Adjective,    hangul: "형용사"   }
+- { slug: adverb,       label: Adverb,       hangul: "부사"     }
+- { slug: particle,     label: Particle,     hangul: "조사"     }
+- { slug: counter,      label: Counter,      hangul: "수사"     }
+- { slug: pronoun,      label: Pronoun,      hangul: "대명사"   }
+- { slug: numeral,      label: Numeral,      hangul: "수사"     }
+- { slug: interjection, label: Interjection, hangul: "감탄사"   }
+- { slug: other,        label: Other,        hangul: ""         }

@@ -1,0 +1,69 @@
+---
+title: "Korean notes"
+description: "Cultural notes, learning meta, and short observations about Korean."
+permalink: /blog/korean/notes/
+---
+{%- assign all_topics = "" | split: "," -%}
+{%- for n in site.korean_notes -%}
+  {%- for t in n.topics -%}
+    {%- unless all_topics contains t -%}{%- assign all_topics = all_topics | push: t -%}{%- endunless -%}
+  {%- endfor -%}
+{%- endfor -%}
+{%- assign all_topics = all_topics | sort -%}
+
+<header class="page-header" data-reveal>
+  <p class="eyebrow"><a href="{{ '/blog/korean/' | relative_url }}">Korean</a> · <span>Notes</span></p>
+  <h1 class="page-header__title">Notes</h1>
+  <p class="page-header__lede">
+    Culture, learning meta, and short observations.
+  </p>
+</header>
+
+<section class="section section--first" data-reveal>
+  <div class="kr-controls">
+    <div class="kr-filters" data-kr-filters>
+      {%- if all_topics.size > 0 -%}
+      <div class="kr-filter-row" data-kr-row="topic">
+        <span class="kr-filter-row__label">Topic</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for t in all_topics -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ t }}">{{ t }}</button>
+        {%- endfor -%}
+      </div>
+      {%- endif -%}
+
+      <div class="kr-filter-row" data-kr-row="level">
+        <span class="kr-filter-row__label">Level</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for l in site.data.korean_levels -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ l.slug }}">{{ l.label }}</button>
+        {%- endfor -%}
+        <button class="kr-chip" type="button" data-kr-value="any">Any</button>
+      </div>
+    </div>
+
+    <p class="kr-count" data-kr-count></p>
+  </div>
+
+  {%- assign notes = site.korean_notes | sort: 'order' -%}
+  <ul class="kr-grid kr-grid--prose" data-kr-grid>
+    {%- for n in notes -%}
+      {%- assign topics_csv = n.topics | join: "," -%}
+      <li class="kr-card kr-card--link"
+          data-kr-item
+          data-level="{{ n.level }}"
+          data-topics="{{ topics_csv }}"
+          data-search="{{ n.title | downcase }}">
+        <a href="{{ n.url | relative_url }}" class="kr-card__linkbox">
+          <h3 class="kr-card__title">{{ n.title }}</h3>
+          <div class="kr-card__badges">
+            {%- if n.level -%}<span class="kr-badge kr-badge--level">{{ n.level }}</span>{%- endif -%}
+            {%- for t in n.topics -%}<span class="kr-badge">{{ t }}</span>{%- endfor -%}
+          </div>
+        </a>
+      </li>
+    {%- endfor -%}
+  </ul>
+
+  <p class="kr-empty" data-kr-empty hidden>No notes match these filters yet.</p>
+</section>

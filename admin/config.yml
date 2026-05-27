@@ -6,52 +6,95 @@ backend:
   name: github
   repo: mahsa-agz/mahsa-agz.github.io
   branch: main
-  # OAuth proxy (Cloudflare Worker). Fill in once you deploy the worker.
-  # See OAUTH-SETUP notes for the recipe.
   base_url: https://decap-oauth.mahsa-agzdh.workers.dev
   auth_endpoint: auth
 
 # Uncomment when running `npx decap-server` locally to bypass GitHub auth.
 # local_backend: true
 
-# Images uploaded through the editor land here.
 media_folder: "assets/images/korean"
 public_folder: "/assets/images/korean"
 
-# Commits go straight to main (no editorial workflow / PR dance).
 publish_mode: simple
 
-# Sidebar grouping in the admin UI.
 collections:
-  # ---------------------------------------------------------------------------
-  # Korean lessons → one markdown file per lesson in _korean/.
-  # ---------------------------------------------------------------------------
-  - name: korean
-    label: "Korean lessons"
-    label_singular: "Korean lesson"
-    folder: "_korean"
+  # ===========================================================================
+  # DATA SCIENCE — blog posts in _posts/.
+  # ===========================================================================
+  - name: posts
+    label: "Data Science (blog posts)"
+    label_singular: "Post"
+    folder: "_posts"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    extension: md
+    format: frontmatter
+    summary: "{{title}} — {{date | date('YYYY-MM-DD')}}"
+    sortable_fields: [date, title, category]
+    fields:
+      - { label: Title, name: title, widget: string }
+      - { label: Date, name: date, widget: datetime }
+      - label: Category
+        name: category
+        widget: select
+        options:
+          - { label: Foundations,              value: foundations }
+          - { label: EDA,                      value: eda }
+          - { label: Feature Engineering,      value: feature-eng }
+          - { label: Statistical Methods,      value: stats-methods }
+          - { label: Classic ML,               value: classic-ml }
+          - { label: Deep Learning,            value: deep-learning }
+          - { label: Model Evaluation,         value: evaluation }
+          - { label: "Databases / SQL",        value: databases }
+          - { label: "Tools / Workflow",       value: tools }
+          - { label: Other,                    value: other }
+      - { label: "Read time (min)", name: read_time, widget: number, required: false, value_type: int, min: 1 }
+      - { label: Excerpt, name: excerpt, widget: text, required: false, hint: "Short summary shown on the blog index card." }
+      - { label: Lede, name: lede, widget: string, required: false, hint: "Italic opening line shown above the body." }
+      - { label: Description, name: description, widget: text, required: false, hint: "SEO / Open Graph description." }
+      - { label: "Cover image", name: image, widget: image, required: false, hint: "Shown on the homepage Notes teaser." }
+      - { label: Body, name: body, widget: markdown }
+
+  # ===========================================================================
+  # KOREAN — VOCAB. One file per word in _korean_vocab/.
+  # No date. Sorted by `order`. All info displayed inline on the card.
+  # ===========================================================================
+  - name: korean_vocab
+    label: "Korean — Vocab"
+    label_singular: "Vocab word"
+    folder: "_korean_vocab"
     create: true
     slug: "{{slug}}"
     extension: md
     format: frontmatter
-    summary: "{{title}} — {{type}} ({{level}})"
-    sortable_fields: [date, title, type, level]
+    summary: "{{hangul}} — {{en}}  [{{pos}}, {{level}}]"
+    sortable_fields: [order, hangul, level, pos]
     view_filters:
-      - { label: Grammar, field: type, pattern: grammar }
-      - { label: Vocab,   field: type, pattern: vocab }
-      - { label: Phrases, field: type, pattern: phrase }
-      - { label: Notes,   field: type, pattern: note }
+      - { label: Verbs,      field: pos, pattern: verb }
+      - { label: Nouns,      field: pos, pattern: noun }
+      - { label: Adjectives, field: pos, pattern: adjective }
+      - { label: Beginner,     field: level, pattern: beginner }
+      - { label: Intermediate, field: level, pattern: intermediate }
+      - { label: Advanced,     field: level, pattern: advanced }
     fields:
-      - { label: Title, name: title, widget: string }
-      - label: Type
-        name: type
+      - { label: Hangul, name: hangul, widget: string, hint: "한국어" }
+      - { label: Romanization, name: roman, widget: string, hint: "Revised romanization, e.g. 'meokda'" }
+      - { label: English, name: en, widget: string }
+      - label: "Part of speech"
+        name: pos
         widget: select
-        default: grammar
+        default: noun
         options:
-          - { label: Grammar, value: grammar }
-          - { label: Vocab,   value: vocab }
-          - { label: Phrases, value: phrase }
-          - { label: Notes,   value: note }
+          - { label: Verb,         value: verb }
+          - { label: Noun,         value: noun }
+          - { label: Adjective,    value: adjective }
+          - { label: Adverb,       value: adverb }
+          - { label: Particle,     value: particle }
+          - { label: Counter,      value: counter }
+          - { label: Pronoun,      value: pronoun }
+          - { label: Numeral,      value: numeral }
+          - { label: Interjection, value: interjection }
+          - { label: Other,        value: other }
       - label: Level
         name: level
         widget: select
@@ -60,14 +103,166 @@ collections:
           - { label: Beginner,     value: beginner }
           - { label: Intermediate, value: intermediate }
           - { label: Advanced,     value: advanced }
-      - { label: Date, name: date, widget: datetime }
-      - { label: Excerpt, name: excerpt, widget: text, required: false, hint: "One-line summary shown on the /korean/ index card." }
+      - label: Topics
+        name: topics
+        widget: list
+        default: []
+        required: false
+        field: { label: Topic, name: topic, widget: string, hint: "e.g. food, travel, family" }
+      - label: Usage
+        name: usage
+        widget: select
+        multiple: true
+        required: false
+        default: []
+        options:
+          - { label: Daily,    value: daily }
+          - { label: Formal,   value: formal }
+          - { label: Business, value: business }
+          - { label: News,     value: news }
+          - { label: Slang,    value: slang }
+          - { label: Idiom,    value: idiom }
+          - { label: Literary, value: literary }
+      - { label: Hanja, name: hanja, widget: string, required: false, hint: "Sino-Korean source characters, e.g. 小數. Leave empty for native Korean words." }
+      - label: "Hanja breakdown"
+        name: hanja_parts
+        widget: list
+        required: false
+        default: []
+        summary: "{{fields.char}} ({{fields.hanja}}) — {{fields.meaning}}"
+        fields:
+          - { label: "Korean character", name: char,    widget: string, hint: "e.g. 소" }
+          - { label: "Hanja character",  name: hanja,   widget: string, hint: "e.g. 小" }
+          - { label: Meaning,            name: meaning, widget: string, hint: "e.g. small" }
+      - label: Examples
+        name: examples
+        widget: list
+        required: false
+        default: []
+        summary: "{{fields.ko}} — {{fields.en}}"
+        fields:
+          - { label: Korean,   name: ko, widget: string }
+          - { label: English,  name: en, widget: string }
+      - { label: Notes, name: notes, widget: text, required: false, hint: "Conjugation hints, honorific forms, common mistakes, etc." }
+      - { label: Order, name: order, widget: number, required: false, value_type: int, hint: "Optional explicit ordering. Lower = earlier." }
+
+  # ===========================================================================
+  # KOREAN — GRAMMAR. Long-form markdown in _korean_grammar/.
+  # ===========================================================================
+  - name: korean_grammar
+    label: "Korean — Grammar"
+    label_singular: "Grammar topic"
+    folder: "_korean_grammar"
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    summary: "{{title}}  [{{level}}]"
+    sortable_fields: [order, title, level]
+    fields:
+      - { label: Title, name: title, widget: string }
+      - label: Level
+        name: level
+        widget: select
+        default: beginner
+        options: [beginner, intermediate, advanced]
+      - label: Topics
+        name: topics
+        widget: list
+        required: false
+        default: []
+        field: { label: Topic, name: topic, widget: string }
+      - label: Usage
+        name: usage
+        widget: select
+        multiple: true
+        required: false
+        default: []
+        options: [daily, formal, business, news, slang, idiom, literary]
+      - { label: Excerpt, name: excerpt, widget: text, required: false, hint: "Shown on the grammar listing card." }
+      - { label: Order, name: order, widget: number, required: false, value_type: int }
       - { label: Body, name: body, widget: markdown }
 
-  # ---------------------------------------------------------------------------
-  # Random recommendations → edits the existing _data/recommendations.yml.
-  # The whole file opens as one form; the list widget lets you add / reorder / delete.
-  # ---------------------------------------------------------------------------
+  # ===========================================================================
+  # KOREAN — PHRASES. Fixed expressions in _korean_phrases/.
+  # ===========================================================================
+  - name: korean_phrases
+    label: "Korean — Phrases"
+    label_singular: "Phrase"
+    folder: "_korean_phrases"
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    summary: "{{hangul}} — {{en}}"
+    sortable_fields: [order, hangul, level]
+    fields:
+      - { label: Hangul, name: hangul, widget: string }
+      - { label: Romanization, name: roman, widget: string }
+      - { label: English, name: en, widget: string }
+      - { label: "Literal gloss", name: literal, widget: string, required: false, hint: "Word-for-word literal meaning, e.g. 'well + request (humble)'." }
+      - label: Level
+        name: level
+        widget: select
+        default: beginner
+        options: [beginner, intermediate, advanced]
+      - label: Topics
+        name: topics
+        widget: list
+        required: false
+        default: []
+        field: { label: Topic, name: topic, widget: string }
+      - label: Usage
+        name: usage
+        widget: select
+        multiple: true
+        required: false
+        default: []
+        options: [daily, formal, business, news, slang, idiom, literary]
+      - label: Examples
+        name: examples
+        widget: list
+        required: false
+        default: []
+        summary: "{{fields.ko}} — {{fields.en}}"
+        fields:
+          - { label: Korean,  name: ko, widget: string }
+          - { label: English, name: en, widget: string }
+      - { label: Notes, name: notes, widget: text, required: false }
+      - { label: Order, name: order, widget: number, required: false, value_type: int }
+
+  # ===========================================================================
+  # KOREAN — NOTES. Cultural / learning meta in _korean_notes/.
+  # ===========================================================================
+  - name: korean_notes
+    label: "Korean — Notes"
+    label_singular: "Note"
+    folder: "_korean_notes"
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    summary: "{{title}}"
+    sortable_fields: [order, title]
+    fields:
+      - { label: Title, name: title, widget: string }
+      - label: Level
+        name: level
+        widget: select
+        default: any
+        options: [any, beginner, intermediate, advanced]
+      - label: Topics
+        name: topics
+        widget: list
+        required: false
+        default: []
+        field: { label: Topic, name: topic, widget: string }
+      - { label: Order, name: order, widget: number, required: false, value_type: int }
+      - { label: Body, name: body, widget: markdown }
+
+  # ===========================================================================
+  # RECOMMENDATIONS — edits _data/recommendations.yml as one big form.
+  # ===========================================================================
   - name: recommendations
     label: "Random recommendations"
     files:

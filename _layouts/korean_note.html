@@ -1,0 +1,19 @@
+---
+layout: default
+---
+<article class="post kr-page">
+  <header class="post__header">
+    <p class="post__back"><a href="{{ '/blog/korean/notes/' | relative_url }}">← All notes</a></p>
+    <h1 class="post__title">{{ page.title }}</h1>
+    <p class="post__meta">
+      {%- if page.level -%}<span class="kr-badge kr-badge--level">{{ page.level | capitalize }}</span>{%- endif -%}
+      {%- for topic in page.topics -%}
+        <span class="kr-badge">{{ topic }}</span>
+      {%- endfor -%}
+    </p>
+  </header>
+
+  <div class="post__body prose">
+    {{ content }}
+  </div>
+</article>

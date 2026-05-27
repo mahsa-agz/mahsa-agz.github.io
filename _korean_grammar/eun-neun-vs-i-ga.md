@@ -1,9 +1,9 @@
 ---
 title: "은/는 vs 이/가 — topic vs subject"
-type: grammar
 level: beginner
-date: 2026-05-27
-excerpt: "Two pairs of particles that look interchangeable but aren't. The difference is what you're emphasising, not what role the word plays."
+topics: [particles, basics]
+usage: [daily, formal]
+order: 1
 ---
 
 Korean marks the **topic** of a sentence (은/는) and the **subject** (이/가) with different particles. English doesn't, which is why this trips most learners up early.

@@ -5,5 +5,4 @@ items:
   - { label: About,    url: "/about/" }
   - { label: Projects, url: "/work/" }
   - { label: Blog,     url: "/blog/" }
-  - { label: Korean,   url: "/korean/" }
   - { label: Contact,  url: "#contact" }

@@ -1,0 +1,134 @@
+---
+title: "Korean vocab"
+description: "Searchable, filterable Korean vocabulary with Hanja breakdowns where they help."
+permalink: /blog/korean/vocab/
+---
+{%- comment -%}
+  Collect unique topic & usage values from the vocab itself so chips auto-populate.
+{%- endcomment -%}
+{%- assign all_topics = "" | split: "," -%}
+{%- for w in site.korean_vocab -%}
+  {%- for t in w.topics -%}
+    {%- unless all_topics contains t -%}{%- assign all_topics = all_topics | push: t -%}{%- endunless -%}
+  {%- endfor -%}
+{%- endfor -%}
+{%- assign all_topics = all_topics | sort -%}
+
+<header class="page-header" data-reveal>
+  <p class="eyebrow"><a href="{{ '/blog/korean/' | relative_url }}">Korean</a> · <span>Vocab</span></p>
+  <h1 class="page-header__title">Vocab</h1>
+  <p class="page-header__lede">
+    {{ site.korean_vocab | size }} {{ site.korean_vocab | size | pluralize: "word", "words" }}. Filter to narrow, or search to jump straight to one.
+  </p>
+</header>
+
+<section class="section section--first" data-reveal>
+  <div class="kr-controls">
+    <label class="kr-search" for="kr-search-input">
+      <input id="kr-search-input" type="search" placeholder="Search hangul, roman, English, hanja…" data-kr-search />
+    </label>
+
+    <div class="kr-filters" data-kr-filters>
+      <div class="kr-filter-row" data-kr-row="pos">
+        <span class="kr-filter-row__label">POS</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for p in site.data.korean_pos -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ p.slug }}">{{ p.label }}</button>
+        {%- endfor -%}
+      </div>
+
+      <div class="kr-filter-row" data-kr-row="level">
+        <span class="kr-filter-row__label">Level</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for l in site.data.korean_levels -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ l.slug }}">{{ l.label }}</button>
+        {%- endfor -%}
+      </div>
+
+      {%- if all_topics.size > 0 -%}
+      <div class="kr-filter-row" data-kr-row="topic">
+        <span class="kr-filter-row__label">Topic</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for t in all_topics -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ t }}">{{ t }}</button>
+        {%- endfor -%}
+      </div>
+      {%- endif -%}
+
+      <div class="kr-filter-row" data-kr-row="usage">
+        <span class="kr-filter-row__label">Usage</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for u in site.data.korean_usage -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ u.slug }}">{{ u.label }}</button>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    <p class="kr-count" data-kr-count></p>
+  </div>
+
+  {%- assign words = site.korean_vocab | sort: 'order' -%}
+  <ul class="kr-grid" data-kr-grid data-kr-page-size="50">
+    {%- for w in words -%}
+      {%- assign topics_csv = w.topics | join: "," -%}
+      {%- assign usage_csv = w.usage | join: "," -%}
+      {%- capture search_blob -%}{{ w.hangul }} {{ w.roman }} {{ w.en }} {{ w.hanja }} {%- for ex in w.examples -%}{{ ex.ko }} {{ ex.en }} {%- endfor -%}{%- endcapture -%}
+      <li class="kr-card"
+          data-kr-item
+          data-pos="{{ w.pos }}"
+          data-level="{{ w.level }}"
+          data-topics="{{ topics_csv }}"
+          data-usage="{{ usage_csv }}"
+          data-search="{{ search_blob | downcase | strip }}">
+        <header class="kr-card__head">
+          <h3 class="kr-card__hangul">{{ w.hangul }}</h3>
+          <p class="kr-card__en">{{ w.en }}</p>
+          <p class="kr-card__roman">{{ w.roman }}</p>
+          {%- if w.hanja and w.hanja != "" -%}
+            <p class="kr-card__hanja">
+              <span class="kr-card__hanja-chars">{{ w.hanja }}</span>
+              {%- if w.hanja_parts.size > 0 -%}
+                <span class="kr-card__hanja-parts">
+                  {%- for part in w.hanja_parts -%}
+                    <span><b>{{ part.char }}</b>&nbsp;{{ part.hanja }} {{ part.meaning }}</span>{%- unless forloop.last -%} · {%- endunless -%}
+                  {%- endfor -%}
+                </span>
+              {%- endif -%}
+            </p>
+          {%- endif -%}
+        </header>
+
+        <div class="kr-card__badges">
+          {%- if w.pos -%}<span class="kr-badge kr-badge--pos">{{ w.pos }}</span>{%- endif -%}
+          {%- if w.level -%}<span class="kr-badge kr-badge--level">{{ w.level }}</span>{%- endif -%}
+          {%- for u in w.usage -%}<span class="kr-badge kr-badge--usage">{{ u }}</span>{%- endfor -%}
+          {%- for t in w.topics -%}<span class="kr-badge">{{ t }}</span>{%- endfor -%}
+        </div>
+
+        {%- if w.examples.size > 0 -%}
+          <details class="kr-card__details">
+            <summary>Examples ({{ w.examples.size }})</summary>
+            <ul class="kr-card__examples">
+              {%- for ex in w.examples -%}
+                <li><span class="kr-ex-ko">{{ ex.ko }}</span> — <em class="kr-ex-en">{{ ex.en }}</em></li>
+              {%- endfor -%}
+            </ul>
+          </details>
+        {%- endif -%}
+
+        {%- if w.notes and w.notes != "" -%}
+          <details class="kr-card__details">
+            <summary>Notes</summary>
+            <p class="kr-card__notes">{{ w.notes }}</p>
+          </details>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+
+  <p class="kr-empty" data-kr-empty hidden>No vocab matches these filters yet.</p>
+
+  <div class="kr-loadmore" data-kr-loadmore hidden>
+    <button class="kr-loadmore__btn" type="button" data-kr-loadmore-btn>Load more</button>
+  </div>
+</section>

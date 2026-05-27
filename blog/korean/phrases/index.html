@@ -1,0 +1,108 @@
+---
+title: "Korean phrases"
+description: "Fixed Korean expressions — where the literal meaning doesn't quite explain the use."
+permalink: /blog/korean/phrases/
+---
+{%- assign all_topics = "" | split: "," -%}
+{%- for p in site.korean_phrases -%}
+  {%- for t in p.topics -%}
+    {%- unless all_topics contains t -%}{%- assign all_topics = all_topics | push: t -%}{%- endunless -%}
+  {%- endfor -%}
+{%- endfor -%}
+{%- assign all_topics = all_topics | sort -%}
+
+<header class="page-header" data-reveal>
+  <p class="eyebrow"><a href="{{ '/blog/korean/' | relative_url }}">Korean</a> · <span>Phrases</span></p>
+  <h1 class="page-header__title">Phrases</h1>
+  <p class="page-header__lede">
+    Fixed expressions, idioms, and set phrases.
+  </p>
+</header>
+
+<section class="section section--first" data-reveal>
+  <div class="kr-controls">
+    <label class="kr-search" for="kr-search-input">
+      <input id="kr-search-input" type="search" placeholder="Search hangul, roman, English…" data-kr-search />
+    </label>
+
+    <div class="kr-filters" data-kr-filters>
+      <div class="kr-filter-row" data-kr-row="level">
+        <span class="kr-filter-row__label">Level</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for l in site.data.korean_levels -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ l.slug }}">{{ l.label }}</button>
+        {%- endfor -%}
+      </div>
+
+      {%- if all_topics.size > 0 -%}
+      <div class="kr-filter-row" data-kr-row="topic">
+        <span class="kr-filter-row__label">Topic</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for t in all_topics -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ t }}">{{ t }}</button>
+        {%- endfor -%}
+      </div>
+      {%- endif -%}
+
+      <div class="kr-filter-row" data-kr-row="usage">
+        <span class="kr-filter-row__label">Usage</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for u in site.data.korean_usage -%}
+          <button class="kr-chip" type="button" data-kr-value="{{ u.slug }}">{{ u.label }}</button>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    <p class="kr-count" data-kr-count></p>
+  </div>
+
+  {%- assign phrases = site.korean_phrases | sort: 'order' -%}
+  <ul class="kr-grid" data-kr-grid>
+    {%- for p in phrases -%}
+      {%- assign topics_csv = p.topics | join: "," -%}
+      {%- assign usage_csv = p.usage | join: "," -%}
+      {%- capture search_blob -%}{{ p.hangul }} {{ p.roman }} {{ p.en }} {{ p.literal }} {%- for ex in p.examples -%}{{ ex.ko }} {{ ex.en }} {%- endfor -%}{%- endcapture -%}
+      <li class="kr-card"
+          data-kr-item
+          data-level="{{ p.level }}"
+          data-topics="{{ topics_csv }}"
+          data-usage="{{ usage_csv }}"
+          data-search="{{ search_blob | downcase | strip }}">
+        <header class="kr-card__head">
+          <h3 class="kr-card__hangul">{{ p.hangul }}</h3>
+          <p class="kr-card__en">{{ p.en }}</p>
+          <p class="kr-card__roman">{{ p.roman }}</p>
+          {%- if p.literal and p.literal != "" -%}
+            <p class="kr-card__literal"><em>literally:</em> {{ p.literal }}</p>
+          {%- endif -%}
+        </header>
+
+        <div class="kr-card__badges">
+          {%- if p.level -%}<span class="kr-badge kr-badge--level">{{ p.level }}</span>{%- endif -%}
+          {%- for u in p.usage -%}<span class="kr-badge kr-badge--usage">{{ u }}</span>{%- endfor -%}
+          {%- for t in p.topics -%}<span class="kr-badge">{{ t }}</span>{%- endfor -%}
+        </div>
+
+        {%- if p.examples.size > 0 -%}
+          <details class="kr-card__details">
+            <summary>Examples ({{ p.examples.size }})</summary>
+            <ul class="kr-card__examples">
+              {%- for ex in p.examples -%}
+                <li><span class="kr-ex-ko">{{ ex.ko }}</span> — <em class="kr-ex-en">{{ ex.en }}</em></li>
+              {%- endfor -%}
+            </ul>
+          </details>
+        {%- endif -%}
+
+        {%- if p.notes and p.notes != "" -%}
+          <details class="kr-card__details">
+            <summary>Notes</summary>
+            <p class="kr-card__notes">{{ p.notes }}</p>
+          </details>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+
+  <p class="kr-empty" data-kr-empty hidden>No phrases match these filters yet.</p>
+</section>
