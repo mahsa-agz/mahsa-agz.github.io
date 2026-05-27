@@ -410,7 +410,7 @@ img { max-width: 100%; display: block; }
 }
 .project-card {
   background: var(--card);
-  border: 1px solid var(--line);
+  /* border: 1px solid var(--line); */
   border-radius: 8px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
@@ -658,10 +658,11 @@ img { max-width: 100%; display: block; }
 }
 .about-skill {
   background: var(--card);
-  border: 1px solid var(--line);
+  /* border: 1px solid var(--line); */
   border-radius: 10px;
   padding: 18px 18px 16px;
   transition: transform 0.2s ease, border-color 0.2s ease;
+   box-shadow: var(--header-shadow);
 }
 .about-skill:hover {
   transform: translateY(-2px);
