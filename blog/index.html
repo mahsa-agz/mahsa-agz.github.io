@@ -10,8 +10,9 @@ permalink: /blog/
 <section class="section section--first" data-reveal>
   <div class="tabs" data-tabs>
     <div class="tabs__list" role="tablist" aria-label="Blog view">
-      <button class="tabs__tab" role="tab" id="blog-tab-notes" aria-controls="blog-panel-notes" aria-selected="true">Data Science</button>
-      <button class="tabs__tab" role="tab" id="blog-tab-recs"  aria-controls="blog-panel-recs"  aria-selected="false" tabindex="-1">Random recommendations</button>
+      <button class="tabs__tab" role="tab" id="blog-tab-notes"  aria-controls="blog-panel-notes"  aria-selected="true">Data Science</button>
+      <button class="tabs__tab" role="tab" id="blog-tab-recs"   aria-controls="blog-panel-recs"   aria-selected="false" tabindex="-1">Random recommendations</button>
+      <button class="tabs__tab" role="tab" id="blog-tab-korean" aria-controls="blog-panel-korean" aria-selected="false" tabindex="-1">Korean</button>
     </div>
 
     <div class="tabs__panel" role="tabpanel" id="blog-panel-notes" aria-labelledby="blog-tab-notes">
@@ -88,6 +89,43 @@ permalink: /blog/
         {%- endfor -%}
         <li class="post-list__empty" data-filter-empty hidden>
           No recommendations of this type yet.
+        </li>
+      </ul>
+    </div>
+
+    <div class="tabs__panel" role="tabpanel" id="blog-panel-korean" aria-labelledby="blog-tab-korean" hidden>
+      <p class="rec-intro">
+        Grammar, vocab, phrases, and cultural notes ,  written down as I learn.
+      </p>
+
+      <ul class="kr-hub">
+        <li class="kr-hub__item">
+          <a class="kr-hub__link" href="{{ '/blog/korean/grammar/' | relative_url }}">
+            <h2 class="kr-hub__title">Grammar</h2>
+            <p class="kr-hub__desc">Explainers for particles, conjugations, and the rules that hide in plain sight.</p>
+            <p class="kr-hub__count">{{ site.korean_grammar | size }} {{ site.korean_grammar | size | pluralize: "topic", "topics" }}</p>
+          </a>
+        </li>
+        <li class="kr-hub__item">
+          <a class="kr-hub__link" href="{{ '/blog/korean/vocab/' | relative_url }}">
+            <h2 class="kr-hub__title">Vocab</h2>
+            <p class="kr-hub__desc">Searchable, filterable word bank. Hanja breakdowns where they help.</p>
+            <p class="kr-hub__count">{{ site.korean_vocab | size }} {{ site.korean_vocab | size | pluralize: "word", "words" }}</p>
+          </a>
+        </li>
+        <li class="kr-hub__item">
+          <a class="kr-hub__link" href="{{ '/blog/korean/phrases/' | relative_url }}">
+            <h2 class="kr-hub__title">Phrases</h2>
+            <p class="kr-hub__desc">Fixed expressions where the literal meaning doesn't quite explain the use.</p>
+            <p class="kr-hub__count">{{ site.korean_phrases | size }} {{ site.korean_phrases | size | pluralize: "phrase", "phrases" }}</p>
+          </a>
+        </li>
+        <li class="kr-hub__item">
+          <a class="kr-hub__link" href="{{ '/blog/korean/notes/' | relative_url }}">
+            <h2 class="kr-hub__title">Notes</h2>
+            <p class="kr-hub__desc">Culture, learning meta, and short observations that don't fit elsewhere.</p>
+            <p class="kr-hub__count">{{ site.korean_notes | size }} {{ site.korean_notes | size | pluralize: "note", "notes" }}</p>
+          </a>
         </li>
       </ul>
     </div>
