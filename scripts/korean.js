@@ -31,9 +31,9 @@
       if (wanted === "all") continue;
 
       const raw = item.dataset[row] || "";
-      // Multi-value fields (topics, usage) come in as CSV.
-      if (row === "topics" || row === "usage" || row === "topic") {
-        // Note: data attr for "topics" filter row is data-topics; for "usage" is data-usage.
+      // Multi-value fields (topics, usage, hanja) come in as CSV.
+      if (row === "topics" || row === "usage" || row === "topic" || row === "hanja") {
+        // Note: data attr for "topic" filter row is data-topics; others match their row name.
         const attrKey = (row === "topic") ? "topics" : row;
         const values = (item.dataset[attrKey] || "").split(",").map(s => s.trim()).filter(Boolean);
         if (!values.includes(wanted)) return false;

@@ -4,7 +4,8 @@ description: "Searchable, filterable Korean vocabulary with Hanja breakdowns whe
 permalink: /blog/korean/vocab/
 ---
 {%- comment -%}
-  Collect unique topic & usage values from the vocab itself so chips auto-populate.
+  Collect unique topic & Hanja values from the vocab itself so chips auto-populate.
+  Hanja entries are stored as "<char>|<meaning>" so we keep the gloss alongside the character.
 {%- endcomment -%}
 {%- assign all_topics = "" | split: "," -%}
 {%- for w in site.korean_vocab -%}
@@ -13,6 +14,21 @@ permalink: /blog/korean/vocab/
   {%- endfor -%}
 {%- endfor -%}
 {%- assign all_topics = all_topics | sort -%}
+
+{%- assign all_hanja = "" | split: "," -%}
+{%- assign all_hanja_pairs = "" | split: "," -%}
+{%- for w in site.korean_vocab -%}
+  {%- for part in w.hanja_parts -%}
+    {%- if part.hanja and part.hanja != "" -%}
+      {%- unless all_hanja contains part.hanja -%}
+        {%- assign all_hanja = all_hanja | push: part.hanja -%}
+        {%- capture pair -%}{{ part.hanja }}|{{ part.meaning }}{%- endcapture -%}
+        {%- assign all_hanja_pairs = all_hanja_pairs | push: pair -%}
+      {%- endunless -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endfor -%}
+{%- assign all_hanja_pairs = all_hanja_pairs | sort -%}
 
 <p class="post__back"><a href="{{ '/blog/korean/' | relative_url }}">← Korean</a></p>
 <header class="page-header" data-reveal>
@@ -56,6 +72,19 @@ permalink: /blog/korean/vocab/
       </div>
       {%- endif -%}
 
+      {%- if all_hanja_pairs.size > 0 -%}
+      <div class="kr-filter-row" data-kr-row="hanja">
+        <span class="kr-filter-row__label">Hanja</span>
+        <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
+        {%- for pair in all_hanja_pairs -%}
+          {%- assign bits = pair | split: "|" -%}
+          <button class="kr-chip kr-chip--hanja" type="button" data-kr-value="{{ bits[0] }}">
+            <span class="kr-chip__hanja">{{ bits[0] }}</span><span class="kr-chip__gloss">{{ bits[1] }}</span>
+          </button>
+        {%- endfor -%}
+      </div>
+      {%- endif -%}
+
       <div class="kr-filter-row" data-kr-row="usage">
         <span class="kr-filter-row__label">Usage</span>
         <button class="kr-chip is-active" type="button" data-kr-value="all">All</button>
@@ -73,6 +102,8 @@ permalink: /blog/korean/vocab/
     {%- for w in words -%}
       {%- assign topics_csv = w.topics | join: "," -%}
       {%- assign usage_csv = w.usage | join: "," -%}
+      {%- assign hanja_chars = w.hanja_parts | map: "hanja" -%}
+      {%- assign hanja_csv = hanja_chars | join: "," -%}
       {%- capture search_blob -%}{{ w.hangul }} {{ w.roman }} {{ w.en }} {{ w.hanja }} {%- for ex in w.examples -%}{{ ex.ko }} {{ ex.en }} {%- endfor -%}{%- endcapture -%}
       <li class="kr-card"
           data-kr-item
@@ -80,6 +111,7 @@ permalink: /blog/korean/vocab/
           data-level="{{ w.level }}"
           data-topics="{{ topics_csv }}"
           data-usage="{{ usage_csv }}"
+          data-hanja="{{ hanja_csv }}"
           data-search="{{ search_blob | downcase | strip }}">
         <header class="kr-card__head">
           <h3 class="kr-card__hangul">{{ w.hangul }}</h3>

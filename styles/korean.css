@@ -133,6 +133,34 @@
   color: #fff;
 }
 
+/* Hanja chips: 小 small — big character + small gloss inline. */
+.kr-chip--hanja {
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.kr-chip__hanja {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--rose-2, var(--rose));
+}
+
+.kr-chip--hanja.is-active .kr-chip__hanja {
+  color: #fff;
+}
+
+.kr-chip__gloss {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  letter-spacing: 0.02em;
+}
+
+.kr-chip--hanja.is-active .kr-chip__gloss {
+  color: rgba(255, 255, 255, 0.85);
+}
+
 .kr-count {
   margin: 0;
   font-size: 0.85rem;
