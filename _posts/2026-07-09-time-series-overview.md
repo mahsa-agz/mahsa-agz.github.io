@@ -6,6 +6,7 @@ read_time: 12
 excerpt: "A practical overview of time-series data: the core terms, the main problem types, common traps, and a choose-the-method cheat sheet."
 lede: "Time series is not just data with dates. The order matters, the future cannot leak into the past, and the best method depends on the pattern in the series as much as on raw accuracy."
 description: "An intuitive overview of time-series analysis: basic terms, types of time-series problems, common evaluation traps, and when to use popular forecasting methods."
+image: /assets/images/blog/time-series-cover.png
 ---
 
 ## Why time series is different

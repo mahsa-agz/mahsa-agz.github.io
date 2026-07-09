@@ -6,6 +6,7 @@ read_time: 9
 excerpt: "What the A, I, and M actually do, why stationarity matters, and when ARIMA is still a very strong forecasting baseline."
 lede: "ARIMA works by saying: the present looks like a weighted memory of the past, but only after we remove the part that keeps drifting away."
 description: "An intuitive guide to ARIMA and SARIMA: what the parameters mean, why differencing matters, and when to use or avoid the model."
+image: /assets/images/blog/time-series-cover.png
 ---
 
 ## Why ARIMA still matters

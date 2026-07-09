@@ -6,6 +6,7 @@ read_time: 10
 excerpt: "How tree models become time-series forecasters once you build lagged features, rolling windows, and calendar signals."
 lede: "Tree models do not understand time by themselves. They only become time-series models after we translate history into features the model can read."
 description: "An intuitive guide to using gradient boosting for time series with lagged features, rolling statistics, covariates, and time-aware validation."
+image: /assets/images/blog/time-series-cover.png
 ---
 
 ## Why boosting shows up in forecasting so often
