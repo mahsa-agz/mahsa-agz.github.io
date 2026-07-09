@@ -1,6 +1,6 @@
 ---
 title: "Time series, intuitively"
-date: 2026-07-09 12:00:00 +0900
+date: 2026-07-09 00:03:00 +0900
 category: time-series
 read_time: 12
 excerpt: "A practical overview of time-series data: the core terms, the main problem types, common traps, and a choose-the-method cheat sheet."

@@ -1,6 +1,6 @@
 ---
 title: "Gradient boosting for time series, intuitively"
-date: 2026-07-09 10:00:00 +0900
+date: 2026-07-09 00:01:00 +0900
 category: time-series
 read_time: 10
 excerpt: "How tree models become time-series forecasters once you build lagged features, rolling windows, and calendar signals."

@@ -1,6 +1,6 @@
 ---
 title: "ARIMA, intuitively"
-date: 2026-07-09 10:30:00 +0900
+date: 2026-07-09 00:02:00 +0900
 category: time-series
 read_time: 9
 excerpt: "What the A, I, and M actually do, why stationarity matters, and when ARIMA is still a very strong forecasting baseline."
