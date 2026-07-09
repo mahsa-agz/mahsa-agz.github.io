@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Feature engineering category cover</title>
+  <desc id="desc">A professional cover with data blocks moving through a transformation pipeline.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#081421"/>
+      <stop offset="52%" stop-color="#16263e"/>
+      <stop offset="100%" stop-color="#0b1119"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f9e7b1"/>
+      <stop offset="100%" stop-color="#b8954a"/>
+    </linearGradient>
+    <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M120 0H0V120" fill="none" stroke="#627a96" stroke-opacity=".2" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="44%" r="50%">
+      <stop offset="0%" stop-color="#b8954a" stop-opacity=".32"/>
+      <stop offset="100%" stop-color="#b8954a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+  <circle cx="600" cy="360" r="280" fill="url(#glow)"/>
+  <g fill="none" stroke-linejoin="round">
+    <rect x="170" y="220" width="180" height="320" rx="24" stroke="#f0dba2" stroke-opacity=".55" stroke-width="2"/>
+    <rect x="510" y="200" width="180" height="360" rx="24" stroke="url(#accent)" stroke-width="3"/>
+    <rect x="850" y="250" width="180" height="260" rx="24" stroke="#f0dba2" stroke-opacity=".7" stroke-width="2"/>
+    <path d="M350 380H470" stroke="#f0dba2" stroke-opacity=".75" stroke-width="4" stroke-linecap="round"/>
+    <path d="M690 380H810" stroke="#f0dba2" stroke-opacity=".75" stroke-width="4" stroke-linecap="round"/>
+    <path d="M440 350L470 380L440 410" stroke="#f0dba2" stroke-opacity=".75" stroke-width="4" stroke-linecap="round"/>
+    <path d="M780 350L810 380L780 410" stroke="#f0dba2" stroke-opacity=".75" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g fill="#f7e4ad" fill-opacity=".9">
+    <rect x="205" y="260" width="48" height="48" rx="10"/><rect x="275" y="260" width="48" height="48" rx="10"/><rect x="205" y="332" width="118" height="48" rx="10"/><rect x="205" y="404" width="82" height="48" rx="10"/><rect x="515" y="250" width="70" height="28" rx="8"/><rect x="605" y="250" width="70" height="28" rx="8"/><rect x="545" y="308" width="110" height="28" rx="8"/><rect x="555" y="366" width="92" height="28" rx="8"/><rect x="535" y="424" width="130" height="28" rx="8"/><rect x="880" y="300" width="120" height="28" rx="8"/><rect x="880" y="352" width="86" height="28" rx="8"/><rect x="880" y="404" width="96" height="28" rx="8"/>
+  </g>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Time series category cover</title>
+  <desc id="desc">A professional cover with layered forecast lines, seasonality, and a timeline grid.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#071320"/>
+      <stop offset="50%" stop-color="#102a40"/>
+      <stop offset="100%" stop-color="#09111b"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#9cf4ef"/>
+      <stop offset="100%" stop-color="#4f8f8b"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffd79c"/>
+      <stop offset="100%" stop-color="#e0a74e"/>
+    </linearGradient>
+    <pattern id="grid" width="110" height="100" patternUnits="userSpaceOnUse">
+      <path d="M110 0H0V100" fill="none" stroke="#61809d" stroke-opacity=".22" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="54%" cy="42%" r="50%">
+      <stop offset="0%" stop-color="#4f8f8b" stop-opacity=".36"/>
+      <stop offset="100%" stop-color="#4f8f8b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+  <circle cx="650" cy="340" r="300" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M120 560H1080" stroke="#a8bfd6" stroke-opacity=".3" stroke-width="2"/>
+    <path d="M120 560C180 500 230 380 290 395C350 410 400 520 460 488C520 456 570 270 630 290C690 310 740 566 800 546C860 526 910 360 970 345C1010 334 1048 390 1080 408" fill="url(#teal)" fill-opacity=".12" stroke="url(#teal)" stroke-width="5"/>
+    <path d="M120 580C180 620 230 545 290 508C350 471 400 382 460 410C520 438 570 574 630 560C690 546 740 410 800 398C860 386 910 480 970 515C1014 541 1047 524 1080 498" fill="url(#gold)" fill-opacity=".1" stroke="url(#gold)" stroke-width="4"/>
+    <path d="M720 170V650" stroke="#8ec9c5" stroke-opacity=".4" stroke-width="2" stroke-dasharray="10 12"/>
+    <path d="M725 182L755 212L805 162" stroke="#9cf4ef" stroke-opacity=".75" stroke-width="4"/>
+  </g>
+  <g fill="#9cf4ef">
+    <circle cx="180" cy="470" r="7"/><circle cx="350" cy="410" r="7"/><circle cx="520" cy="430" r="7"/><circle cx="690" cy="310" r="7"/><circle cx="860" cy="516" r="7"/><circle cx="1030" cy="378" r="7"/>
+  </g>
+</svg>

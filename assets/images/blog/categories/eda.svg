@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">EDA category cover</title>
+  <desc id="desc">An abstract analytics cover with scatter points, histograms, and a smooth trend line.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#081321"/>
+      <stop offset="52%" stop-color="#14263f"/>
+      <stop offset="100%" stop-color="#0a111d"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd9bb"/>
+      <stop offset="100%" stop-color="#b27249"/>
+    </linearGradient>
+    <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M120 0H0V120" fill="none" stroke="#5e7897" stroke-opacity=".2" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="52%" cy="46%" r="48%">
+      <stop offset="0%" stop-color="#b27249" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="#b27249" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+  <circle cx="650" cy="360" r="280" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M170 620H1020" stroke="#a8bed6" stroke-opacity=".38" stroke-width="2"/>
+    <path d="M210 670V160" stroke="#a8bed6" stroke-opacity=".38" stroke-width="2"/>
+    <path d="M250 620V580H290V620" stroke="#ffcfa7" stroke-opacity=".75" stroke-width="10"/>
+    <path d="M320 620V520H360V620" stroke="#ffcfa7" stroke-opacity=".85" stroke-width="10"/>
+    <path d="M390 620V470H430V620" stroke="#ffcfa7" stroke-opacity=".95" stroke-width="10"/>
+    <path d="M460 620V545H500V620" stroke="#ffcfa7" stroke-opacity=".78" stroke-width="10"/>
+    <path d="M560 500C648 424 736 392 826 382C888 374 948 384 1010 425" stroke="url(#accent)" stroke-width="5"/>
+    <path d="M562 518C650 447 740 417 826 409C891 402 951 412 1010 450" stroke="#fff2e6" stroke-opacity=".45" stroke-width="2"/>
+  </g>
+  <g fill="#ffd5b3">
+    <circle cx="580" cy="472" r="7"/><circle cx="650" cy="436" r="7"/><circle cx="715" cy="408" r="7"/><circle cx="804" cy="387" r="7"/><circle cx="885" cy="393" r="7"/><circle cx="960" cy="411" r="7"/>
+  </g>
+  <g fill="#b27249" fill-opacity=".85">
+    <circle cx="608" cy="544" r="6"/><circle cx="664" cy="470" r="6"/><circle cx="692" cy="512" r="6"/><circle cx="738" cy="444" r="6"/><circle cx="778" cy="495" r="6"/><circle cx="850" cy="430" r="6"/>
+  </g>
+</svg>

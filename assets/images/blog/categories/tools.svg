@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Tools and workflow category cover</title>
+  <desc id="desc">A professional cover with terminal panes, branch nodes, and workflow paths.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#08131f"/>
+      <stop offset="52%" stop-color="#13253d"/>
+      <stop offset="100%" stop-color="#0a1018"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d9dce2"/>
+      <stop offset="100%" stop-color="#6b7280"/>
+    </linearGradient>
+    <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M120 0H0V120" fill="none" stroke="#5f7892" stroke-opacity=".18" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="51%" cy="45%" r="49%">
+      <stop offset="0%" stop-color="#6b7280" stop-opacity=".28"/>
+      <stop offset="100%" stop-color="#6b7280" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+  <circle cx="610" cy="350" r="280" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="170" y="200" width="400" height="250" rx="22" stroke="#d9dde2" stroke-opacity=".45" stroke-width="2"/>
+    <path d="M170 260H570" stroke="#d9dde2" stroke-opacity=".25" stroke-width="2"/>
+    <path d="M230 324L260 352L318 292" stroke="#d9dde2" stroke-opacity=".85" stroke-width="5"/>
+    <path d="M360 318H496M360 362H450M360 406H520" stroke="#d9dde2" stroke-opacity=".72" stroke-width="4"/>
+    <path d="M650 500H980" stroke="url(#accent)" stroke-width="5"/>
+    <path d="M720 500V380M840 500V315M920 500V430" stroke="url(#accent)" stroke-width="4"/>
+    <path d="M720 380C752 330 790 315 840 315C875 315 900 347 920 430" stroke="#d9dde2" stroke-opacity=".45" stroke-width="3"/>
+  </g>
+  <g fill="#d7dbe1">
+    <circle cx="720" cy="380" r="12"/><circle cx="840" cy="315" r="12"/><circle cx="920" cy="430" r="12"/><circle cx="980" cy="500" r="12"/><circle cx="650" cy="500" r="12"/>
+  </g>
+</svg>

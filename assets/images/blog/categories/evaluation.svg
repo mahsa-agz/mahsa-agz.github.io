@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Model evaluation category cover</title>
+  <desc id="desc">A professional cover with a confusion matrix and a rising evaluation curve.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#081220"/>
+      <stop offset="52%" stop-color="#12253f"/>
+      <stop offset="100%" stop-color="#091019"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f2d4e4"/>
+      <stop offset="100%" stop-color="#b06a8d"/>
+    </linearGradient>
+    <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M120 0H0V120" fill="none" stroke="#607794" stroke-opacity=".19" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="52%" cy="45%" r="48%">
+      <stop offset="0%" stop-color="#b06a8d" stop-opacity=".33"/>
+      <stop offset="100%" stop-color="#b06a8d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+  <circle cx="620" cy="360" r="280" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="180" y="240" width="300" height="300" rx="22" stroke="#e7c8d8" stroke-opacity=".55" stroke-width="2"/>
+    <path d="M330 240V540M180 390H480" stroke="#e7c8d8" stroke-opacity=".35" stroke-width="2"/>
+    <path d="M620 560H1020" stroke="#e7c8d8" stroke-opacity=".35" stroke-width="2"/>
+    <path d="M620 560V210" stroke="#e7c8d8" stroke-opacity=".35" stroke-width="2"/>
+    <path d="M650 530C714 476 762 420 818 360C875 297 924 252 990 240" stroke="url(#accent)" stroke-width="5"/>
+    <path d="M652 530C720 492 782 438 842 385C892 341 942 298 990 280" stroke="#f5ddea" stroke-opacity=".45" stroke-width="2"/>
+  </g>
+  <g fill="#f0d6e3">
+    <rect x="205" y="265" width="100" height="100" rx="14"/><rect x="355" y="265" width="100" height="100" rx="14" fill-opacity=".35"/><rect x="205" y="415" width="100" height="100" rx="14" fill-opacity=".35"/><rect x="355" y="415" width="100" height="100" rx="14"/>
+    <circle cx="650" cy="530" r="7"/><circle cx="750" cy="440" r="7"/><circle cx="845" cy="340" r="7"/><circle cx="945" cy="260" r="7"/>
+  </g>
+</svg>

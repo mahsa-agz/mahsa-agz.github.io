@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Classic machine learning category cover</title>
+  <desc id="desc">A professional cover with clustered points and a clean decision boundary.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#071320"/>
+      <stop offset="52%" stop-color="#112740"/>
+      <stop offset="100%" stop-color="#081019"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#cde5ff"/>
+      <stop offset="100%" stop-color="#4a7fb0"/>
+    </linearGradient>
+    <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M120 0H0V120" fill="none" stroke="#5f7895" stroke-opacity=".19" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="44%" r="50%">
+      <stop offset="0%" stop-color="#4a7fb0" stop-opacity=".34"/>
+      <stop offset="100%" stop-color="#4a7fb0" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+  <circle cx="610" cy="350" r="270" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M290 620L890 190" stroke="url(#accent)" stroke-width="5"/>
+    <path d="M380 540C468 500 560 445 655 373C742 307 817 252 884 205" stroke="#dcecff" stroke-opacity=".45" stroke-width="2" stroke-dasharray="10 12"/>
+    <circle cx="408" cy="485" r="78" stroke="#8bb7df" stroke-opacity=".36" stroke-width="2"/>
+    <circle cx="738" cy="306" r="96" stroke="#8bb7df" stroke-opacity=".36" stroke-width="2"/>
+  </g>
+  <g fill="#d7e8fb">
+    <circle cx="348" cy="520" r="7"/><circle cx="385" cy="480" r="7"/><circle cx="432" cy="500" r="7"/><circle cx="462" cy="452" r="7"/><circle cx="515" cy="468" r="7"/><circle cx="690" cy="332" r="7"/><circle cx="728" cy="287" r="7"/><circle cx="768" cy="322" r="7"/><circle cx="802" cy="262" r="7"/><circle cx="842" cy="296" r="7"/>
+  </g>
+  <g fill="#4a7fb0" fill-opacity=".9">
+    <circle cx="330" cy="560" r="6"/><circle cx="380" cy="548" r="6"/><circle cx="458" cy="530" r="6"/><circle cx="640" cy="330" r="6"/><circle cx="706" cy="360" r="6"/><circle cx="868" cy="248" r="6"/>
+  </g>
+</svg>

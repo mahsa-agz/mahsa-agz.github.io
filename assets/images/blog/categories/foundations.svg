@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Foundations category cover</title>
+  <desc id="desc">A professional abstract cover with geometric axes, curves, and construction lines.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#081221"/>
+      <stop offset="55%" stop-color="#132540"/>
+      <stop offset="100%" stop-color="#09111d"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd2da"/>
+      <stop offset="100%" stop-color="#c4677a"/>
+    </linearGradient>
+    <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M120 0H0V120" fill="none" stroke="#5e7897" stroke-opacity=".22" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#c4677a" stop-opacity=".34"/>
+      <stop offset="100%" stop-color="#c4677a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+  <circle cx="620" cy="370" r="270" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M170 600H1030" stroke="#9eb7d2" stroke-opacity=".45" stroke-width="2"/>
+    <path d="M260 670V150" stroke="#9eb7d2" stroke-opacity=".45" stroke-width="2"/>
+    <path d="M260 600L560 260L900 600Z" stroke="url(#accent)" stroke-width="4"/>
+    <circle cx="560" cy="260" r="56" stroke="#f6c5cf" stroke-opacity=".75" stroke-width="3"/>
+    <path d="M330 540C420 470 500 430 590 408C660 391 736 382 878 392" stroke="#ffdbe2" stroke-opacity=".8" stroke-width="4"/>
+    <path d="M330 540C420 520 500 520 590 540C660 555 736 585 878 620" stroke="#c4677a" stroke-opacity=".78" stroke-width="3"/>
+    <path d="M410 240L900 240" stroke="#6d89aa" stroke-opacity=".28" stroke-width="2" stroke-dasharray="8 12"/>
+    <path d="M560 260V600" stroke="#6d89aa" stroke-opacity=".28" stroke-width="2" stroke-dasharray="8 12"/>
+  </g>
+  <g fill="#ffd6dd" fill-opacity=".9">
+    <circle cx="420" cy="493" r="7"/><circle cx="510" cy="435" r="7"/><circle cx="602" cy="403" r="7"/><circle cx="712" cy="389" r="7"/><circle cx="854" cy="389" r="7"/>
+  </g>
+</svg>

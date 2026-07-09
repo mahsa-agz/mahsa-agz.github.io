@@ -53,7 +53,7 @@ collections:
       - { label: Excerpt, name: excerpt, widget: text, required: false, hint: "Short summary shown on the blog index card." }
       - { label: Lede, name: lede, widget: string, required: false, hint: "Italic opening line shown above the body." }
       - { label: Description, name: description, widget: text, required: false, hint: "SEO / Open Graph description." }
-      - { label: "Cover image", name: image, widget: image, required: false, hint: "Shown on the homepage Notes teaser." }
+      - { label: "Cover image", name: image, widget: image, required: false, hint: "Optional social/share image. Homepage blog cards now use the category cover automatically." }
       - { label: Body, name: body, widget: markdown }
 
   # ===========================================================================

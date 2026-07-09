@@ -326,12 +326,16 @@ permalink: /
     <div class="news-grid">
       {%- for post in site.posts limit:3 -%}
         {%- assign cat_label = post.category -%}
+        {%- assign cat_cover = '/assets/og-default.png' -%}
         {%- for cat in site.data.categories -%}
-          {%- if cat.slug == post.category -%}{%- assign cat_label = cat.label -%}{%- endif -%}
+          {%- if cat.slug == post.category -%}
+            {%- assign cat_label = cat.label -%}
+            {%- assign cat_cover = cat.cover | default: cat_cover -%}
+          {%- endif -%}
         {%- endfor -%}
         <article class="news-card">
           <img
-            src="{{ post.image | default: '/assets/og-default.png' | relative_url }}"
+            src="{{ cat_cover | relative_url }}"
             alt="{{ post.title }}"
           />
           <div class="news-overlay">

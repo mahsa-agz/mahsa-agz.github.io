@@ -1,13 +1,13 @@
 # Blog post categories ,  the chip filter on /blog/ is generated from this list.
 # `slug` is what each post puts in its front-matter `category:` field.
-- { slug: foundations,    label: Foundations,            full: "Foundations (Statistics and Math)" }
-- { slug: eda,            label: EDA,                    full: "Exploratory Data Analysis (EDA)" }
-- { slug: feature-eng,    label: Feature Engineering,    full: "Feature Engineering and Data Preparation" }
-- { slug: stats-methods,  label: Statistical Methods,    full: "Statistical Methods" }
-- { slug: time-series,    label: Time Series,            full: "Time Series Analysis and Forecasting" }
-- { slug: classic-ml,     label: Classic ML,             full: "Classic Machine Learning" }
-- { slug: deep-learning,  label: Deep Learning,          full: "Deep Learning" }
-- { slug: evaluation,     label: Model Evaluation,       full: "Model Evaluation" }
-- { slug: databases,      label: "Databases / SQL",      full: "Databases / SQL" }
-- { slug: tools,          label: "Tools / Workflow",     full: "Tools / Workflow" }
-- { slug: other,          label: Other,                  full: "Other" }
+- { slug: foundations,    label: Foundations,            full: "Foundations (Statistics and Math)",        cover: "/assets/images/blog/categories/foundations.svg" }
+- { slug: eda,            label: EDA,                    full: "Exploratory Data Analysis (EDA)",          cover: "/assets/images/blog/categories/eda.svg" }
+- { slug: feature-eng,    label: Feature Engineering,    full: "Feature Engineering and Data Preparation", cover: "/assets/images/blog/categories/feature-eng.svg" }
+- { slug: stats-methods,  label: Statistical Methods,    full: "Statistical Methods",                      cover: "/assets/images/blog/categories/stats-methods.svg" }
+- { slug: time-series,    label: Time Series,            full: "Time Series Analysis and Forecasting",     cover: "/assets/images/blog/categories/time-series.svg" }
+- { slug: classic-ml,     label: Classic ML,             full: "Classic Machine Learning",                 cover: "/assets/images/blog/categories/classic-ml.svg" }
+- { slug: deep-learning,  label: Deep Learning,          full: "Deep Learning",                            cover: "/assets/images/blog/categories/deep-learning.svg" }
+- { slug: evaluation,     label: Model Evaluation,       full: "Model Evaluation",                         cover: "/assets/images/blog/categories/evaluation.svg" }
+- { slug: databases,      label: "Databases / SQL",      full: "Databases / SQL",                          cover: "/assets/images/blog/categories/databases.svg" }
+- { slug: tools,          label: "Tools / Workflow",     full: "Tools / Workflow",                         cover: "/assets/images/blog/categories/tools.svg" }
+- { slug: other,          label: Other,                  full: "Other",                                    cover: "/assets/images/blog/categories/other.svg" }

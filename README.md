@@ -57,7 +57,7 @@ If Ruby isn't installed, the site still builds fine on GitHub Pages after a push
    excerpt: "Short summary for the blog index card."
    lede: "Italic first line shown above the body."
    description: "SEO / Open Graph description."
-   image: /assets/img/pca-cover.jpg   # cover for the homepage Notes teaser
+   image: /assets/img/pca-cover.jpg   # optional social/share image
    ---
    ```
 
@@ -68,7 +68,7 @@ That's it. The post automatically:
 - Lands at `/blog/<slug>.html` (permalink rule in `_config.yml`)
 - Appears at the top of `/blog/` (sorted newest-first)
 - Is picked up by the category filter chip matching its `category:`
-- Shows in the homepage Notes teaser if it's one of the 3 most recent
+- Shows in the homepage Notes teaser if it's one of the 3 most recent, using its category cover automatically
 - Is included in the auto-generated `/sitemap.xml`
 
 ## Editing the navigation

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Other category cover</title>
+  <desc id="desc">A professional abstract cover for uncategorized topics with layered forms and subtle motion.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#081321"/>
+      <stop offset="52%" stop-color="#13253d"/>
+      <stop offset="100%" stop-color="#0a1018"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f3f6fa"/>
+      <stop offset="100%" stop-color="#9aa3ad"/>
+    </linearGradient>
+    <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M120 0H0V120" fill="none" stroke="#607794" stroke-opacity=".18" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="52%" cy="45%" r="48%">
+      <stop offset="0%" stop-color="#9aa3ad" stop-opacity=".26"/>
+      <stop offset="100%" stop-color="#9aa3ad" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+  <circle cx="610" cy="360" r="280" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M270 545C360 458 450 415 560 430C657 442 727 490 815 472C873 460 926 420 980 350" stroke="url(#accent)" stroke-width="5"/>
+    <path d="M270 610C362 548 445 532 540 552C640 573 723 614 812 597C895 581 958 510 1010 430" stroke="#d9e0e6" stroke-opacity=".45" stroke-width="3"/>
+    <circle cx="408" cy="340" r="72" stroke="#d9e0e6" stroke-opacity=".3" stroke-width="2"/>
+    <circle cx="785" cy="300" r="106" stroke="#d9e0e6" stroke-opacity=".24" stroke-width="2"/>
+    <path d="M470 260L532 322L470 384L408 322Z" stroke="#edf2f7" stroke-opacity=".8" stroke-width="3"/>
+  </g>
+  <g fill="#eff3f7">
+    <circle cx="300" cy="520" r="7"/><circle cx="444" cy="438" r="7"/><circle cx="615" cy="450" r="7"/><circle cx="790" cy="470" r="7"/><circle cx="936" cy="406" r="7"/>
+  </g>
+</svg>
