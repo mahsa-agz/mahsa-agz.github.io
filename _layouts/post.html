@@ -1,7 +1,23 @@
 ---
 layout: default
 ---
+{%- assign post_cover = nil -%}
+{%- for cat in site.data.categories -%}
+  {%- if cat.slug == page.category and cat.cover -%}
+    {%- assign post_cover = cat.cover -%}
+    {%- break -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if post_cover == nil or post_cover == '' -%}
+  {%- assign post_cover = page.image -%}
+{%- endif -%}
 <article class="post">
+  {%- if post_cover -%}
+    <div class="post__cover">
+      <img src="{{ post_cover | relative_url }}" alt="" />
+    </div>
+  {%- endif -%}
+
   <header class="post__header">
     <p class="post__back"><a href="{{ '/blog/' | relative_url }}">← All writing</a></p>
     <h1 class="post__title">{{ page.title }}</h1>

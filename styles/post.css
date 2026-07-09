@@ -296,6 +296,34 @@
   padding: var(--sp-8) var(--sp-5) var(--sp-9);
 }
 
+.post__cover {
+  width: min(96vw, 92ch);
+  margin: 0 auto var(--sp-7);
+  border-radius: calc(var(--radius) + 6px);
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.post__cover img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 5;
+  object-fit: cover;
+}
+
+@media (max-width: 720px) {
+  .post__cover {
+    width: min(100%, 92ch);
+    margin-bottom: var(--sp-6);
+  }
+
+  .post__cover img {
+    aspect-ratio: 16 / 7;
+  }
+}
+
 .post__back {
   margin: 0 0 var(--sp-6);
   font-size: var(--fs-sm);
