@@ -137,6 +137,7 @@
 [data-category="eda"]            { --cat-color: #b27249; }
 [data-category="feature-eng"]    { --cat-color: #b8954a; }
 [data-category="stats-methods"]  { --cat-color: #5a9c7a; }
+[data-category="time-series"]    { --cat-color: #4f8f8b; }
 [data-category="classic-ml"]     { --cat-color: #4a7fb0; }
 [data-category="deep-learning"]  { --cat-color: #8d6cae; }
 [data-category="evaluation"]     { --cat-color: #b06a8d; }
@@ -148,6 +149,7 @@
 .post-filter__chip[data-filter-value="eda"]           { --cat-color: #b27249; }
 .post-filter__chip[data-filter-value="feature-eng"]   { --cat-color: #b8954a; }
 .post-filter__chip[data-filter-value="stats-methods"] { --cat-color: #5a9c7a; }
+.post-filter__chip[data-filter-value="time-series"]   { --cat-color: #4f8f8b; }
 .post-filter__chip[data-filter-value="classic-ml"]    { --cat-color: #4a7fb0; }
 .post-filter__chip[data-filter-value="deep-learning"] { --cat-color: #8d6cae; }
 .post-filter__chip[data-filter-value="evaluation"]    { --cat-color: #b06a8d; }

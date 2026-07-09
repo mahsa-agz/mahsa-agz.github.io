@@ -42,6 +42,7 @@ collections:
           - { label: EDA,                      value: eda }
           - { label: Feature Engineering,      value: feature-eng }
           - { label: Statistical Methods,      value: stats-methods }
+          - { label: Time Series,              value: time-series }
           - { label: Classic ML,               value: classic-ml }
           - { label: Deep Learning,            value: deep-learning }
           - { label: Model Evaluation,         value: evaluation }
