@@ -66,19 +66,19 @@ If Ruby isn't installed, the site still builds fine on GitHub Pages after a push
 
 That's it. The post automatically:
 - Lands at `/blog/<slug>.html` (permalink rule in `_config.yml`)
-- Can be linked from the roadmap on `/blog/` by adding its `url` to `_data/learning_roadmap.yml`
-- Is picked up by the category filter chip matching its roadmap categories
+- Can be linked from the tree and the topic table on `/blog/` by adding its `url` to `_data/learning_roadmap.yml`
+- Is picked up by the category filter chip matching its topic categories
 - Shows in the homepage Notes teaser if it's one of the 3 most recent, using its category cover automatically
 - Is included in the auto-generated `/sitemap.xml`
 
-## Editing the notebook map
+## Editing the notes data
 
-The main `/blog/` page now reads its notebook-map structure from `_data/learning_roadmap.yml`.
+The main `/blog/` page reads its tree and topic-table structure from `_data/learning_roadmap.yml`.
 
-Each roadmap step has:
+Each entry group has:
 - `step` ,  keeps the groups in a stable order in the file
 - `title` + `lede` ,  the section heading and short explanation
-- `items` ,  the individual topics/cards in that step
+- `items` ,  the individual topic nodes and table rows in that group
 
 Each item can have:
 - `title`
@@ -86,7 +86,7 @@ Each item can have:
 - `summary`
 - `url` ,  optional; add this when the topic already has a post so the card links to it
 
-This means you can add future topics to the map before writing the post itself, then attach the `url` later when the note is published. The page is meant to be updated over time, and the groups do not have to form one perfectly linear route.
+This means you can add future topics before writing the post itself, then attach the `url` later when the note is published.
 
 ## Editing the navigation
 

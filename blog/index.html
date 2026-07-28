@@ -5,10 +5,7 @@ permalink: /blog/
 ---
 <header class="page-header" data-reveal>
   <p class="eyebrow"><span class="eyebrow__dot"></span>Blog</p>
-  <h1 class="page-header__title">Notes and Connections</h1>
-  <p class="page-header__lede">
-    Methods, ideas, and side paths organized as a small graph on top and a full topic list underneath.
-  </p>
+  <h1 class="page-header__title">Notes</h1>
 </header>
 
 <section class="section section--first" data-reveal>
@@ -27,75 +24,80 @@ permalink: /blog/
       </div>
 
       <div class="notes-view" data-filterable="notes">
-        <section class="knowledge-graph" aria-label="Knowledge graph">
-          <div class="knowledge-graph__head">
-            <h2 class="knowledge-graph__title">Knowledge graph</h2>
-            <p class="knowledge-graph__hint">Click a node to jump to the topic.</p>
-          </div>
-
-          <div class="knowledge-graph__grid">
+        <section class="knowledge-tree" aria-label="Knowledge tree" data-filter-group>
+          <h2 class="notes-section-title">Tree</h2>
+          <div class="knowledge-tree__forest">
             {%- for step in site.data.learning_roadmap -%}
-              <article class="knowledge-cluster" data-filter-group>
-                <h3 class="knowledge-cluster__title">{{ step.title }}</h3>
-                <div class="knowledge-cluster__nodes">
+              <article class="knowledge-branch" data-filter-group>
+                <h3 class="knowledge-branch__label">{{ step.title }}</h3>
+                <ul class="knowledge-branch__children">
                   {%- for item in step.items -%}
                     {%- assign topic_id = 'topic-' | append: step.slug | append: '-' | append: item.title | slugify -%}
-                    <a class="knowledge-node" href="#{{ topic_id }}" data-category="{{ item.categories | join: '|' }}">
-                      {{ item.title }}
-                    </a>
+                    <li class="knowledge-branch__child">
+                      <a class="knowledge-node" href="#{{ topic_id }}" data-category="{{ item.categories | join: '|' }}">
+                        {{ item.title }}
+                      </a>
+                    </li>
                   {%- endfor -%}
-                </div>
+                </ul>
               </article>
             {%- endfor -%}
           </div>
         </section>
 
-        <div class="roadmap">
-        {%- for step in site.data.learning_roadmap -%}
-          <article class="roadmap-step" data-filter-group>
-            <div class="roadmap-step__body">
-              <header class="roadmap-step__head">
-                <h2 class="roadmap-step__title">{{ step.title }}</h2>
-                <p class="roadmap-step__lede">{{ step.lede }}</p>
-              </header>
-
-              <ul class="roadmap-topics">
-                {%- for item in step.items -%}
-                  {%- assign topic_id = 'topic-' | append: step.slug | append: '-' | append: item.title | slugify -%}
-                  <li class="roadmap-topic" id="{{ topic_id }}" data-category="{{ item.categories | join: '|' }}">
-                    <div class="roadmap-topic__chips" aria-label="Categories">
-                      {%- for category_slug in item.categories -%}
-                        {%- assign category_label = category_slug -%}
-                        {%- for category in site.data.categories -%}
-                          {%- if category.slug == category_slug -%}
-                            {%- assign category_label = category.label -%}
-                          {%- endif -%}
-                        {%- endfor -%}
-                        <span class="topic-chip">{{ category_label }}</span>
-                      {%- endfor -%}
-                    </div>
-
-                    {%- if item.url -%}
-                      <a class="roadmap-topic__title" href="{{ item.url | relative_url }}">{{ item.title }}</a>
-                    {%- else -%}
-                      <p class="roadmap-topic__title">{{ item.title }}</p>
-                    {%- endif -%}
-
-                    <p class="roadmap-topic__summary">{{ item.summary }}</p>
-
-                    {%- if item.url -%}
-                      <a class="roadmap-topic__link" href="{{ item.url | relative_url }}">Read note</a>
-                    {%- endif -%}
-                  </li>
+        <section class="notes-database" aria-label="All topics" data-filter-group>
+          <h2 class="notes-section-title">All topics</h2>
+          <div class="notes-table-wrap">
+            <table class="notes-table">
+              <thead>
+                <tr>
+                  <th scope="col">Topic</th>
+                  <th scope="col">Area</th>
+                  <th scope="col">Categories</th>
+                  <th scope="col">Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                {%- for step in site.data.learning_roadmap -%}
+                  {%- for item in step.items -%}
+                    {%- assign topic_id = 'topic-' | append: step.slug | append: '-' | append: item.title | slugify -%}
+                    <tr class="notes-row" id="{{ topic_id }}" data-category="{{ item.categories | join: '|' }}">
+                      <td data-label="Topic">
+                        {%- if item.url -%}
+                          <a class="notes-row__topic" href="{{ item.url | relative_url }}">{{ item.title }}</a>
+                        {%- else -%}
+                          <span class="notes-row__topic">{{ item.title }}</span>
+                        {%- endif -%}
+                      </td>
+                      <td data-label="Area">
+                        <span class="notes-row__area">{{ step.title }}</span>
+                      </td>
+                      <td data-label="Categories">
+                        <div class="notes-row__chips" aria-label="Categories">
+                          {%- for category_slug in item.categories -%}
+                            {%- assign category_label = category_slug -%}
+                            {%- for category in site.data.categories -%}
+                              {%- if category.slug == category_slug -%}
+                                {%- assign category_label = category.label -%}
+                              {%- endif -%}
+                            {%- endfor -%}
+                            <span class="topic-chip">{{ category_label }}</span>
+                          {%- endfor -%}
+                        </div>
+                      </td>
+                      <td data-label="Note">
+                        <span class="notes-row__summary">{{ item.summary }}</span>
+                      </td>
+                    </tr>
+                  {%- endfor -%}
                 {%- endfor -%}
-              </ul>
-            </div>
-          </article>
-        {%- endfor -%}
-        </div>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         <div class="post-list__empty roadmap__empty" data-filter-empty hidden>
-          No notebook topics in this category yet. Add one to the map and it will show up here.
+          No topics in this category yet.
         </div>
       </div>
     </div>
