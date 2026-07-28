@@ -1934,8 +1934,12 @@ main {
 
 .knowledge-tree__forest {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-4);
+  max-height: 34rem;
+  overflow-y: auto;
+  padding-right: var(--sp-2);
+  scrollbar-gutter: stable;
 }
 
 .knowledge-branch {
@@ -2119,7 +2123,9 @@ a.notes-row__topic:hover {
 
 @media (max-width: 860px) {
   .knowledge-tree__forest {
-    grid-template-columns: 1fr;
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
   }
 }
 

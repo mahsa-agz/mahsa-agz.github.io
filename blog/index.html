@@ -34,9 +34,15 @@ permalink: /blog/
                   {%- for item in step.items -%}
                     {%- assign topic_id = 'topic-' | append: step.slug | append: '-' | append: item.title | slugify -%}
                     <li class="knowledge-branch__child">
-                      <a class="knowledge-node" href="#{{ topic_id }}" data-category="{{ item.categories | join: '|' }}">
-                        {{ item.title }}
-                      </a>
+                      {%- if item.url -%}
+                        <a class="knowledge-node" href="{{ item.url | relative_url }}" data-category="{{ item.categories | join: '|' }}">
+                          {{ item.title }}
+                        </a>
+                      {%- else -%}
+                        <a class="knowledge-node" href="#{{ topic_id }}" data-category="{{ item.categories | join: '|' }}">
+                          {{ item.title }}
+                        </a>
+                      {%- endif -%}
                     </li>
                   {%- endfor -%}
                 </ul>
