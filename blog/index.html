@@ -25,22 +25,44 @@ permalink: /blog/
 
       <div class="notes-view" data-filterable="notes">
         <section class="knowledge-tree" aria-label="Knowledge tree" data-filter-group>
-          <h2 class="notes-section-title">Tree</h2>
+          <h2 class="notes-section-title">Topic map</h2>
           <div class="knowledge-tree__forest">
             {%- for step in site.data.learning_roadmap -%}
               <article class="knowledge-branch" data-filter-group>
                 <h3 class="knowledge-branch__label">{{ step.title }}</h3>
                 <ul class="knowledge-branch__children">
                   {%- for item in step.items -%}
-                    {%- assign topic_id = 'topic-' | append: step.slug | append: '-' | append: item.title | slugify -%}
+                    {%- assign topic_slug = item.title | slugify -%}
                     <li class="knowledge-branch__child">
                       {%- if item.url -%}
-                        <a class="knowledge-node" href="{{ item.url | relative_url }}" data-category="{{ item.categories | join: '|' }}">
-                          {{ item.title }}
+                        <a class="knowledge-node" href="{{ item.url | relative_url }}" data-category="{{ item.categories | join: '|' }}" data-primary-category="{{ item.categories | first }}">
+                          <span class="knowledge-node__title">{{ item.title }}</span>
+                          <span class="knowledge-node__tags" aria-label="Categories">
+                            {%- for category_slug in item.categories -%}
+                              {%- assign category_label = category_slug -%}
+                              {%- for category in site.data.categories -%}
+                                {%- if category.slug == category_slug -%}
+                                  {%- assign category_label = category.label -%}
+                                {%- endif -%}
+                              {%- endfor -%}
+                              <span class="knowledge-node__tag" data-node-category="{{ category_slug }}">{{ category_label }}</span>
+                            {%- endfor -%}
+                          </span>
                         </a>
                       {%- else -%}
-                        <a class="knowledge-node" href="#{{ topic_id }}" data-category="{{ item.categories | join: '|' }}">
-                          {{ item.title }}
+                        <a class="knowledge-node" href="{{ '/notes/coming-soon.html' | relative_url }}?topic={{ topic_slug }}" data-category="{{ item.categories | join: '|' }}" data-primary-category="{{ item.categories | first }}">
+                          <span class="knowledge-node__title">{{ item.title }}</span>
+                          <span class="knowledge-node__tags" aria-label="Categories">
+                            {%- for category_slug in item.categories -%}
+                              {%- assign category_label = category_slug -%}
+                              {%- for category in site.data.categories -%}
+                                {%- if category.slug == category_slug -%}
+                                  {%- assign category_label = category.label -%}
+                                {%- endif -%}
+                              {%- endfor -%}
+                              <span class="knowledge-node__tag" data-node-category="{{ category_slug }}">{{ category_label }}</span>
+                            {%- endfor -%}
+                          </span>
                         </a>
                       {%- endif -%}
                     </li>
@@ -48,57 +70,6 @@ permalink: /blog/
                 </ul>
               </article>
             {%- endfor -%}
-          </div>
-        </section>
-
-        <section class="notes-database" aria-label="All topics" data-filter-group>
-          <h2 class="notes-section-title">All topics</h2>
-          <div class="notes-table-wrap">
-            <table class="notes-table">
-              <thead>
-                <tr>
-                  <th scope="col">Topic</th>
-                  <th scope="col">Area</th>
-                  <th scope="col">Categories</th>
-                  <th scope="col">Note</th>
-                </tr>
-              </thead>
-              <tbody>
-                {%- for step in site.data.learning_roadmap -%}
-                  {%- for item in step.items -%}
-                    {%- assign topic_id = 'topic-' | append: step.slug | append: '-' | append: item.title | slugify -%}
-                    <tr class="notes-row" id="{{ topic_id }}" data-category="{{ item.categories | join: '|' }}">
-                      <td data-label="Topic">
-                        {%- if item.url -%}
-                          <a class="notes-row__topic" href="{{ item.url | relative_url }}">{{ item.title }}</a>
-                        {%- else -%}
-                          <span class="notes-row__topic">{{ item.title }}</span>
-                        {%- endif -%}
-                      </td>
-                      <td data-label="Area">
-                        <span class="notes-row__area">{{ step.title }}</span>
-                      </td>
-                      <td data-label="Categories">
-                        <div class="notes-row__chips" aria-label="Categories">
-                          {%- for category_slug in item.categories -%}
-                            {%- assign category_label = category_slug -%}
-                            {%- for category in site.data.categories -%}
-                              {%- if category.slug == category_slug -%}
-                                {%- assign category_label = category.label -%}
-                              {%- endif -%}
-                            {%- endfor -%}
-                            <span class="topic-chip">{{ category_label }}</span>
-                          {%- endfor -%}
-                        </div>
-                      </td>
-                      <td data-label="Note">
-                        <span class="notes-row__summary">{{ item.summary }}</span>
-                      </td>
-                    </tr>
-                  {%- endfor -%}
-                {%- endfor -%}
-              </tbody>
-            </table>
           </div>
         </section>
 

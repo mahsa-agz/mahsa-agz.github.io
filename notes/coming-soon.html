@@ -1,0 +1,88 @@
+---
+layout: default
+title: Topic Note
+description: Placeholder page for notes that are still being drafted.
+permalink: /notes/coming-soon.html
+---
+<article class="post">
+  <header class="post__header">
+    <p class="post__back"><a href="{{ '/blog/' | relative_url }}">← Back to notes</a></p>
+    <p class="eyebrow"><span class="eyebrow__dot"></span>Note in progress</p>
+    <h1 class="post__title" id="topic-page-title">Coming soon</h1>
+    <p class="post__meta" id="topic-page-area">This note is still being written.</p>
+  </header>
+
+  <div class="post__body prose">
+    <p class="post__lede" id="topic-page-summary">
+      A full write-up for this topic is on the way.
+    </p>
+    <div class="notes-placeholder__chips" id="topic-page-categories" aria-label="Categories"></div>
+
+    <p>
+      This topic already belongs on the map, but the full explanation page is still being drafted.
+    </p>
+    <p>
+      For now, this page gives the topic a stable destination and a short summary, so it can be expanded later
+      without changing the structure of the notes.
+    </p>
+  </div>
+</article>
+
+<script>
+  (function () {
+    const topicSlug = new URLSearchParams(window.location.search).get("topic");
+    if (!topicSlug) return;
+
+    const steps = {{ site.data.learning_roadmap | jsonify }};
+    const categoryMap = Object.fromEntries(
+      {{ site.data.categories | jsonify }}.map((category) => [category.slug, category.label])
+    );
+
+    const slugify = (value) =>
+      String(value || "")
+        .toLowerCase()
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/[\s_-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+    let foundItem = null;
+    let foundStep = null;
+
+    steps.some((step) =>
+      step.items.some((item) => {
+        if (slugify(item.title) === topicSlug) {
+          foundItem = item;
+          foundStep = step;
+          return true;
+        }
+        return false;
+      })
+    );
+
+    if (!foundItem || !foundStep) return;
+
+    const titleEl = document.getElementById("topic-page-title");
+    const areaEl = document.getElementById("topic-page-area");
+    const summaryEl = document.getElementById("topic-page-summary");
+    const categoriesEl = document.getElementById("topic-page-categories");
+
+    if (titleEl) titleEl.textContent = foundItem.title;
+    if (areaEl) areaEl.textContent = `${foundStep.title} · full note coming soon`;
+    if (summaryEl) summaryEl.textContent = foundItem.summary;
+
+    if (categoriesEl && Array.isArray(foundItem.categories)) {
+      categoriesEl.innerHTML = "";
+      foundItem.categories.forEach((slug) => {
+        const chip = document.createElement("span");
+        chip.className = "topic-chip";
+        chip.textContent = categoryMap[slug] || slug;
+        categoriesEl.appendChild(chip);
+      });
+    }
+
+    document.title = `${foundItem.title} | {{ site.title }}`;
+  })();
+</script>
