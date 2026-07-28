@@ -71,23 +71,22 @@ That's it. The post automatically:
 - Shows in the homepage Notes teaser if it's one of the 3 most recent, using its category cover automatically
 - Is included in the auto-generated `/sitemap.xml`
 
-## Editing the learning roadmap
+## Editing the notebook map
 
-The main `/blog/` page now reads its learning-path structure from `_data/learning_roadmap.yml`.
+The main `/blog/` page now reads its notebook-map structure from `_data/learning_roadmap.yml`.
 
 Each roadmap step has:
-- `step` ,  display number on the path
+- `step` ,  keeps the groups in a stable order in the file
 - `title` + `lede` ,  the section heading and short explanation
 - `items` ,  the individual topics/cards in that step
 
 Each item can have:
 - `title`
 - `categories` ,  one or more category slugs from `_data/categories.yml`
-- `status` + `status_label` ,  for example `published`, `planned`, or `needs-review`
 - `summary`
 - `url` ,  optional; add this when the topic already has a post so the card links to it
 
-This means you can add future topics to the road before writing the post itself, then attach the `url` later when the note is published.
+This means you can add future topics to the map before writing the post itself, then attach the `url` later when the note is published. The page is meant to be updated over time, and the groups do not have to form one perfectly linear route.
 
 ## Editing the navigation
 

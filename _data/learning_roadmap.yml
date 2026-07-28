@@ -5,33 +5,21 @@
   items:
     - title: Basic Terminology
       categories: [foundations]
-      status: planned
-      status_label: Planned
       summary: Build a shared mental model for variables, distributions, signals, and noise.
     - title: Cohen's d
       categories: [foundations]
-      status: planned
-      status_label: Planned
       summary: Understand effect size before moving into model coefficients and significance tests.
     - title: Degree of Freedom
       categories: [foundations]
-      status: planned
-      status_label: Planned
       summary: A small concept with outsized importance in tests, models, and sampling.
     - title: p-Values
       categories: [foundations]
-      status: planned
-      status_label: Planned
       summary: Separate the intuition, the misuse, and the situations where p-values still help.
     - title: "beta, t, and p-values: meaning and misinterpretation"
       categories: [foundations]
-      status: planned
-      status_label: Planned
       summary: Connect the coefficient, its uncertainty, and the resulting test statistic in one story.
     - title: Minimum sample size for developing a multivariable prediction model
       categories: [foundations]
-      status: needs-review
-      status_label: Needs Review
       summary: Anchor later modeling decisions in sample-size discipline instead of rule-of-thumb habits.
 
 - step: "02"
@@ -41,28 +29,18 @@
   items:
     - title: Bivariate analysis and false positives
       categories: [eda]
-      status: planned
-      status_label: Planned
       summary: Use simple comparisons without getting fooled by chance findings or loose interpretation.
     - title: "Correlation: Pearson and Spearman"
       categories: [eda, stats-methods]
-      status: needs-review
-      status_label: Needs Review
       summary: Compare linear vs rank-based relationships and know when each one earns trust.
     - title: Handling missing data
       categories: [feature-eng]
-      status: planned
-      status_label: Planned
       summary: Start with missingness mechanisms before reaching for imputation recipes.
     - title: Imputation Methods
       categories: [feature-eng]
-      status: planned
-      status_label: Planned
       summary: Move from deletion and simple fills to methods that preserve more of the signal.
     - title: Maximum relevance and minimum redundancy feature selection
       categories: [feature-eng]
-      status: planned
-      status_label: Planned
       summary: Select features that matter without stuffing the model with duplicates of the same idea.
 
 - step: "03"
@@ -72,105 +50,94 @@
   items:
     - title: Linear regression, intuitively
       categories: [classic-ml]
-      status: published
-      status_label: Published
       summary: Residuals, R-squared, adjusted R-squared, F, and the p-value built from first principles.
       url: /blog/linear-regression.html
     - title: Regression Estimation Methods
       categories: [classic-ml]
-      status: planned
-      status_label: Planned
       summary: Compare least squares and related estimators from the perspective of what they optimize.
     - title: Multiple Regression
       categories: [classic-ml]
-      status: planned
-      status_label: Planned
       summary: Extend the linear-regression story to multiple predictors without losing the intuition.
     - title: PCA, intuitively
       categories: [classic-ml, feature-eng]
-      status: published
-      status_label: Published
       summary: Why we compress dimensions, what variance preservation buys us, and where PCA breaks down.
       url: /blog/pca.html
     - title: Robust standard errors and covariance types in regression
       categories: [stats-methods]
-      status: planned
-      status_label: Planned
       summary: Learn when your coefficient estimate is fine but your uncertainty estimate is not.
     - title: Variance partitioning in multiple regression or ANOVA
       categories: [stats-methods]
-      status: planned
-      status_label: Planned
       summary: Break apart explained variance so model contribution is easier to reason about.
     - title: Elastic Net
       categories: [classic-ml]
-      status: planned
-      status_label: Planned
       summary: Use shrinkage when plain regression is too brittle and feature sets start to sprawl.
     - title: ROC Curves and AUC
       categories: [evaluation]
-      status: planned
-      status_label: Planned
       summary: Evaluate ranking behavior without pretending every threshold tells the same story.
 
 - step: "04"
+  slug: trait-state-methods
+  title: Statistical methods for separating trait and state
+  lede: Start simple, then move toward models that can separate what is stable about a person from what changes moment to moment.
+  items:
+    - title: Repeated Measures Analysis
+      categories: [stats-methods]
+      summary: The first step for repeated observations. It compares the same people across time, but usually assumes everyone follows roughly the same pattern.
+    - title: Longitudinal Data Analysis
+      categories: [stats-methods]
+      summary: The bigger umbrella for data collected over time. Repeated measures sits inside it, but longitudinal thinking is broader and more flexible.
+    - title: Mixed-Effects Models (Linear Mixed Models)
+      categories: [stats-methods]
+      summary: The most common practical tool for trait-versus-state questions. Fixed effects show the overall trend, while random effects capture stable person-to-person differences.
+    - title: Hierarchical (Multilevel) Models
+      categories: [stats-methods]
+      summary: A more general version of mixed-effects models. It is useful when data are nested, like measurements inside people and people inside larger groups.
+    - title: Variance Decomposition
+      categories: [stats-methods]
+      summary: This tells you how much of the total variation comes from stable traits, changing states, and plain measurement noise.
+
+- step: "05"
   slug: forecasting
   title: Move into forecasting and temporal data
   lede: Treat time as structure, not just another column, and choose methods that respect sequence.
   items:
     - title: Time series, intuitively
       categories: [time-series]
-      status: published
-      status_label: Published
       summary: A practical orientation to trend, seasonality, autocorrelation, and forecasting task types.
       url: /blog/time-series-overview.html
     - title: ARIMA, intuitively
       categories: [time-series]
-      status: published
-      status_label: Published
       summary: Understand what the A, I, and M parts contribute before treating ARIMA like a formula.
       url: /blog/time-series-arima.html
     - title: SARIMA
       categories: [time-series]
-      status: planned
-      status_label: Planned
       summary: Add seasonal structure only after the non-seasonal ARIMA pieces make intuitive sense.
     - title: Gradient boosting for time series, intuitively
       categories: [time-series]
-      status: published
-      status_label: Published
       summary: Turn lagged features, rolling summaries, and calendar signals into a strong tabular baseline.
       url: /blog/time-series-gradient-boosting.html
 
-- step: "05"
+- step: "06"
   slug: evidence-and-study-design
   title: Judge evidence and research design
   lede: Keep models grounded in how studies are built, reported, and limited in the real world.
   items:
     - title: Research study designs and reporting guidelines
       categories: [other]
-      status: planned
-      status_label: Planned
       summary: Build a map of descriptive, observational, experimental, and synthesis-style study designs.
     - title: Structural Equation Modeling (SEM)
       categories: [stats-methods]
-      status: needs-review
-      status_label: Needs Review
       summary: Treat SEM as a modeling language for relationships and measurement, not just a software feature.
     - title: Prediction studies
       categories: [other]
-      status: planned
-      status_label: Planned
       summary: Separate predictive performance questions from explanatory claims and causal language.
 
-- step: "06"
+- step: "07"
   slug: workflow
   title: Work like a teammate
   lede: Make the learning portable by documenting, versioning, and shipping it cleanly.
   items:
     - title: Git, in one page
       categories: [tools]
-      status: published
-      status_label: Published
       summary: A practical reference for everyday commits, branches, pull requests, and conflict resolution.
       url: /blog/git.html
