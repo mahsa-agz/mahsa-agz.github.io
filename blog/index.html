@@ -5,10 +5,9 @@ permalink: /blog/
 ---
 <header class="page-header" data-reveal>
   <p class="eyebrow"><span class="eyebrow__dot"></span>Blog</p>
-  <h1 class="page-header__title">A working notebook, not just a post archive</h1>
+  <h1 class="page-header__title">Notes and Connections</h1>
   <p class="page-header__lede">
-    This page collects ideas, methods, and side paths that come up while I work through projects.
-    Some topics connect directly, some branch off, and some are just useful detours worth keeping.
+    Methods, ideas, and side paths organized as a small graph on top and a full topic list underneath.
   </p>
 </header>
 
@@ -20,28 +19,6 @@ permalink: /blog/
     </div>
 
     <div class="tabs__panel" role="tabpanel" id="blog-panel-notes" aria-labelledby="blog-tab-notes">
-      <section class="roadmap-hero" aria-label="Learning map notes">
-        <div class="roadmap-hero__copy">
-          <p class="roadmap-hero__eyebrow">Notebook map</p>
-          <h2 class="roadmap-hero__title">Notes, methods, branches, and side routes from the work.</h2>
-          <p class="roadmap-hero__lede">
-            Think of this as a growing notebook map rather than a fixed syllabus. Some areas connect cleanly,
-            some split like a tree, and not everything needs a perfectly linear flow to be worth keeping.
-          </p>
-        </div>
-
-        <div class="roadmap-hero__notes" aria-label="Map notes">
-          <p class="roadmap-note">
-            <strong>Updated over time.</strong>
-            New topics, notes, and connections get added here whenever they show up in the work.
-          </p>
-          <p class="roadmap-note">
-            <strong>Not one fixed route.</strong>
-            Some ideas belong on the main path, while others work better as branches, shortcuts, or side notes.
-          </p>
-        </div>
-      </section>
-
       <div class="post-filter" data-filter="notes" role="toolbar" aria-label="Filter notes by category">
         <button class="post-filter__chip is-active" type="button" data-filter-value="all" aria-pressed="true">All</button>
         {%- for cat in site.data.categories -%}
@@ -49,7 +26,31 @@ permalink: /blog/
         {%- endfor -%}
       </div>
 
-      <div class="roadmap" data-filterable="notes">
+      <div class="notes-view" data-filterable="notes">
+        <section class="knowledge-graph" aria-label="Knowledge graph">
+          <div class="knowledge-graph__head">
+            <h2 class="knowledge-graph__title">Knowledge graph</h2>
+            <p class="knowledge-graph__hint">Click a node to jump to the topic.</p>
+          </div>
+
+          <div class="knowledge-graph__grid">
+            {%- for step in site.data.learning_roadmap -%}
+              <article class="knowledge-cluster" data-filter-group>
+                <h3 class="knowledge-cluster__title">{{ step.title }}</h3>
+                <div class="knowledge-cluster__nodes">
+                  {%- for item in step.items -%}
+                    {%- assign topic_id = 'topic-' | append: step.slug | append: '-' | append: item.title | slugify -%}
+                    <a class="knowledge-node" href="#{{ topic_id }}" data-category="{{ item.categories | join: '|' }}">
+                      {{ item.title }}
+                    </a>
+                  {%- endfor -%}
+                </div>
+              </article>
+            {%- endfor -%}
+          </div>
+        </section>
+
+        <div class="roadmap">
         {%- for step in site.data.learning_roadmap -%}
           <article class="roadmap-step" data-filter-group>
             <div class="roadmap-step__body">
@@ -60,7 +61,8 @@ permalink: /blog/
 
               <ul class="roadmap-topics">
                 {%- for item in step.items -%}
-                  <li class="roadmap-topic" data-category="{{ item.categories | join: '|' }}">
+                  {%- assign topic_id = 'topic-' | append: step.slug | append: '-' | append: item.title | slugify -%}
+                  <li class="roadmap-topic" id="{{ topic_id }}" data-category="{{ item.categories | join: '|' }}">
                     <div class="roadmap-topic__chips" aria-label="Categories">
                       {%- for category_slug in item.categories -%}
                         {%- assign category_label = category_slug -%}
@@ -90,6 +92,7 @@ permalink: /blog/
             </div>
           </article>
         {%- endfor -%}
+        </div>
 
         <div class="post-list__empty roadmap__empty" data-filter-empty hidden>
           No notebook topics in this category yet. Add one to the map and it will show up here.
