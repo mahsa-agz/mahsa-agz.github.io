@@ -73,18 +73,37 @@ document.querySelectorAll("[data-filter]").forEach((filter) => {
   const group = filter.getAttribute("data-filter");
   const chips = Array.from(filter.querySelectorAll("[data-filter-value]"));
   const list = document.querySelector(`[data-filterable="${group}"]`);
-  if (!list) return;
+  if (!list || !chips.length) return;
   const items = Array.from(list.querySelectorAll("[data-category]"));
   const empty = list.querySelector("[data-filter-empty]");
+  const filterGroups = Array.from(list.querySelectorAll("[data-filter-group]"));
+
+  const matchesValue = (item, value) => {
+    if (value === "all") return true;
+    const categories = (item.getAttribute("data-category") || "")
+      .split("|")
+      .map((token) => token.trim())
+      .filter(Boolean);
+    return categories.includes(value);
+  };
+
+  const syncGroups = () => {
+    filterGroups.forEach((groupEl) => {
+      const visibleItems = Array.from(
+        groupEl.querySelectorAll("[data-category]")
+      ).filter((item) => !item.hidden);
+      groupEl.hidden = visibleItems.length === 0;
+    });
+  };
 
   const apply = (value) => {
     let shown = 0;
     items.forEach((item) => {
-      const match =
-        value === "all" || item.getAttribute("data-category") === value;
+      const match = matchesValue(item, value);
       item.hidden = !match;
       if (match) shown++;
     });
+    syncGroups();
     if (empty) empty.hidden = shown !== 0;
   };
 
@@ -98,6 +117,9 @@ document.querySelectorAll("[data-filter]").forEach((filter) => {
       apply(chip.getAttribute("data-filter-value"));
     });
   });
+
+  const activeChip = chips.find((chip) => chip.classList.contains("is-active"));
+  apply((activeChip || chips[0]).getAttribute("data-filter-value"));
 });
 
 // ===== Tabs (ARIA) =====

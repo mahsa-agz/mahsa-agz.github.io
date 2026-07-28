@@ -1,0 +1,29 @@
+﻿Skill/Topic,Category,Confidence,Date,Date Added,Link,Notes,Resource,Status,Sub Category
+Correlation: Pearson and Spearman,"Exploratory Data Analysis (EDA), Statistical Methods (Inference-Oriented)",,,,,,,Needs Review,
+"Linear Regression ",Classic Machine Learning,,,,,,,Needs Review,Supervised
+Structural Equation Modeling (SEM) ,Statistical Methods (Inference-Oriented),,,,,,,Todo,
+Variance partitioning methods in multiple regression or ANOVA.,Statistical Methods (Inference-Oriented),,,,,,,,
+"β, t, and p-Values: Meaning and Misinterpretation",Foundations (Statistics and Math),,,,https://www.notion.so/Linear-Regression-34afda699d5680c78f9cf7192fa1b762?v=b1dfda699d56830d8b98087c64aab9b6&source=copy_link,,,,
+Robust Standard Errors / Covariance Types in Regression,Statistical Methods (Inference-Oriented),,,,,,,,
+p-Values,Foundations (Statistics and Math),,,,,,,Todo,
+Degree of Freedom,Foundations (Statistics and Math),,,,,,,Todo,
+F-Score,Foundations (Statistics and Math),,,,,,,,
+Multiple Regression,Classic Machine Learning,,,,,,,,Supervised
+Regression Estimation Methods,Classic Machine Learning,,,,,,,,Supervised
+PCA,"Classic Machine Learning, Feature Engineering and Data Preparation",,,,,,,,Supervised
+Bivariate analysis and False Positive,Exploratory Data Analysis (EDA),,,,,,,,
+handling missing data,Feature Engineering and Data Preparation,,,,,,,,
+handling missing data (1),Feature Engineering and Data Preparation,,,,,,,,
+Imputation Methods,Feature Engineering and Data Preparation,,,,,,,,
+ROC Curves / AUC,Classic Machine Learning,,,,,,,,
+Research Study Designs and Reporting Guidelines,other,,,,,,,,
+Minimum sample size for developing a multivariable prediction model,Foundations (Statistics and Math),,,,,,"https://pubmed.ncbi.nlm.nih.gov/30347470/  , https://onlinelibrary.wiley.com/doi/10.1002/sim.7992",,
+Elastic Net,Classic Machine Learning,,,,,,,Todo,Supervised
+"heterogeneous ",Foundations (Statistics and Math),,,,,,,,
+Maximum Relevance and Minimum Redundancy Feature Selection Methods,Feature Engineering and Data Preparation,,,,,,https://arxiv.org/pdf/1908.05376,,
+Basic Terminology,Foundations (Statistics and Math),,,,,,,,
+Cohen’s d,Foundations (Statistics and Math),,,,,,,,
+"lasso elasticnet ",,,,,,,,,
+Time Series Analysis Overview,Time Series,,,,,,https://youtu.be/GE3JOFwTWVM?si=0AIDvMSAJ7g7hXcF,,
+ARIMA = AutoRegressive Integrated Moving Average,Time Series,,,,,,,,
+SARIMA = Seasonal AutoRegressive Integrated Moving Average,Time Series,,,,,,,,

@@ -1,0 +1,16 @@
+﻿Superior Group,Common Methods,Intuitive Analysis Logic,Main Goal,Reporting Guideline,Study Type
+Observational Studies,"Correlation, regression, ANOVA, clustering, PCA, ML classification","“What is happening right now?” Analyze associations, group differences, correlations, and patterns. No temporal causality.",Understand relationships at one time point,STROBE,Cross-sectional Study
+Observational Studies,"Survival analysis, mixed models, longitudinal regression",“Who develops the outcome later?” Time matters. Baseline variables predict future events.,Track future outcomes over time,STROBE,Cohort Study
+Observational Studies,"Logistic regression, odds ratios",“What factors may explain the outcome?” Look backward from outcome to exposures.,Compare people with vs without an outcome,STROBE,Case-Control Study
+Experimental Studies,"Hypothesis testing, ANCOVA, repeated measures",“Did the intervention cause change?” Randomization reduces bias and improves causal confidence.,Test causal effect of intervention,CONSORT,Randomized Controlled Trial (RCT)
+Experimental Studies,"Difference-in-differences, interrupted time series",Similar to RCT but weaker causal confidence because groups may differ initially.,Evaluate intervention without full randomization,TREND,Quasi-Experimental Study
+Longitudinal Studies,"Mixed-effects models, growth curve models",“How do individuals evolve?” Dependency between repeated measurements becomes important.,Study change across time,STROBE,Panel / Repeated Measures Study
+Descriptive Studies,"Frequencies, descriptive statistics",Mostly descriptive and exploratory. Focus on prevalence and distributions.,Describe population characteristics,STROBE,Survey Study
+Descriptive Studies,Narrative analysis,Clinical or exploratory insight rather than statistical inference.,Document rare or important observations,CARE,Case Report / Case Series
+Diagnostic Studies,"Sensitivity, specificity, ROC-AUC",“How accurately can this tool detect disease?” Focus is prediction accuracy against gold standard.,Evaluate diagnostic tools,STARD,Diagnostic Accuracy Study
+Prediction Studies,"Logistic regression, risk scores",Prediction matters more than explanation. Generalization and validation are critical.,Predict future or hidden outcomes,TRIPOD,Statistical Prediction Model
+Prediction Studies,"Random Forest, XGBoost, deep learning, feature selection","Focus shifts from inference to robustness, validation, overfitting, feature engineering, and reproducibility.",Build high-performance predictive systems,TRIPOD-AI,Machine Learning Prediction Study
+Qualitative Studies,"Thematic analysis, grounded theory",Interpretation replaces numerical inference. Themes and concepts are extracted from text.,Understand experiences and meanings,COREQ,Interview / Thematic Study
+Mixed Methods,Sequential or parallel mixed analysis,Use numbers for patterns and interviews for interpretation and context.,Combine quantitative and qualitative evidence,GRAMMS,Mixed-Methods Study
+Evidence Synthesis,"Structured search, evidence synthesis",Literature itself becomes the dataset. Bias assessment becomes central.,Summarize all evidence systematically,PRISMA,Systematic Review
+Evidence Synthesis,Random/fixed effects models,Pool effect sizes across papers to estimate overall effect.,Combine statistical results from studies,PRISMA,Meta-analysis

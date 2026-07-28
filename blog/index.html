@@ -1,10 +1,31 @@
 ---
 title: Blog
-description: "Data science notes, recommendations, and Korean lessons by Mahsa Aghazadeh."
+description: "Data science notes and recommendations by Mahsa Aghazadeh."
 permalink: /blog/
 ---
+{%- assign total_topics = 0 -%}
+{%- assign published_topics = 0 -%}
+{%- assign planned_topics = 0 -%}
+{%- assign review_topics = 0 -%}
+{%- for step in site.data.learning_roadmap -%}
+  {%- for item in step.items -%}
+    {%- assign total_topics = total_topics | plus: 1 -%}
+    {%- if item.status == "published" -%}
+      {%- assign published_topics = published_topics | plus: 1 -%}
+    {%- elsif item.status == "needs-review" -%}
+      {%- assign review_topics = review_topics | plus: 1 -%}
+    {%- else -%}
+      {%- assign planned_topics = planned_topics | plus: 1 -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endfor -%}
 <header class="page-header" data-reveal>
   <p class="eyebrow"><span class="eyebrow__dot"></span>Blog</p>
+  <h1 class="page-header__title">A learning road, not just a publish archive</h1>
+  <p class="page-header__lede">
+    Categories still matter, but the main order now follows a clearer learning flow:
+    foundations first, then data work, then modeling, forecasting, and research judgment.
+  </p>
 </header>
 
 <section class="section section--first" data-reveal>
@@ -15,6 +36,36 @@ permalink: /blog/
     </div>
 
     <div class="tabs__panel" role="tabpanel" id="blog-panel-notes" aria-labelledby="blog-tab-notes">
+      <section class="roadmap-hero" aria-label="Learning roadmap summary">
+        <div class="roadmap-hero__copy">
+          <p class="roadmap-hero__eyebrow">Roadmap</p>
+          <h2 class="roadmap-hero__title">Follow the path in the order you would actually learn it.</h2>
+          <p class="roadmap-hero__lede">
+            Each step mixes published notes with planned topics, so the site can grow like a syllabus
+            instead of feeling trapped by posting date.
+          </p>
+        </div>
+
+        <dl class="roadmap-stats">
+          <div class="roadmap-stats__item">
+            <dt>Topics on the road</dt>
+            <dd>{{ total_topics }}</dd>
+          </div>
+          <div class="roadmap-stats__item">
+            <dt>Published</dt>
+            <dd>{{ published_topics }}</dd>
+          </div>
+          <div class="roadmap-stats__item">
+            <dt>Planned</dt>
+            <dd>{{ planned_topics }}</dd>
+          </div>
+          <div class="roadmap-stats__item">
+            <dt>Needs review</dt>
+            <dd>{{ review_topics }}</dd>
+          </div>
+        </dl>
+      </section>
+
       <div class="post-filter" data-filter="notes" role="toolbar" aria-label="Filter notes by category">
         <button class="post-filter__chip is-active" type="button" data-filter-value="all" aria-pressed="true">All</button>
         {%- for cat in site.data.categories -%}
@@ -22,27 +73,63 @@ permalink: /blog/
         {%- endfor -%}
       </div>
 
-      <ul class="post-list" data-filterable="notes">
-        {%- for post in site.posts -%}
-          {%- assign cat_full = post.category -%}
-          {%- for cat in site.data.categories -%}
-            {%- if cat.slug == post.category -%}{%- assign cat_full = cat.full -%}{%- endif -%}
-          {%- endfor -%}
-          <li class="post-list__item" data-category="{{ post.category }}" data-date="{{ post.date | date: '%Y-%m-%d' }}">
-            <p class="post-list__meta">{{ post.date | date: '%Y-%m-%d' }}</p>
-            <div>
-              <a class="post-list__title" href="{{ post.url | relative_url }}">
-                {{ post.title }}
-              </a>
-              <p class="post-list__excerpt">{{ post.excerpt }}</p>
-              <p class="post-list__category">{{ cat_full }}</p>
+      <div class="roadmap" data-filterable="notes">
+        {%- for step in site.data.learning_roadmap -%}
+          <article class="roadmap-step" data-filter-group>
+            <div class="roadmap-step__marker" aria-hidden="true">
+              <span class="roadmap-step__number">{{ step.step }}</span>
             </div>
-          </li>
+
+            <div class="roadmap-step__body">
+              <header class="roadmap-step__head">
+                <p class="roadmap-step__eyebrow">Step {{ step.step }}</p>
+                <h2 class="roadmap-step__title">{{ step.title }}</h2>
+                <p class="roadmap-step__lede">{{ step.lede }}</p>
+              </header>
+
+              <ul class="roadmap-topics">
+                {%- for item in step.items -%}
+                  <li class="roadmap-topic" data-category="{{ item.categories | join: '|' }}" data-status="{{ item.status }}">
+                    <div class="roadmap-topic__meta">
+                      <div class="roadmap-topic__chips" aria-label="Categories">
+                        {%- for category_slug in item.categories -%}
+                          {%- assign category_label = category_slug -%}
+                          {%- for category in site.data.categories -%}
+                            {%- if category.slug == category_slug -%}
+                              {%- assign category_label = category.label -%}
+                            {%- endif -%}
+                          {%- endfor -%}
+                          <span class="topic-chip">{{ category_label }}</span>
+                        {%- endfor -%}
+                      </div>
+
+                      <span class="roadmap-topic__status roadmap-topic__status--{{ item.status }}">
+                        {{ item.status_label }}
+                      </span>
+                    </div>
+
+                    {%- if item.url -%}
+                      <a class="roadmap-topic__title" href="{{ item.url | relative_url }}">{{ item.title }}</a>
+                    {%- else -%}
+                      <p class="roadmap-topic__title">{{ item.title }}</p>
+                    {%- endif -%}
+
+                    <p class="roadmap-topic__summary">{{ item.summary }}</p>
+
+                    {%- if item.url -%}
+                      <a class="roadmap-topic__link" href="{{ item.url | relative_url }}">Read note</a>
+                    {%- endif -%}
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </div>
+          </article>
         {%- endfor -%}
-        <li class="post-list__empty" data-filter-empty hidden>
-          No notes in this category yet ,  check back soon.
-        </li>
-      </ul>
+
+        <div class="post-list__empty roadmap__empty" data-filter-empty hidden>
+          No roadmap topics in this category yet. Add one to the path and it will show up here.
+        </div>
+      </div>
     </div>
 
     <div class="tabs__panel" role="tabpanel" id="blog-panel-recs" aria-labelledby="blog-tab-recs" hidden>

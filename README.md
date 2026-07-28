@@ -66,10 +66,28 @@ If Ruby isn't installed, the site still builds fine on GitHub Pages after a push
 
 That's it. The post automatically:
 - Lands at `/blog/<slug>.html` (permalink rule in `_config.yml`)
-- Appears at the top of `/blog/` (sorted newest-first)
-- Is picked up by the category filter chip matching its `category:`
+- Can be linked from the roadmap on `/blog/` by adding its `url` to `_data/learning_roadmap.yml`
+- Is picked up by the category filter chip matching its roadmap categories
 - Shows in the homepage Notes teaser if it's one of the 3 most recent, using its category cover automatically
 - Is included in the auto-generated `/sitemap.xml`
+
+## Editing the learning roadmap
+
+The main `/blog/` page now reads its learning-path structure from `_data/learning_roadmap.yml`.
+
+Each roadmap step has:
+- `step` ,  display number on the path
+- `title` + `lede` ,  the section heading and short explanation
+- `items` ,  the individual topics/cards in that step
+
+Each item can have:
+- `title`
+- `categories` ,  one or more category slugs from `_data/categories.yml`
+- `status` + `status_label` ,  for example `published`, `planned`, or `needs-review`
+- `summary`
+- `url` ,  optional; add this when the topic already has a post so the card links to it
+
+This means you can add future topics to the road before writing the post itself, then attach the `url` later when the note is published.
 
 ## Editing the navigation
 

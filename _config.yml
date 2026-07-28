@@ -12,21 +12,6 @@ linkedin_url: https://www.linkedin.com/in/mahsaagz
 # Posts live under /blog/<slug>.html so existing URLs keep working.
 permalink: /blog/:slug.html
 
-# Custom collections.
-# Grammar and Notes have individual pages (output: true).
-# Vocab and Phrases are inline-only — all info displayed in cards (output: false).
-collections:
-  korean_grammar:
-    output: true
-    permalink: /blog/korean/grammar/:slug.html
-  korean_vocab:
-    output: false
-  korean_phrases:
-    output: false
-  korean_notes:
-    output: true
-    permalink: /blog/korean/notes/:slug.html
-
 # Default layouts so most files don't need to specify one.
 defaults:
   - scope:
@@ -34,16 +19,6 @@ defaults:
       type: posts
     values:
       layout: post
-  - scope:
-      path: ""
-      type: korean_grammar
-    values:
-      layout: korean_grammar
-  - scope:
-      path: ""
-      type: korean_notes
-    values:
-      layout: korean_note
   - scope:
       path: ""
       type: pages

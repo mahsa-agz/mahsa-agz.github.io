@@ -1,0 +1,29 @@
+﻿Skill/Topic,Category,Sub Category,Status
+Cohen’s d,Foundations (Statistics and Math),,
+Basic Terminology,Foundations (Statistics and Math),,
+"heterogeneous ",Foundations (Statistics and Math),,
+Minimum sample size for developing a multivariable prediction model,Foundations (Statistics and Math),,
+F-Score,Foundations (Statistics and Math),,
+Degree of Freedom,Foundations (Statistics and Math),,Todo
+p-Values,Foundations (Statistics and Math),,Todo
+"β, t, and p-Values: Meaning and Misinterpretation",Foundations (Statistics and Math),,
+Bivariate analysis and False Positive,Exploratory Data Analysis (EDA),,
+Correlation: Pearson and Spearman,"Exploratory Data Analysis (EDA), Statistical Methods (Inference-Oriented)",,Needs Review
+Maximum Relevance and Minimum Redundancy Feature Selection Methods,Feature Engineering and Data Preparation,,
+Imputation Methods,Feature Engineering and Data Preparation,,
+handling missing data (1),Feature Engineering and Data Preparation,,
+handling missing data,Feature Engineering and Data Preparation,,
+PCA,"Classic Machine Learning, Feature Engineering and Data Preparation",Supervised,
+Robust Standard Errors / Covariance Types in Regression,Statistical Methods (Inference-Oriented),,
+Variance partitioning methods in multiple regression or ANOVA.,Statistical Methods (Inference-Oriented),,
+Structural Equation Modeling (SEM) ,Statistical Methods (Inference-Oriented),,Todo
+Elastic Net,Classic Machine Learning,Supervised,Todo
+ROC Curves / AUC,Classic Machine Learning,,
+Regression Estimation Methods,Classic Machine Learning,Supervised,
+Multiple Regression,Classic Machine Learning,Supervised,
+"Linear Regression ",Classic Machine Learning,Supervised,Needs Review
+SARIMA = Seasonal AutoRegressive Integrated Moving Average,Time Series,,
+ARIMA = AutoRegressive Integrated Moving Average,Time Series,,
+Time Series Analysis Overview,Time Series,,
+Research Study Designs and Reporting Guidelines,other,,
+"lasso elasticnet ",,,
