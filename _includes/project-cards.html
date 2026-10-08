@@ -1,0 +1,35 @@
+{%- comment -%}
+  Project card grid (styles in home.css). Pass the items as `projects`,
+  e.g. {% include project-cards.html projects=site.data.projects %}.
+{%- endcomment -%}
+<div class="project-grid">
+  {%- for project in include.projects -%}
+  <article class="project-card">
+    <div class="project-card__image">
+      <img src="{{ project.image }}" alt="{{ project.alt }}" loading="lazy" />
+      {%- if project.badge %}
+      <span class="project-badge">{{ project.badge }}</span>
+      {%- endif %}
+    </div>
+    <div class="project-body">
+      <h3>{{ project.title }}</h3>
+      <p>{{ project.desc }}</p>
+      <div class="project-tags">
+        {%- for tag in project.tags %}
+        <span>{{ tag }}</span>
+        {%- endfor %}
+      </div>
+      <div class="project-links">
+        {%- for link in project.links -%}
+          {%- assign first_char = link.url | slice: 0, 1 -%}
+          {%- if first_char == "/" %}
+          <a href="{{ link.url | relative_url }}">{{ link.label }}</a>
+          {%- else %}
+          <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
+          {%- endif -%}
+        {%- endfor %}
+      </div>
+    </div>
+  </article>
+  {%- endfor %}
+</div>

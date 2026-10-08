@@ -1,10 +1,11 @@
 ---
 title: About
-description: "Mahsa Aghazadeh ,  data scientist and deputy team lead at 3R Innovation. Background in computer science and data science (KAIST)."
+description: "Mahsa Aghazadeh ,  data scientist and deputy team lead at 3R Innovation. Experience, research, education and toolkit."
 permalink: /about/
 ---
 <header class="page-header" data-reveal>
   <p class="eyebrow"><span class="eyebrow__dot"></span>About</p>
+  <h1 class="page-header__title">About me</h1>
 </header>
 
 <section class="section section--first bio" data-reveal>
@@ -66,6 +67,179 @@ permalink: /about/
   </figure>
 </section>
 
+<section id="experience" class="section" data-reveal>
+  <header class="section__head">
+    <h2 class="section__title">Experience</h2>
+  </header>
+
+  <article class="entry">
+    <div class="entry__meta">
+      <p class="entry__role">Data Scientist · Deputy Team Lead</p>
+      <p class="entry__where">3R Innovation · Daejeon</p>
+      <p class="entry__when">2025 ,  present</p>
+    </div>
+    <div class="entry__body">
+      <h3 class="entry__title">
+        Pediatric Digital Sensor Study (PDSS)
+      </h3>
+      <p class="entry__lede">
+        Building the digital-phenotyping pipeline that turns raw
+        sensor recordings from 103 children into a dataset clinicians
+        and researchers can analyze.
+      </p>
+      <ul class="entry__list">
+        <li>
+          Designed and built the per-(child × task) feature pipeline:
+          four sensor modalities (eye-tracking, keyboard, stylus,
+          voice), ~30 tasks per child, 14,500+ raw files, ~1,500
+          features per row.
+        </li>
+        <li>
+          Chose session-level windowing over fixed 15s / 60s windows
+          after a quality-check pass showed the latter would drop
+          roughly half the tasks; this preserved 100% task coverage
+          across modalities.
+        </li>
+        <li>
+          Diagnosed and patched three blocking bugs in a partner
+          lab's feature extractor without modifying their code, using
+          in-memory wrappers ,  kept their version control intact and
+          made every patch explicit.
+        </li>
+        <li>
+          Trained K-SADS ADHD models on the resulting features:
+          inattention classification reached AUC 0.72 (LogReg on VST
+          core features); hyperactivity classification reached F2
+          0.65 (LogReg on AST + VST + Flanker core); hyperactivity
+          severity regression reached Pearson <em>r</em> = 0.54
+          (ElasticNet on aggregate features).
+        </li>
+        <li>
+          Working alongside our project manager on product-side
+          tasks ,  scoping, sizing, and writing up decisions ,  to
+          learn the part of the work that lives upstream of the code.
+        </li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="entry__meta">
+      <p class="entry__role">Full-stack Developer</p>
+      <p class="entry__where">Iranzamin Bank · Tehran</p>
+      <p class="entry__when">Dec 2021 ,  Jul 2022</p>
+    </div>
+    <div class="entry__body">
+      <h3 class="entry__title">Core banking &amp; national infrastructure</h3>
+      <ul class="entry__list">
+        <li>
+          Built backend systems for core banking ,  including
+          <strong>Pichak</strong>, Iran's national digital cheque
+          system ,  with .NET Core, SQL Server, and REST APIs.
+        </li>
+        <li>
+          Developed responsive web frontends and Flutter mobile UIs.
+        </li>
+      </ul>
+    </div>
+  </article>
+</section>
+
+<section id="research" class="section" data-reveal>
+  <header class="section__head">
+    <h2 class="section__title">Research</h2>
+  </header>
+  <p class="section__lede">
+    Two studies from my M.Sc. at KAIST's Human Factors and Ergonomics
+    Lab, bridging pose-estimation accuracy and the deployable tool
+    that a non-expert user actually operates.
+  </p>
+
+  <article class="entry">
+    <div class="entry__meta">
+      <p class="entry__role">Paper 1 · published</p>
+      <p class="entry__where">HFEL, KAIST</p>
+      <p class="entry__when">2024 ,  2025</p>
+    </div>
+    <div class="entry__body">
+      <h3 class="entry__title">
+        CV-based monocular 3D pose estimation for ergonomic risk
+        assessment
+      </h3>
+      <p class="entry__lede">
+        When is an off-the-shelf pose model accurate enough to score
+        ergonomic risk ,  and when does kinematic error change the
+        decision?
+      </p>
+      <ul class="entry__list">
+        <li>
+          Compared MediaPipe and MMPose against an 8-camera OptiTrack
+          reference across three camera views (front, 45°, side) and
+          a range of static and dynamic tasks.
+        </li>
+        <li>
+          Separated <em>kinematic fidelity</em> (joint positions and
+          angles) from <em>ergonomic-decision robustness</em> ,  the
+          degree to which kinematic errors actually change REBA / RULA
+          risk classification.
+        </li>
+        <li>
+          MediaPipe outperformed MMPose overall; 45° was its best
+          view; intraclass correlations of 0.87 (REBA) and 0.92 (RULA)
+          against the reference.
+        </li>
+        <li>
+          Authors: Aghazadeh &amp; Xiong. Published in
+          <em>International Journal of Industrial Ergonomics</em>, 116
+          (2026), 104061 ,
+          <a href="https://doi.org/10.1016/j.ergon.2026.104061" target="_blank" rel="noopener noreferrer">DOI</a>.
+        </li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="entry">
+    <div class="entry__meta">
+      <p class="entry__role">Paper 2 · in preparation</p>
+      <p class="entry__where">HFEL, KAIST</p>
+      <p class="entry__when">2024 ,  2025</p>
+    </div>
+    <div class="entry__body">
+      <h3 class="entry__title">
+        ErgoYar ,  a mobile ergonomic-assessment app for non-experts
+      </h3>
+      <p class="entry__lede">
+        Translating a validated CV pipeline into a mobile tool an SME
+        worker or supervisor can run without training.
+      </p>
+      <ul class="entry__list">
+        <li>
+          Built a Flutter front-end and FastAPI / Supabase backend
+          that turn a smartphone video into per-frame REBA / RULA
+          scoring with an annotated pose overlay.
+        </li>
+        <li>
+          Designed the interface around progressive disclosure
+          (overview → body part → joint detail) and body-part-specific
+          feedback rather than a single composite score, so the
+          density of per-joint output stays interpretable on a small
+          screen.
+        </li>
+        <li>
+          Pilot usability study with 10 non-expert users: SUS
+          <strong>80.5</strong> (excellent band, ~90th percentile),
+          uMARS &gt; 3.5 across all six dimensions, SUS–uMARS Pearson
+          <em>r</em> = 0.74.
+        </li>
+        <li>
+          All ten participants completed the seven-task protocol
+          without facilitator intervention.
+        </li>
+      </ul>
+    </div>
+  </article>
+</section>
+
 <section class="section" data-reveal>
   <header class="section__head">
     <h2 class="section__title">Education</h2>
@@ -94,6 +268,63 @@ permalink: /about/
       </div>
     </li>
   </ul>
+</section>
+
+<section id="toolkit" class="section" data-reveal>
+  <header class="section__head">
+    <h2 class="section__title">Toolkit</h2>
+  </header>
+
+  <dl class="toolkit">
+    <div class="toolkit__row">
+      <dt>Languages</dt>
+      <dd>
+        <span class="chip">Python</span>
+        <span class="chip">C++</span>
+        <span class="chip">C#</span>
+        <span class="chip">Dart</span>
+      </dd>
+    </div>
+    <div class="toolkit__row">
+      <dt>ML &amp; data</dt>
+      <dd>
+        <span class="chip">PyTorch</span>
+        <span class="chip">TensorFlow</span>
+        <span class="chip">scikit-learn</span>
+        <span class="chip">pandas</span>
+        <span class="chip">NumPy</span>
+        <span class="chip">Statsmodels</span>
+      </dd>
+    </div>
+    <div class="toolkit__row">
+      <dt>Engineering</dt>
+      <dd>
+        <span class="chip">.NET Core</span>
+        <span class="chip">Django</span>
+        <span class="chip">FastAPI</span>
+        <span class="chip">SQL Server</span>
+        <span class="chip">Supabase</span>
+        <span class="chip">Flutter</span>
+        <span class="chip">JavaScript</span>
+        <span class="chip">Git</span>
+        <span class="chip">Figma</span>
+      </dd>
+    </div>
+    <div class="toolkit__row">
+      <dt>Concepts</dt>
+      <dd>
+        <span class="chip chip--soft">Computer vision</span>
+        <span class="chip chip--soft">ML / DL</span>
+        <span class="chip chip--soft">Data analysis</span>
+        <span class="chip chip--soft">HCI</span>
+        <span class="chip chip--soft">Software design</span>
+      </dd>
+    </div>
+    <div class="toolkit__row">
+      <dt>Spoken</dt>
+      <dd>English (IELTS 8.0) · Korean (TOPIK 5) · Persian (native)</dd>
+    </div>
+  </dl>
 </section>
 
 <section class="section" data-reveal>

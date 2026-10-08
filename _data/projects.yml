@@ -1,0 +1,86 @@
+# Projects ,  shown as cards on the homepage (featured: true, in order)
+# and on /work/ (all, in order). Links starting with "/" are site pages.
+- title: "PDSS multimodal pipeline"
+  badge: "3R Innovation · current"
+  image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=760&q=85"
+  alt: "Multimodal sensor data and pediatric screening"
+  desc: >-
+    Digital-phenotyping pipeline for the Pediatric Digital Sensor Study:
+    eye-tracking, keyboard, stylus and voice recordings from 103 children
+    turned into features clinicians can analyse alongside their
+    assessments.
+  tags: [Multimodal ML, Sensor Data, ADHD Screening, Python]
+  featured: true
+  links:
+    - { label: "Read more", url: "/about/#experience" }
+
+- title: "CV-based ergonomic risk assessment"
+  badge: "M.Sc. thesis · published"
+  image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=760&q=85"
+  alt: "Computer vision ergonomic assessment thesis project"
+  desc: >-
+    Validated monocular 3D pose estimation (MediaPipe, MMPose) against
+    8-camera optical motion capture across three camera views, and
+    measured when kinematic error changes REBA / RULA risk decisions.
+    ICCs of 0.87 (REBA) and 0.92 (RULA).
+  tags: [Computer Vision, Pose Estimation, REBA / RULA]
+  featured: true
+  links:
+    - { label: "Paper", url: "https://doi.org/10.1016/j.ergon.2026.104061" }
+    - { label: "Read more", url: "/about/#research" }
+
+- title: "Cold-Start Music Recommender"
+  image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=760&q=85"
+  alt: "Music recommendation system project"
+  desc: >-
+    CCFCRec on 1M Yahoo! Music interactions, tested on a strict cold-start
+    split of 25,295 unseen songs. HR@5 of 0.768, 1.46× a content-KNN
+    baseline; an ablation shows the contrastive loss drives the gain.
+  tags: [Recommenders, Contrastive Learning, PyTorch]
+  featured: true
+  links:
+    - { label: "GitHub", url: "https://github.com/mahsa-agz/MusicRecSys" }
+
+- title: "ErgoYar"
+  badge: "Mobile app"
+  image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=760&q=85"
+  alt: "Mobile ergonomic assessment app"
+  desc: >-
+    Mobile app that turns a smartphone video into per-frame REBA / RULA
+    scores with an annotated pose overlay, built for non-experts. Pilot
+    usability study: SUS 80.5 (excellent band).
+  tags: [Flutter, FastAPI, Supabase, HCI]
+  links:
+    - { label: "Read more", url: "/about/#research" }
+
+- title: "EnsembleEFT"
+  image: "https://images.unsplash.com/photo-1555255707-c07966088b7b?auto=format&fit=crop&w=760&q=85"
+  alt: "Facial expression recognition project"
+  desc: >-
+    A small ensemble (MobileNet + ShuffleNet) for facial expression
+    recognition. Grad-CAM for interpretability, tuned to run on the edge.
+  tags: [Computer Vision, Ensemble Learning, Edge Deployment]
+  links:
+    - { label: "GitHub", url: "https://github.com/mahsa-agz/EnsembleEFT" }
+
+- title: "MoodMate"
+  image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=760&q=85"
+  alt: "Mood tracking application project"
+  desc: >-
+    Knowledge-based mental-health app that tracks emotional patterns,
+    sleep, diet, activity and weather, then uses a rule-based inference
+    engine to surface personalized suggestions.
+  tags: [Knowledge Systems, Java, JESS, MySQL]
+  links:
+    - { label: "GitHub", url: "https://github.com/mahsa-agz/MoodMate" }
+
+- title: "Music & Mental Health"
+  image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=760&q=85"
+  alt: "Music and mental health analysis project"
+  desc: >-
+    Statistical study on how music habits, listening contexts, and genre
+    preferences relate to self-reported anxiety, depression, insomnia and
+    OCD. ANOVA, regression, and hypothesis testing in pandas + statsmodels.
+  tags: [Statistics, ANOVA, Regression, Health]
+  links:
+    - { label: "GitHub", url: "https://github.com/mahsa-agz/Music-MentalHealth" }
