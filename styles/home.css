@@ -1,45 +1,51 @@
 /* =============================================================
    HOME PAGE STYLES ,  Calvino-inspired layout
-   Green accent for header/hero, neutral page below.
+   Teal accent for header/hero, dusty pink for small highlights,
+   neutral page below.
    Dark/light mode via [data-theme="dark"] + prefers-color-scheme.
    ============================================================= */
 
 :root {
-  --orange: #4a7a5c;        /* brand green (name kept for history) */
-  --orange-dark: #3f6b4f;
+  --orange: #4a7a74;        /* brand teal (name kept for history) */
+  --orange-dark: #3e6a64;
+  --accent-text: #3e6a64;   /* teal for text and links on the page background */
+  --accent-text-hover: #b5566b;
+  --pink: #b5566b;          /* dusty rose highlight: title bars, buttons, hover */
+  --pink-light: #f6c9d2;    /* rose on the teal band: logo dot, photo ring */
+  --panel-rose: #efdfe0;    /* "dirty pink" About panel */
   --text: #111;
   --muted: #5a5a5a;
-  --light: #e8f0ea;         /* soft sage panel */
+  --light: #e7f0ee;         /* soft teal-grey panel */
   --line: #ececec;
   --bg: #ffffff;
   --card: #ffffff;
-  --pink-soft: #f3f8f4;
-  --tag-bg: #e4eee6;
-  --skill-track: #dde7df;
+  --pink-soft: #f2f7f6;
+  --tag-bg: #e1edeb;
+  --skill-track: #d9e7e4;
   --shadow-card: 0 16px 28px rgba(0, 0, 0, .06);
   --shadow-tool: 0 12px 18px rgba(0, 0, 0, .05);
   --header-shadow: 0 2px 8px rgba(0, 0, 0, .12);
   --back-top-shadow: 0 8px 22px rgba(0, 0, 0, .18);
-  --accent-text: #3f6b4f;   /* green for text and links on the page background */
-  --accent-text-hover: #4a7a5c;
   --section-gap: 56px;      /* vertical rhythm between sections */
   --section-pad-x: 50px;    /* inner padding of panels and section content */
 }
 
 :root[data-theme="dark"] {
-  --orange: #4a7a5c;
-  --accent-text: #8cc2a0;
-  --accent-text-hover: #a9d4b8;
-  --orange-dark: #3f6b4f;
+  --orange: #4a7a74;
+  --orange-dark: #3e6a64;
+  --accent-text: #8cc4bc;
+  --accent-text-hover: #e89aac;
+  --pink: #e89aac;
+  --panel-rose: #2a1e22;
   --text: #ecedee;
   --muted: #9aa3ad;
-  --light: #18241d;
-  --line: #22302a;
+  --light: #172422;
+  --line: #22302e;
   --bg: #0f1419;
   --card: #1a151a00;
-  --pink-soft: #131d17;
-  --tag-bg: #1a2a20;
-  --skill-track: #1e2c23;
+  --pink-soft: #121d1b;
+  --tag-bg: #1a2a28;
+  --skill-track: #1d2c29;
   --shadow-card: 0 16px 28px rgba(0, 0, 0, .45);
   --shadow-tool: 0 12px 18px rgba(0, 0, 0, .4);
   --header-shadow: 0 2px 8px rgba(0, 0, 0, .55);
@@ -48,19 +54,21 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --orange: #4a7a5c;
-    --accent-text: #8cc2a0;
-    --accent-text-hover: #a9d4b8;
-    --orange-dark: #3f6b4f;
+    --orange: #4a7a74;
+    --orange-dark: #3e6a64;
+    --accent-text: #8cc4bc;
+    --accent-text-hover: #e89aac;
+    --pink: #e89aac;
+    --panel-rose: #2a1e22;
     --text: #ecedee;
     --muted: #9aa3ad;
-    --light: #18241d;
-    --line: #22302a;
+    --light: #172422;
+    --line: #22302e;
     --bg: #0f1419;
     --card: #1a151a00;
-    --pink-soft: #131d17;
-    --tag-bg: #1a2a20;
-    --skill-track: #1e2c23;
+    --pink-soft: #121d1b;
+    --tag-bg: #1a2a28;
+    --skill-track: #1d2c29;
     --shadow-card: 0 16px 28px rgba(0, 0, 0, .45);
     --shadow-tool: 0 12px 18px rgba(0, 0, 0, .4);
     --header-shadow: 0 2px 8px rgba(0, 0, 0, .55);
@@ -103,7 +111,7 @@ img { max-width: 100%; display: block; }
   color: #fff;
   letter-spacing: -.7px;
 }
-.logo span { color: #fff; }
+.logo span { color: var(--pink-light); }
 
 .nav {
   display: flex;
@@ -118,7 +126,7 @@ img { max-width: 100%; display: block; }
 }
 .nav a:hover { opacity: .7; }
 .nav a[aria-current="page"] {
-  border-bottom: 2px solid #fff;
+  border-bottom: 2px solid var(--pink-light);
   padding-bottom: 4px;
 }
 
@@ -229,8 +237,7 @@ img { max-width: 100%; display: block; }
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: 50%;
-  border: 4px solid #fff;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+  box-shadow: 0 0 0 4px #fff, 0 0 0 8px var(--pink-light), 0 10px 30px rgba(0, 0, 0, .18);
 }
 
 .hero-copy .role {
@@ -353,6 +360,17 @@ img { max-width: 100%; display: block; }
   padding: 0 var(--section-pad-x);
 }
 .narrow { width: 900px; }
+/* Section titles carry a short dusty-rose bar underneath. */
+.about-text-head h2::after,
+.works-head h2::after,
+.latest-head h2::after {
+  content: "";
+  display: block;
+  width: 36px; height: 3px;
+  border-radius: 2px;
+  background: var(--pink);
+  margin-top: 10px;
+}
 .section h2,
 .about-panel h2,
 .latest h2 {
@@ -568,7 +586,7 @@ img { max-width: 100%; display: block; }
 .about-panel {
   max-width: 90%;
   margin: 0 auto;
-  background: var(--light);
+  background: var(--panel-rose);
   border-radius: 0 60px 60px 0;
   padding: 40px var(--section-pad-x);
   display: grid;
@@ -840,7 +858,7 @@ img { max-width: 100%; display: block; }
    FOOTER (always dark)
    ============================================================= */
 .footer {
-  background: #16211b;
+  background: #15201f;
   color: #fff;
   padding: 58px 0 50px;
 }
@@ -851,8 +869,8 @@ img { max-width: 100%; display: block; }
   grid-template-columns: 1fr auto;
   gap: 60px;
 }
-.footer-logo { color: #8cc2a0; font-size: 27px; }
-.footer-logo span { color: #8cc2a0; }
+.footer-logo { color: #8cc4bc; font-size: 27px; }
+.footer-logo span { color: #e89aac; }
 .footer-brand p {
   font-size: 13px;
   line-height: 1.5;
@@ -891,12 +909,12 @@ img { max-width: 100%; display: block; }
 }
 .dark-pill:hover { background: #fff; color: #0f1419; }
 .solid-pill {
-  background: var(--orange);
-  border-color: var(--orange);
+  background: #b5566b;
+  border-color: #b5566b;
   color: #fff;
   padding: 12px 36px;
 }
-.solid-pill:hover { background: var(--orange-dark); border-color: var(--orange-dark); }
+.solid-pill:hover { background: #a14a5e; border-color: #a14a5e; }
 
 .copyright { font-size: 12px; font-weight: 500; opacity: 0.7; }
 
@@ -907,14 +925,14 @@ img { max-width: 100%; display: block; }
   font-family: Oswald, sans-serif;
   font-size: 12px;
 }
-.footer-nav a:hover { color: #8cc2a0; }
+.footer-nav a:hover { color: #e89aac; }
 
 .back-top {
   position: fixed;
   right: 29px; bottom: 28px;
   z-index: 22;
   width: 42px; height: 42px;
-  background: var(--orange);
+  background: #b5566b;
   color: #fff;
   border-radius: 50%;
   display: grid; place-items: center;
@@ -951,6 +969,7 @@ img { max-width: 100%; display: block; }
   margin-bottom: 10px;
 }
 .pub-tag--muted { background: var(--tag-bg); color: var(--accent-text); }
+.pub-tag--poster { background: var(--pink); }
 .pub-title {
   font-size: 16px;
   font-weight: 600;

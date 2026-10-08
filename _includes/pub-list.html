@@ -6,7 +6,7 @@
   {%- for pub in include.pubs -%}
     {%- case pub.kind -%}
       {%- when "journal" -%}{%- assign tag = "Journal" -%}{%- assign tag_class = "pub-tag" -%}
-      {%- when "poster" -%}{%- assign tag = "Poster" -%}{%- assign tag_class = "pub-tag" -%}
+      {%- when "poster" -%}{%- assign tag = "Poster" -%}{%- assign tag_class = "pub-tag pub-tag--poster" -%}
       {%- else -%}{%- assign tag = "In preparation" -%}{%- assign tag_class = "pub-tag pub-tag--muted" -%}
     {%- endcase -%}
     <li class="pub">

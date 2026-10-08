@@ -1,8 +1,8 @@
 /* =============================================================
    DESIGN TOKENS
    White-dominant, no warm browns.
-   Palette: forest green (matches the homepage band) with a soft
-   sage surface. Headings in Oswald, body in Inter.
+   Palette: teal (matches the homepage band) with dusty-rose
+   highlights. Headings in Oswald, body in Inter.
    ============================================================= */
 :root {
   /* Light tokens (default) */
@@ -16,13 +16,13 @@
   --hairline: #e6e8ec;
   --line: #d2d5db;
 
-  --accent: #2e5a46;
-  --accent-2: #3f6b4f;
-  --accent-soft: #e8f0ea;
+  --accent: #3e6a64;
+  --accent-2: #4a7a74;
+  --accent-soft: #e7f0ee;
 
-  --rose: #4a7a5c;          /* brand green (token name kept for history) */
-  --rose-2: #3f6b4f;
-  --rose-soft: #e8f0ea;
+  --rose: #4a7a74;          /* brand teal (token name kept for history) */
+  --rose-2: #3e6a64;
+  --rose-soft: #e7f0ee;
 
   --gold: #b8954a;          /* third category color ,  projects */
 
@@ -79,13 +79,13 @@
   --hairline: #232932;
   --line: #2e3440;
 
-  --accent: #8cc2a0;
-  --accent-2: #a9d4b8;
-  --accent-soft: #18241d;
+  --accent: #8cc4bc;
+  --accent-2: #a9d6cf;
+  --accent-soft: #172422;
 
-  --rose: #7fb38f;
-  --rose-2: #9fcaad;
-  --rose-soft: #18241d;
+  --rose: #7fb8b0;
+  --rose-2: #9fcdc6;
+  --rose-soft: #172422;
 
   --gold: #d6b67a;
 
@@ -107,12 +107,12 @@
     --ink-muted: #6e7681;
     --hairline: #232932;
     --line: #2e3440;
-    --accent: #8cc2a0;
-    --accent-2: #a9d4b8;
-    --accent-soft: #18241d;
-    --rose: #7fb38f;
-    --rose-2: #9fcaad;
-    --rose-soft: #18241d;
+    --accent: #8cc4bc;
+    --accent-2: #a9d6cf;
+    --accent-soft: #172422;
+    --rose: #7fb8b0;
+    --rose-2: #9fcdc6;
+    --rose-soft: #172422;
     --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.5),
       0 8px 24px -12px rgba(0, 0, 0, 0.6);
     --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.5),
@@ -193,7 +193,7 @@ main {
 }
 .eyebrow__dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--rose); display: inline-block;
+  background: var(--pink, var(--rose)); display: inline-block;
   animation: pulse 2.4s var(--ease) infinite;
 }
 @keyframes pulse {
@@ -470,6 +470,16 @@ main {
   white-space: nowrap;
 }
 .section__head-link:hover { color: var(--rose); }
+/* Short dusty-rose bar under page and section titles (matches the homepage). */
+.page-header__title::after,
+.section__title::after {
+  content: "";
+  display: block;
+  width: 36px; height: 3px;
+  border-radius: 2px;
+  background: var(--pink, var(--rose));
+  margin-top: 12px;
+}
 .section__title {
   font-family: var(--font-heading);
   font-size: 2.2rem; font-weight: 400;
@@ -657,19 +667,19 @@ main {
 
 /* =============================================================
    HERO BAND ,  full-width solid color behind the hero
-   Brand green in both modes.
+   Brand teal in both modes.
    ============================================================= */
 .hero-band {
-  background: #4a7a5c;
+  background: #4a7a74;
   color: #ffffff;
   border-bottom: 1px solid var(--hairline);
 }
 :root[data-theme="dark"] .hero-band {
-  background: #3f6b4f;
+  background: #3e6a64;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) .hero-band {
-    background: #3f6b4f;
+    background: #3e6a64;
   }
 }
 .hero-band__inner {
