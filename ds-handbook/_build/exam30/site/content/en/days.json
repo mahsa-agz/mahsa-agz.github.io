@@ -1,0 +1,1678 @@
+{
+ "days": [
+  {
+   "day": 1,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "In Two Sum, why does a hash map bring the time from `O(n^2)` down to `O(n)`? What do you store, and when do you check it?",
+     "a": "The brute force checks every pair, which is `O(n^2)`. With a dict that maps value to index, each element asks one question in `O(1)` average time: have I already seen `target - x`? I check the dict **before** inserting the current element, so an element is never paired with itself. One pass gives `O(n)` time and `O(n)` extra space. The trade-off is memory for speed. If the input were sorted, two pointers would give `O(n)` time with `O(1)` space.",
+     "ref": "algo-hashing"
+    },
+    {
+     "area": "algo",
+     "q": "Why is a stack the natural data structure for checking balanced brackets like `([]{})`?",
+     "a": "Brackets close in the reverse order in which they open, which is exactly last in, first out. For each opening bracket I push it. For each closing bracket the top of the stack must be the matching opener, otherwise the string is invalid. At the end the stack must be empty, which catches inputs like `((`. Time is `O(n)` and space is `O(n)` in the worst case. An early exit: an odd length string can never be valid.",
+     "ref": "algo-stack"
+    },
+    {
+     "area": "sql",
+     "q": "What is the logical order in which SQL evaluates a query, and why can you usually not use a `SELECT` alias inside `WHERE`?",
+     "a": "The logical order is `FROM` (and `JOIN`), `WHERE`, `GROUP BY`, `HAVING`, `SELECT`, `DISTINCT`, `ORDER BY`, `LIMIT`. `WHERE` runs before `SELECT`, so an alias defined in `SELECT` does not exist yet when rows are filtered. `ORDER BY` runs after `SELECT`, so aliases work there. The fix is to repeat the expression or to compute it in a subquery or CTE and filter in the outer query.",
+     "ref": "sql-query-order"
+    },
+    {
+     "area": "sql",
+     "q": "What does `WHERE discount = NULL` return, and how should you write it? Explain three-valued logic briefly.",
+     "a": "It returns no rows. Any comparison with `NULL` gives `UNKNOWN`, not `TRUE`, and `WHERE` keeps only rows where the condition is `TRUE`. The correct form is `WHERE discount IS NULL` (or `IS NOT NULL`). SQL logic has three values: `TRUE`, `FALSE`, `UNKNOWN`. A related trap: `WHERE country <> 'US'` also drops rows where `country` is `NULL`. Use `COALESCE(col, default)` when you want to treat `NULL` as a real value.",
+     "ref": "sql-basics"
+    },
+    {
+     "area": "stats",
+     "q": "Average watch time per user is 30 minutes but the median is 4 minutes. What does that tell you, and which number would you report?",
+     "a": "The distribution is strongly right-skewed: a small group of heavy users pulls the mean up. The median describes the typical user, so it is better for 'what does a normal user do'. The mean still matters for totals, because total watch time = mean x number of users, and it is the usual A/B metric. I would report both, plus percentiles like p90, and maybe look at the metric on a log scale or with capping (winsorizing) to reduce the outlier effect.",
+     "ref": "stats-descriptive"
+    },
+    {
+     "area": "stats",
+     "q": "Why does the sample variance divide by `n - 1` instead of `n`?",
+     "a": "The sample mean is computed from the same data, so the deviations from it are on average a bit too small. Dividing by `n - 1` (Bessel's correction) makes the sample variance an unbiased estimator of the population variance. We lose one degree of freedom because the deviations must sum to zero. For large `n` the difference is tiny. In pandas, `Series.var()` uses `ddof=1` by default, while `numpy.var` uses `ddof=0`.",
+     "ref": "stats-descriptive"
+    },
+    {
+     "area": "ai",
+     "q": "A product manager says 'use ML to reduce churn'. How do you turn that into a concrete ML problem?",
+     "a": "1. **Decision**: what action will the prediction drive, for example sending a retention offer to the top 5% risk users.\n2. **Target**: define churn exactly, for example no session in the next 28 days, with a prediction time and a label window that do not overlap.\n3. **Features**: only data available at prediction time (activity, tenure, payments), to avoid leakage.\n4. **Metric**: offline PR-AUC or recall at the top k, online the churn rate in an A/B test of the intervention.\n5. **Baseline**: a simple rule like 'no login in 7 days', which the model must beat.",
+     "ref": "ai-ml-framing"
+    },
+    {
+     "area": "ai",
+     "q": "When would you NOT use machine learning for a problem?",
+     "a": "When a simple rule or a SQL query solves it with acceptable quality, because rules are cheaper and easier to explain. When there is no reliable label or too little data to learn from. When errors are very costly and the decision must be fully explainable or auditable, unless the model can be constrained. When the pattern changes faster than you can retrain. A strong answer always starts with a non-ML baseline and asks whether the extra accuracy is worth the cost to build and maintain.",
+     "ref": "ai-ml-framing"
+    }
+   ]
+  },
+  {
+   "day": 2,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "What invariant does binary search keep, and why is it `O(log n)`? What are the classic bugs?",
+     "a": "The invariant: if the target exists, it is inside the current range `[lo, hi]`. Each step compares with the middle and throws away half of the range, so after `k` steps the range has `n / 2^k` elements, which gives `O(log n)` steps. Classic bugs: using `lo < hi` with `hi = mid - 1` inconsistently (off-by-one or infinite loop), not moving `lo` past `mid` (`lo = mid` can loop forever), and integer overflow of `(lo + hi) / 2` in Java or C++ (use `lo + (hi - lo) // 2`). It requires sorted data or, more generally, a monotonic condition.",
+     "ref": "algo-binary-search"
+    },
+    {
+     "area": "algo",
+     "q": "Best Time to Buy and Sell Stock (one transaction): explain the one-pass solution and why it is correct.",
+     "a": "I scan the prices once and keep the minimum price seen so far. For each day the best profit if I sell today is `price - min_so_far`, and I keep the maximum of that. It is correct because the best sell day must pair with the cheapest earlier buy day, and `min_so_far` is exactly that value. Time `O(n)`, space `O(1)`. The order matters: update the profit first, then the minimum, or update the minimum first; both work since selling on the same day gives profit 0.",
+     "ref": "algo-arrays-strings"
+    },
+    {
+     "area": "sql",
+     "q": "What is the difference between `COUNT(*)`, `COUNT(col)` and `COUNT(DISTINCT col)`?",
+     "a": "`COUNT(*)` counts rows, including rows where every column is `NULL`. `COUNT(col)` counts rows where `col` is not `NULL`. `COUNT(DISTINCT col)` counts the distinct non-`NULL` values. Exam use: daily active users is `COUNT(DISTINCT user_id)`, not `COUNT(*)`, because one user has many events. After a `LEFT JOIN`, `COUNT(right.id)` gives 0 for unmatched rows while `COUNT(*)` gives 1.",
+     "ref": "sql-aggregation"
+    },
+    {
+     "area": "sql",
+     "q": "What is the difference between `WHERE` and `HAVING`? Give an example where you need `HAVING`.",
+     "a": "`WHERE` filters individual rows before grouping. `HAVING` filters groups after `GROUP BY`, so it can use aggregates. Example: users with more than 5 orders: `SELECT user_id FROM orders GROUP BY user_id HAVING COUNT(*) > 5`. Put row-level conditions in `WHERE`, not `HAVING`: it is clearer and lets the engine reduce data before grouping.",
+     "ref": "sql-aggregation"
+    },
+    {
+     "area": "stats",
+     "q": "What is the difference between independent and mutually exclusive events? Can two events be both?",
+     "a": "Independent means `P(A and B) = P(A) P(B)`: knowing A does not change the probability of B. Mutually exclusive means `P(A and B) = 0`: they cannot happen together. If both events have positive probability they cannot be both, because mutually exclusive events are strongly dependent: if A happens, B surely does not. For the union: `P(A or B) = P(A) + P(B) - P(A and B)`.",
+     "ref": "stats-probability"
+    },
+    {
+     "area": "stats",
+     "q": "A feature has a 2% chance to crash on each of 50 independent sessions. What is the probability of at least one crash?",
+     "a": "Use the complement: `P(at least one) = 1 - P(none) = 1 - 0.98^50`. `0.98^50` is about `0.364`, so the answer is about `0.636`, or 64%. Adding the probabilities (50 x 2% = 100%) is wrong because the events overlap. The complement trick is the standard tool for every 'at least one' question.",
+     "ref": "stats-probability"
+    },
+    {
+     "area": "ai",
+     "q": "Explain the bias-variance trade-off. How do you diagnose which one you have from train and validation error?",
+     "a": "Expected test error = bias squared + variance + irreducible noise. Bias is error from a model that is too simple; variance is error from a model that is too sensitive to the training sample. High bias: train error is high and validation error is close to it (underfitting). High variance: train error is low but validation error is much higher (overfitting). Learning curves (error vs training size) make this visible: if both curves are flat and high, more data will not help; if there is a big gap, more data or regularization helps.",
+     "ref": "ai-bias-variance"
+    },
+    {
+     "area": "ai",
+     "q": "Your model overfits. List the main ways to fix it.",
+     "a": "1. More training data or data augmentation.\n2. Regularization: L2 or L1 penalty, dropout, weight decay.\n3. A simpler model: fewer features, smaller depth, fewer layers.\n4. Early stopping on a validation set.\n5. Ensembling, for example bagging in a random forest, which reduces variance.\nAlso check for leakage first: a perfect train score with a near-perfect validation score can mean leakage, not good generalization.",
+     "ref": "ai-bias-variance"
+    }
+   ]
+  },
+  {
+   "day": 3,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Valid Anagram: compare sorting vs counting. Which would you choose and why?",
+     "a": "Sorting both strings and comparing costs `O(n log n)` time and is very short to write. Counting characters with a dict or `collections.Counter` costs `O(n)` time and `O(k)` space, where `k` is the alphabet size (26 for lowercase letters, so effectively `O(1)`). I would choose counting for performance and mention sorting as the simple version. First check the lengths: different lengths can never be anagrams.",
+     "ref": "algo-hashing"
+    },
+    {
+     "area": "algo",
+     "q": "How do you reverse a singly linked list iteratively? What is the space cost of the recursive version?",
+     "a": "Iteratively I keep three pointers: `prev = None`, `cur = head`, and on each step save `nxt = cur.next`, set `cur.next = prev`, then move `prev = cur` and `cur = nxt`. At the end `prev` is the new head. This is `O(n)` time and `O(1)` space. The recursive version is also `O(n)` time but uses `O(n)` call stack space, and in Python a long list can hit the recursion limit (default about 1000).",
+     "ref": "algo-linked-list"
+    },
+    {
+     "area": "algo",
+     "q": "Maximum depth of a binary tree: compare the recursive DFS and the BFS approach.",
+     "a": "DFS: `depth(node) = 0 if node is None else 1 + max(depth(left), depth(right))`. Time `O(n)`, space `O(h)` for the recursion, where `h` is the height (`O(log n)` balanced, `O(n)` for a skewed tree). BFS: process the tree level by level with a queue and count the levels. Time `O(n)`, space `O(w)` where `w` is the maximum width. For a very deep tree in Python, BFS or an iterative DFS avoids the recursion limit.",
+     "ref": "algo-trees"
+    },
+    {
+     "area": "sql",
+     "q": "Explain `INNER JOIN`, `LEFT JOIN` and `FULL OUTER JOIN`. When does a join make your row count grow unexpectedly?",
+     "a": "`INNER JOIN` keeps only matching pairs. `LEFT JOIN` keeps all left rows and fills right columns with `NULL` when there is no match. `FULL OUTER JOIN` keeps all rows from both sides. The row count grows when the join key is not unique on the right side: each left row is repeated once per match (fan-out). Always check the grain of each table before joining, for example with `SELECT key, COUNT(*) ... GROUP BY key HAVING COUNT(*) > 1`.",
+     "ref": "sql-joins"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) You join `orders` to `order_items` and then compute `SUM(orders.shipping_fee)`. What goes wrong and how do you fix it?",
+     "a": "Each order appears once per item after the join, so the shipping fee is counted several times and the sum is too high. Fix: aggregate at the right grain first. Compute item totals per order in a CTE (`GROUP BY order_id`), then join that one-row-per-order result to `orders`. Or sum the fee from `orders` alone in a separate query.",
+     "ref": "sql-aggregation"
+    },
+    {
+     "area": "stats",
+     "q": "A disease affects 1% of people. A test has 99% sensitivity and a 5% false positive rate. A person tests positive. What is the probability they have the disease?",
+     "a": "Bayes: `P(D | +) = P(+ | D) P(D) / P(+)`. `P(+) = 0.99 x 0.01 + 0.05 x 0.99 = 0.0099 + 0.0495 = 0.0594`. So `P(D | +) = 0.0099 / 0.0594`, about 0.167, or 17%. The low base rate means most positives are false positives. The same logic applies to fraud or bot detection: precision depends on the base rate.",
+     "ref": "stats-bayes"
+    },
+    {
+     "area": "ai",
+     "q": "What are the assumptions of linear regression, and which ones matter for prediction vs for inference?",
+     "a": "1. Linearity of the relationship between features and the target.\n2. Independent errors.\n3. Constant error variance (homoscedasticity).\n4. Normal errors (mainly for small-sample p-values and intervals).\n5. No perfect multicollinearity.\nFor prediction, mostly linearity and a stable data distribution matter. For inference (coefficients, p-values) all of them matter, because violations make standard errors wrong. Robust standard errors help with non-constant variance.",
+     "ref": "ai-linear-regression"
+    },
+    {
+     "area": "ai",
+     "q": "(Review) You add many features to a linear model and the training error drops, but the validation error rises. What is happening?",
+     "a": "The model is moving towards high variance: it fits noise in the training set. Training error always drops (or stays the same) when you add features to OLS, so it is not a fair measure. Fixes: regularization (ridge or lasso), feature selection, or more data. Judge every change on validation error or cross-validation, never on training error.",
+     "ref": "ai-bias-variance"
+    }
+   ]
+  },
+  {
+   "day": 4,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "What is a prefix sum, and how does it answer range sum queries in `O(1)`?",
+     "a": "Build `P` with `P[0] = 0` and `P[i+1] = P[i] + a[i]`. Then the sum of `a[l..r]` (inclusive) is `P[r+1] - P[l]`. Building costs `O(n)` once and each query is `O(1)`, instead of `O(n)` per query. The extra leading zero removes the special case for `l = 0`. It works for any invertible operation (sum, XOR, count), but not for min or max.",
+     "ref": "algo-prefix-sum"
+    },
+    {
+     "area": "algo",
+     "q": "Move Zeroes: explain the read/write pointer technique and why it keeps the order of non-zero elements.",
+     "a": "A `write` pointer marks where the next non-zero value should go. A `read` pointer scans every element. When `a[read] != 0`, I swap it with `a[write]` and move `write` forward. Non-zero values are written in the same order they are read, so their relative order is kept. All zeros end up after `write`. Time `O(n)`, space `O(1)`, in place. The same pattern solves 'remove duplicates from sorted array' and 'remove element'.",
+     "ref": "algo-two-pointers"
+    },
+    {
+     "area": "sql",
+     "q": "In a `LEFT JOIN`, what is the difference between putting a condition on the right table in `ON` vs in `WHERE`?",
+     "a": "A condition in `ON` is part of the matching: left rows that do not match still appear, with `NULL` right columns. A condition on the right table in `WHERE` runs after the join and removes rows where the right column is `NULL`, so the `LEFT JOIN` silently becomes an `INNER JOIN`. Example: all users with their 2024 orders: `LEFT JOIN orders o ON o.user_id = u.id AND o.year = 2024`. Putting `o.year = 2024` in `WHERE` would drop users without 2024 orders.",
+     "ref": "sql-left-join-nulls"
+    },
+    {
+     "area": "sql",
+     "q": "How do you find users who never placed an order? Give two ways.",
+     "a": "Anti-join with `LEFT JOIN`: `SELECT u.id FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE o.user_id IS NULL`. Or `NOT EXISTS`: `SELECT id FROM users u WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)`. Avoid `NOT IN (SELECT user_id FROM orders)` when `user_id` can be `NULL`: one `NULL` makes the whole condition `UNKNOWN` and the query returns no rows.",
+     "ref": "sql-left-join-nulls"
+    },
+    {
+     "area": "stats",
+     "q": "When do you use a binomial, a Poisson and a geometric distribution? Give a product example for each.",
+     "a": "**Binomial(n, p)**: number of successes in `n` independent trials, for example how many of 1,000 users click. Mean `np`, variance `np(1-p)`.\n**Poisson(lambda)**: number of events in a fixed time or space when events are rare and independent, for example support tickets per hour. Mean = variance = `lambda`.\n**Geometric(p)**: number of trials until the first success, for example sessions until the first purchase. Mean `1/p`.\nBinomial with large `n` and small `p` is close to Poisson with `lambda = np`.",
+     "ref": "stats-distributions"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) Which summary statistics are robust to outliers, and which are not?",
+     "a": "Robust: median, interquartile range (IQR), trimmed mean, median absolute deviation. Not robust: mean, standard deviation, range, and also correlation (Pearson). With heavy-tailed product metrics like revenue per user, report the median and percentiles, and consider winsorizing (capping at for example p99) for A/B metrics.",
+     "ref": "stats-descriptive"
+    },
+    {
+     "area": "ai",
+     "q": "Why does logistic regression use the sigmoid and log loss instead of squared error?",
+     "a": "The sigmoid `p = 1 / (1 + exp(-z))` maps the linear score `z = w.x + b` to a probability between 0 and 1. Equivalently, the model is linear in the log-odds: `log(p / (1-p)) = w.x + b`. Log loss `-[y log p + (1-y) log(1-p)]` is the negative log-likelihood of a Bernoulli outcome, so minimizing it is maximum likelihood. With the sigmoid, log loss is convex, so gradient descent finds the global minimum. Squared error with a sigmoid is non-convex and gives weak gradients for confident wrong predictions.",
+     "ref": "ai-logistic-regression"
+    },
+    {
+     "area": "ai",
+     "q": "How do you interpret a logistic regression coefficient of `0.7` for the feature `is_premium`?",
+     "a": "Being premium adds `0.7` to the log-odds, holding other features fixed. In odds terms the odds are multiplied by `exp(0.7)`, about 2.0, so premium users have about twice the odds of the outcome. It is not 'twice the probability': the change in probability depends on the baseline probability. Coefficients are only comparable across features if the features are on the same scale.",
+     "ref": "ai-logistic-regression"
+    }
+   ]
+  },
+  {
+   "day": 5,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Maximum average of a subarray of fixed length `k`: why is the sliding window `O(n)` instead of `O(n k)`?",
+     "a": "The naive approach recomputes the sum of each window in `O(k)`, for `O(n k)` total. The sliding window keeps the current sum and, when the window moves one step, adds the new element and subtracts the element that leaves. Each step is `O(1)`, so the total is `O(n)` with `O(1)` space. This works because consecutive windows share `k - 1` elements. Fixed-size windows are the simplest case; variable windows grow and shrink with a condition.",
+     "ref": "algo-sliding-window"
+    },
+    {
+     "area": "algo",
+     "q": "Climbing Stairs (1 or 2 steps at a time): what is the recurrence, and how do you go from recursion to `O(1)` space?",
+     "a": "`ways(n) = ways(n-1) + ways(n-2)`, because the last move is either one step or two steps. Base cases `ways(0) = 1`, `ways(1) = 1`. Plain recursion is exponential because it recomputes the same subproblems. Memoization (top-down) or a table (bottom-up) makes it `O(n)` time. Each state only needs the previous two values, so I keep two variables and get `O(1)` space. These are the two signals for dynamic programming: overlapping subproblems and optimal substructure.",
+     "ref": "algo-dp-1d"
+    },
+    {
+     "area": "sql",
+     "q": "How do you compute several conditional metrics in one query, for example the number of iOS users and the share of paid orders?",
+     "a": "Use conditional aggregation with `CASE WHEN` inside the aggregate:\n```sql\nSELECT\n  COUNT(DISTINCT CASE WHEN platform = 'ios' THEN user_id END) AS ios_users,\n  AVG(CASE WHEN status = 'paid' THEN 1.0 ELSE 0 END) AS paid_share\nFROM orders;\n```\nA `CASE` without `ELSE` returns `NULL`, and `COUNT` ignores `NULL`, which is why the first line works. Use `1.0` to avoid integer division in some engines.",
+     "ref": "sql-case-when"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) You `LEFT JOIN` users to orders and want the number of orders per user, including 0. Which `COUNT` do you use?",
+     "a": "Use `COUNT(o.order_id)`, which counts only non-`NULL` matches, so users without orders get 0. `COUNT(*)` would give 1 for those users, because the unmatched row still exists with `NULL` order columns. Group by the user key from the left table: `GROUP BY u.user_id`.",
+     "ref": "sql-aggregation"
+    },
+    {
+     "area": "stats",
+     "q": "What does the Central Limit Theorem say, and why is it so important for A/B testing?",
+     "a": "For independent samples from a distribution with finite variance, the sample mean is approximately normal for large `n`, with mean `mu` and standard error `SE = sigma / sqrt(n)`, whatever the shape of the original distribution. A/B tests compare means of metrics like revenue that are far from normal. Thanks to the CLT, the difference in means is approximately normal, so z-tests, t-tests and normal confidence intervals are valid. Caveat: very heavy tails (a few whales) need a larger `n` before the approximation is good.",
+     "ref": "stats-clt-se"
+    },
+    {
+     "area": "stats",
+     "q": "How much more data do you need to halve the standard error of a mean?",
+     "a": "Four times as much, because `SE = sigma / sqrt(n)`. Doubling `n` only reduces the SE by a factor `sqrt(2)`, about 29%. This square root law is why detecting small effects in A/B tests needs very large samples, and why variance reduction (like CUPED) is valuable.",
+     "ref": "stats-clt-se"
+    },
+    {
+     "area": "ai",
+     "q": "Define precision, recall and F1. Why is accuracy misleading for fraud detection?",
+     "a": "Precision `= TP / (TP + FP)`: of everything flagged, how much is really positive. Recall `= TP / (TP + FN)`: of all real positives, how much we catch. F1 is their harmonic mean `2PR / (P + R)`. If 0.5% of transactions are fraud, a model that predicts 'not fraud' for everything has 99.5% accuracy and zero recall. Choose by cost: if missing fraud is expensive, optimize recall at an acceptable precision.",
+     "ref": "ai-classification-metrics"
+    },
+    {
+     "area": "ai",
+     "q": "How does changing the decision threshold of a classifier affect precision and recall?",
+     "a": "Raising the threshold flags fewer items: precision usually goes up and recall goes down. Lowering it does the opposite. The model is the same; only the operating point changes. Pick the threshold with the business cost in mind, for example the threshold that keeps precision at least 90%, or the one that minimizes `cost_FP x FP + cost_FN x FN`. The default 0.5 is rarely the right choice for imbalanced data.",
+     "ref": "ai-classification-metrics"
+    }
+   ]
+  },
+  {
+   "day": 6,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Search Insert Position: what does binary search return when the target is not found, and why is that the insertion point?",
+     "a": "With the loop `while lo <= hi`, when the target is missing the loop ends with `lo = hi + 1`. The invariant is: everything left of `lo` is smaller than the target and everything right of `hi` is larger. So `lo` is the first index with a value at least the target, which is exactly where it should be inserted. This is the lower bound, the same as `bisect.bisect_left` in Python. Time `O(log n)`.",
+     "ref": "algo-binary-search"
+    },
+    {
+     "area": "algo",
+     "q": "Flood Fill: DFS or BFS? What are the edge cases?",
+     "a": "Both work in `O(m n)` time because each cell is visited at most once. DFS is shorter to write; BFS with a queue avoids deep recursion on large grids. Edge case: if the new color equals the starting color, return immediately, otherwise the algorithm keeps revisiting cells (or the recursion never ends) because recolored cells still match. Check bounds before reading a cell, and only move in 4 directions unless the problem says 8.",
+     "ref": "algo-graphs-bfs-dfs"
+    },
+    {
+     "area": "sql",
+     "q": "What is the difference between a correlated and a non-correlated subquery? What does it mean for performance?",
+     "a": "A non-correlated subquery does not reference the outer query, so it can run once, for example `WHERE price > (SELECT AVG(price) FROM products)`. A correlated subquery references the outer row, for example the average price per category for each product, so logically it runs once per outer row. Modern optimizers often rewrite correlated subqueries as joins, but not always. A join to a pre-aggregated CTE or a window function like `AVG(price) OVER (PARTITION BY category)` is usually clearer and faster.",
+     "ref": "sql-subqueries"
+    },
+    {
+     "area": "sql",
+     "q": "`IN` vs `EXISTS`: when are they equivalent, and what is the `NOT IN` trap?",
+     "a": "For positive checks, `WHERE id IN (SELECT user_id ...)` and `WHERE EXISTS (SELECT 1 ... WHERE user_id = id)` give the same result; `EXISTS` can stop at the first match. The trap is `NOT IN`: if the subquery returns any `NULL`, `x NOT IN (...)` is never `TRUE`, so the query returns zero rows. `NOT EXISTS` does not have this problem, so prefer it, or filter `WHERE user_id IS NOT NULL` inside the subquery.",
+     "ref": "sql-subqueries"
+    },
+    {
+     "area": "stats",
+     "q": "What does a 95% confidence interval mean? What is a common wrong interpretation?",
+     "a": "If we repeated the sampling many times and built an interval each time, about 95% of those intervals would contain the true parameter. Wrong: 'there is a 95% probability that the true value is inside this specific interval'. In the frequentist view the true value is fixed; the interval is random. For a mean: `mean +/- 1.96 x SE`. A wider interval means more uncertainty; it shrinks with `sqrt(n)`.",
+     "ref": "stats-confidence-intervals"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) A bot detector flags 2% of accounts. 1% of accounts are bots and the detector catches 90% of them. What share of flagged accounts are bots?",
+     "a": "True positives = `0.01 x 0.90 = 0.009` of all accounts. Flagged = `0.02`. Precision `= P(bot | flagged) = 0.009 / 0.02 = 0.45`, so 45%. More than half of the flagged accounts are humans. This is Bayes with the base rate; it matters when deciding whether to auto-ban or send to manual review.",
+     "ref": "stats-bayes"
+    },
+    {
+     "area": "ai",
+     "q": "Compare L1 (lasso) and L2 (ridge) regularization.",
+     "a": "Both add a penalty on weight size to the loss: L1 adds `lambda x sum(|w|)`, L2 adds `lambda x sum(w^2)`. L1 pushes some weights to exactly zero, so it does feature selection and gives sparse models. L2 shrinks all weights smoothly and handles correlated features better by sharing weight between them. Elastic net combines both. Features must be standardized first, otherwise the penalty treats features on different scales unfairly. `lambda` is chosen by cross-validation.",
+     "ref": "ai-regularization-cv"
+    },
+    {
+     "area": "ai",
+     "q": "How does k-fold cross-validation work, and how can preprocessing cause leakage inside it?",
+     "a": "Split the data into `k` folds; train on `k - 1` folds and validate on the remaining one, rotate `k` times, and average the scores. It uses all data for validation and gives a variance estimate. Leakage: if you fit a scaler, an imputer, feature selection or target encoding on the full data before splitting, information from the validation fold leaks into training. Fix: put preprocessing in a `sklearn` `Pipeline` so it is refit inside each fold. For time series use forward-chaining splits (`TimeSeriesSplit`); for users with many rows use `GroupKFold`.",
+     "ref": "ai-regularization-cv"
+    }
+   ]
+  },
+  {
+   "day": 7,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Last Stone Weight: why is a heap the right structure, and how do you get a max-heap in Python?",
+     "a": "Each step needs the two largest values, then inserts the difference. A heap gives `O(log n)` push and pop, so the whole simulation is `O(n log n)`. Re-sorting each step would be `O(n^2 log n)`. Python's `heapq` is a min-heap only, so I push negated values and negate again when popping. `heapq.heapify` builds the heap in `O(n)`.",
+     "ref": "algo-heap"
+    },
+    {
+     "area": "algo",
+     "q": "Merge Sorted Array (merge `nums2` into `nums1` which has free space at the end): why do you fill from the back?",
+     "a": "If I fill from the front, I overwrite elements of `nums1` that I have not placed yet. From the back, the free space is at the end, so I compare the largest remaining elements of both arrays and write the bigger one to position `i + j + 1`. Nothing unread is ever overwritten. When `nums2` is empty I stop; leftover `nums1` elements are already in place. Time `O(m + n)`, space `O(1)`.",
+     "ref": "algo-two-pointers"
+    },
+    {
+     "area": "algo",
+     "q": "Majority Element: compare a hash map count with Boyer-Moore voting.",
+     "a": "Counting with a dict is `O(n)` time and `O(n)` space and works for any frequency question. Boyer-Moore keeps one candidate and a counter: same value adds 1, a different value subtracts 1, and at 0 the next value becomes the candidate. A value that appears more than `n/2` times survives all cancellations. It is `O(n)` time and `O(1)` space. If a majority is not guaranteed, a second pass must verify the count.",
+     "ref": "algo-hashing"
+    },
+    {
+     "area": "sql",
+     "q": "A query uses `GROUP BY`, `HAVING`, a window function and `ORDER BY`. In which order are they evaluated, and can you filter on a window function in `WHERE`?",
+     "a": "Order: `FROM/JOIN`, `WHERE`, `GROUP BY`, `HAVING`, window functions, `SELECT`, `DISTINCT`, `ORDER BY`, `LIMIT`. Window functions are computed after `WHERE` and `HAVING`, so you cannot filter on them in `WHERE`. Compute the window in a CTE or subquery and filter in the outer query (some engines have `QUALIFY` for this).",
+     "ref": "sql-query-order"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) Your report of all products with their sales shows fewer products than the product table. The query uses `LEFT JOIN sales s ... WHERE s.sale_date >= '2024-01-01'`. What is the bug?",
+     "a": "The `WHERE` condition on the right table removes products with no sales, because their `s.sale_date` is `NULL`. The `LEFT JOIN` became an inner join. Move the condition into the `ON` clause: `LEFT JOIN sales s ON s.product_id = p.id AND s.sale_date >= '2024-01-01'`, and use `COALESCE(SUM(s.amount), 0)` for products with no sales.",
+     "ref": "sql-left-join-nulls"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) A shop gets on average 3 support tickets per hour. What is the probability of zero tickets in an hour, and what distribution do you use?",
+     "a": "Poisson with `lambda = 3`: `P(X = 0) = exp(-3)`, about `0.05`. Assumptions: events are independent and the rate is constant during the hour. If tickets come in bursts (one outage causes many tickets), the variance is larger than the mean (overdispersion) and a negative binomial fits better.",
+     "ref": "stats-distributions"
+    },
+    {
+     "area": "stats",
+     "q": "What is the difference between the standard deviation and the standard error, and which one goes into a confidence interval for a mean?",
+     "a": "The standard deviation describes the spread of individual observations. The standard error describes the spread of an estimate, here the sample mean: `SE = sd / sqrt(n)`. The confidence interval for a mean uses the SE: `mean +/- 1.96 x SE`. With more data the SD stays about the same, but the SE shrinks.",
+     "ref": "stats-confidence-intervals"
+    },
+    {
+     "area": "stats",
+     "q": "You roll two fair dice. What is the probability that the sum is 7, given that at least one die shows a 3?",
+     "a": "Outcomes with at least one 3: `6 + 6 - 1 = 11`. Among them, the sum is 7 for (3, 4) and (4, 3), so 2 outcomes. The answer is `2 / 11`. The key is conditioning: restrict the sample space to the 11 outcomes, then count. Unconditionally `P(sum = 7) = 6 / 36 = 1/6`.",
+     "ref": "stats-probability"
+    },
+    {
+     "area": "ai",
+     "q": "Can you use linear regression for a binary target? Why is logistic regression preferred?",
+     "a": "You can (the 'linear probability model'), and its coefficients are easy to read as changes in probability. But predictions can fall below 0 or above 1, errors are not constant in variance, and the effect of a feature is forced to be the same at every probability level. Logistic regression keeps predictions in `(0, 1)`, models the log-odds linearly and is fit by maximum likelihood with log loss, so its probabilities are usually better calibrated.",
+     "ref": "ai-logistic-regression"
+    },
+    {
+     "area": "ai",
+     "q": "You tune hyperparameters with cross-validation and report the best CV score as the final performance. What is wrong?",
+     "a": "The best CV score is optimistically biased, because you picked it among many configurations and partly fit the noise of the validation folds. Report performance on a held-out test set that was never used for any choice, or use nested cross-validation (inner loop for tuning, outer loop for evaluation). The more configurations you try, the bigger the optimism.",
+     "ref": "ai-regularization-cv"
+    }
+   ]
+  },
+  {
+   "day": 8,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Group Anagrams: what key do you use in the hash map, and what is the complexity of each choice?",
+     "a": "All anagrams must map to the same key. Option 1: the sorted string, `tuple(sorted(s))` or `''.join(sorted(s))`, cost `O(k log k)` per word, total `O(n k log k)`. Option 2: a tuple of 26 letter counts, cost `O(k)` per word, total `O(n k)`. The dict maps key to a list of words, so space is `O(n k)`. The key must be hashable, so use a tuple, not a list.",
+     "ref": "algo-hashing"
+    },
+    {
+     "area": "algo",
+     "q": "Min Stack: how do you support `getMin` in `O(1)`?",
+     "a": "Store with each element the minimum of the stack at that moment, for example push the pair `(x, min(x, current_min))`. `getMin` reads the top pair, and after a pop the previous minimum is automatically restored because it is stored in the element below. All operations are `O(1)`. A variant uses a second stack that only pushes when the new value is at most the current minimum, to save space.",
+     "ref": "algo-stack"
+    },
+    {
+     "area": "sql",
+     "q": "When do you use a CTE (`WITH`) instead of a subquery, and are CTEs always faster?",
+     "a": "A CTE names an intermediate result, which makes multi-step queries readable top to bottom (for example: daily users, then retention, then the final ratio). It can be referenced several times and it enables recursion. CTEs are not automatically faster. Many engines inline them like subqueries; some materialize them, which can help or hurt. In exams, use CTEs for clarity: one step per CTE, with clear names.",
+     "ref": "sql-cte"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) How do you compute a conversion rate per country in one query, where conversion means the user has at least one purchase?",
+     "a": "First reduce to one row per user, then average a flag:\n```sql\nWITH u AS (\n  SELECT user_id, country,\n         MAX(CASE WHEN event = 'purchase' THEN 1 ELSE 0 END) AS converted\n  FROM events GROUP BY user_id, country\n)\nSELECT country, AVG(converted * 1.0) AS conv_rate\nFROM u GROUP BY country;\n```\nAveraging the flag at event level would weight active users more, which is a different metric.",
+     "ref": "sql-case-when"
+    },
+    {
+     "area": "stats",
+     "q": "Define a p-value. What does a p-value of 0.03 NOT mean?",
+     "a": "The p-value is the probability of seeing a result at least as extreme as the observed one, assuming the null hypothesis is true. A p-value of 0.03 does not mean there is a 3% chance that the null is true, and it does not mean a 97% chance that the treatment works. It also says nothing about the size or importance of the effect. Report the effect size and a confidence interval next to it.",
+     "ref": "stats-hypothesis-tests"
+    },
+    {
+     "area": "stats",
+     "q": "Explain Type I and Type II errors and how alpha and power relate to them.",
+     "a": "Type I error: rejecting a true null (false positive), with probability `alpha`, usually 0.05. Type II error: failing to reject a false null (false negative), with probability `beta`. Power `= 1 - beta`, usually 0.8. For a fixed sample size, lowering alpha raises beta. Only more data, lower variance or a larger true effect reduce both at once.",
+     "ref": "stats-hypothesis-tests"
+    },
+    {
+     "area": "ai",
+     "q": "Compare random forests and gradient boosting.",
+     "a": "A random forest trains many deep trees in parallel on bootstrap samples with random feature subsets and averages them. It mainly reduces **variance**, is hard to overfit and needs little tuning. Gradient boosting trains shallow trees sequentially, each one fitting the errors (negative gradient) of the current ensemble. It mainly reduces **bias** and is usually more accurate on tabular data, but needs tuning (learning rate, number of trees, depth) and early stopping because it can overfit. XGBoost, LightGBM and CatBoost are the common boosting libraries.",
+     "ref": "ai-trees-boosting"
+    },
+    {
+     "area": "ai",
+     "q": "(Review) When do you prefer PR-AUC over ROC-AUC?",
+     "a": "With strong class imbalance where the positive class matters, like fraud or rare content violations. ROC-AUC uses the false positive rate, whose denominator is the huge number of negatives, so many false positives barely move it and the score looks good. PR-AUC uses precision, which directly shows how many flagged items are wrong. The baseline of PR-AUC is the positive rate, not 0.5.",
+     "ref": "ai-classification-metrics"
+    }
+   ]
+  },
+  {
+   "day": 9,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Longest substring without repeating characters: how does the variable-size sliding window work, and why is it `O(n)` even though there is an inner loop?",
+     "a": "The window `[left, right]` always contains unique characters. I extend `right` one step at a time; if the new character is already in the window, I move `left` forward until it is not (or jump `left` to `last_seen[c] + 1` with a dict). The answer is the maximum window length seen. It is `O(n)` because each pointer only moves forward, so each character is added once and removed at most once: amortized `2n` steps. Space is `O(k)` for the set or dict of characters in the window.",
+     "ref": "algo-sliding-window"
+    },
+    {
+     "area": "algo",
+     "q": "Kth largest element in a stream: why a min-heap of size `k` and not a max-heap of all elements?",
+     "a": "A min-heap that keeps only the `k` largest values has the kth largest at its top. For each new value: push it, and if the size exceeds `k`, pop the smallest. Each add is `O(log k)` and memory is `O(k)`, independent of the stream length. A max-heap of everything needs `O(n)` memory and `k` pops per query. The 'min-heap of size k for top k largest' idea also solves top-k frequent and k closest points.",
+     "ref": "algo-heap"
+    },
+    {
+     "area": "sql",
+     "q": "How do you filter all events in January 2024 safely when `event_ts` is a timestamp? What are the common date traps?",
+     "a": "Use a half-open interval: `WHERE event_ts >= '2024-01-01' AND event_ts < '2024-02-01'`. `BETWEEN '2024-01-01' AND '2024-01-31'` misses everything after midnight on 31 January. Wrapping the column in a function, like `DATE(event_ts) = ...`, can also prevent index use. Other traps: time zones (UTC vs local day boundaries change daily counts), and date function names differ between engines (`DATE_TRUNC`, `DATE_DIFF`, `julianday` in SQLite). Say which dialect you assume.",
+     "ref": "sql-dates"
+    },
+    {
+     "area": "sql",
+     "q": "How do you count daily active users, and how do you make sure days with zero activity still appear?",
+     "a": "DAU: `SELECT DATE(event_ts) AS day, COUNT(DISTINCT user_id) AS dau FROM events GROUP BY 1`. Days with no events do not appear at all, because `GROUP BY` only creates groups that exist. Build a calendar (a date table, `generate_series`, or a recursive CTE), `LEFT JOIN` the daily counts to it and use `COALESCE(dau, 0)`. This matters for rolling averages and charts.",
+     "ref": "sql-dates"
+    },
+    {
+     "area": "stats",
+     "q": "How do you choose between a z-test, a t-test, a chi-square test and the Mann-Whitney U test?",
+     "a": "| Situation | Test |\n|---|---|\n| Compare two proportions (conversion), large n | two-proportion z-test or chi-square |\n| Compare two means, unknown variance | Welch t-test (z-test when n is large) |\n| Categorical association, more than 2 groups | chi-square test of independence |\n| Two groups, skewed data, compare distributions or medians | Mann-Whitney U (rank based) |\n| Paired data (before/after same user) | paired t-test |\n\nWith large A/B samples, the t-test and z-test give the same answer. Mann-Whitney does not test the difference in means, so it does not answer a revenue question directly.",
+     "ref": "stats-choosing-a-test"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) A 95% CI for the lift is `[-0.2%, +1.8%]`. What do you conclude, and how does it relate to the hypothesis test?",
+     "a": "The interval contains 0, so at alpha 0.05 we cannot reject the null of no effect; the two-sided test would give `p > 0.05`. But the interval is informative: the effect could be as large as +1.8%, and large negative effects are unlikely. If +1% would be valuable, the test is underpowered for the decision. Options: run longer, use variance reduction, or decide based on cost and risk.",
+     "ref": "stats-confidence-intervals"
+    },
+    {
+     "area": "ai",
+     "q": "You have 1% positives. Compare class weights, oversampling (SMOTE), undersampling and threshold tuning.",
+     "a": "**Class weights**: give positives a larger weight in the loss; no data change, easy, usually my first choice.\n**Undersampling negatives**: faster training, but throws away information; probabilities must be recalibrated.\n**Oversampling / SMOTE**: creates more positives; can overfit or create unrealistic points; only apply it on the training fold, never before the split.\n**Threshold tuning**: often the most important step; the model may rank well already, and the threshold sets the precision/recall trade-off.\nEvaluate with PR-AUC or recall at a fixed precision, not accuracy.",
+     "ref": "ai-features-imbalance"
+    },
+    {
+     "area": "ai",
+     "q": "How do you encode a categorical feature with 50,000 values (for example `creator_id`)?",
+     "a": "One-hot creates 50,000 sparse columns, which is heavy and gives rare categories noisy weights. Options: **target encoding** (mean target per category, smoothed toward the global mean and computed out-of-fold to avoid leakage), **frequency encoding**, **hashing trick** (fixed number of buckets, some collisions), or **learned embeddings** in a neural network. Group rare categories into 'other'. CatBoost handles this natively with ordered target statistics.",
+     "ref": "ai-features-imbalance"
+    }
+   ]
+  },
+  {
+   "day": 10,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Merge Intervals: why do you sort by start time, and what is the complexity?",
+     "a": "After sorting by start, any interval that overlaps the current merged block must come right after it, so one linear pass is enough. For each interval: if `start <= last_end`, extend `last_end = max(last_end, end)`; otherwise start a new block. Sorting is `O(n log n)` and the pass is `O(n)`. Traps: use `max` for the end (an interval can be fully inside another), and clarify whether touching intervals like `[1,2]` and `[2,3]` should merge.",
+     "ref": "algo-sorting-intervals"
+    },
+    {
+     "area": "algo",
+     "q": "Number of Islands: what is the idea and complexity? What would you change for a huge grid in Python?",
+     "a": "Scan every cell; when I find unvisited land, increase the count and run DFS or BFS to mark the whole connected island as visited. Each cell is visited a constant number of times, so time is `O(m n)` and space is `O(m n)` in the worst case. For a huge grid, recursive DFS can hit Python's recursion limit, so I use BFS with `collections.deque` or an iterative stack. Union-find is an alternative, useful when land cells are added over time.",
+     "ref": "algo-graphs-bfs-dfs"
+    },
+    {
+     "area": "sql",
+     "q": "Explain `ROW_NUMBER`, `RANK` and `DENSE_RANK` on the scores 100, 90, 90, 80.",
+     "a": "`ROW_NUMBER`: 1, 2, 3, 4. Always unique; ties are broken arbitrarily unless the `ORDER BY` is complete. `RANK`: 1, 2, 2, 4. Ties share a rank and leave a gap. `DENSE_RANK`: 1, 2, 2, 3. Ties share a rank with no gap. Choose by the question: 'exactly one row per group' means `ROW_NUMBER`; 'the second highest distinct salary' means `DENSE_RANK`.",
+     "ref": "sql-window-ranking"
+    },
+    {
+     "area": "sql",
+     "q": "What is the difference between a window function and `GROUP BY`?",
+     "a": "`GROUP BY` collapses each group into one output row. A window function computes a value over a group of rows (the window) but keeps every input row. Example: `salary - AVG(salary) OVER (PARTITION BY dept)` compares each employee with the department average without losing the employee rows. `PARTITION BY` defines the groups, `ORDER BY` inside `OVER` defines the order for ranking and running calculations. The pandas equivalent is `groupby().transform()`.",
+     "ref": "sql-window-ranking"
+    },
+    {
+     "area": "stats",
+     "q": "What four quantities are linked in a power analysis, and what is the rule of thumb for sample size?",
+     "a": "Significance level `alpha`, power `1 - beta`, the minimum detectable effect `delta` (MDE), and the variance `sigma^2` of the metric. Fix three and the sample size follows. For alpha 0.05 two-sided and power 0.8: `n per group ~= 16 x sigma^2 / delta^2`. For a conversion rate, `sigma^2 = p (1 - p)`. Example: baseline 10%, absolute MDE 1 point: `16 x 0.09 / 0.0001 = 14,400` users per group.",
+     "ref": "stats-power-mde"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) You flip a coin 5 times and get 5 heads. Before flipping, you believed there was a 1% chance the coin was two-headed. What is your belief now?",
+     "a": "Likelihood of 5 heads: 1 for a two-headed coin, `0.5^5 = 1/32` for a fair coin. Posterior odds = prior odds x likelihood ratio = `(0.01 / 0.99) x 32`, about `0.323`. Probability = `0.323 / 1.323`, about 24%. Strong evidence moved the belief a lot, but the low prior still keeps it below 50%.",
+     "ref": "stats-bayes"
+    },
+    {
+     "area": "ai",
+     "q": "How does k-means work, what does it assume, and how do you choose `k`?",
+     "a": "Start with `k` centroids, assign each point to the nearest centroid, move each centroid to the mean of its points, and repeat until assignments stop changing. It minimizes the within-cluster sum of squares. It assumes roughly spherical clusters of similar size, uses Euclidean distance (so scale features first) and depends on initialization (use k-means++ and several restarts). Choose `k` with the elbow method, the silhouette score, or most importantly by whether the segments are useful for the business.",
+     "ref": "ai-unsupervised"
+    },
+    {
+     "area": "ai",
+     "q": "What does PCA do, and when would you use it?",
+     "a": "PCA finds orthogonal directions (principal components) that capture the most variance; they are the eigenvectors of the covariance matrix. Projecting onto the first few components reduces dimensions while keeping most of the variance. Uses: visualization, removing correlated features, compression, noise reduction before clustering. Standardize features first. Limits: it is linear, components are hard to interpret, and high variance is not the same as useful for predicting the target.",
+     "ref": "ai-unsupervised"
+    }
+   ]
+  },
+  {
+   "day": 11,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Top K Frequent Elements: compare a heap, bucket sort and quickselect.",
+     "a": "First count with a `Counter` in `O(n)`. Then:\n- **Heap**: keep a min-heap of size `k` on the counts: `O(n log k)`. Good when `k` is small or for streams.\n- **Bucket sort**: frequencies are between 1 and `n`, so put values in buckets by frequency and read from the highest: `O(n)`.\n- **Quickselect** on the counts: average `O(n)`, worst case `O(n^2)`.\n`Counter.most_common(k)` uses a heap internally. In an exam I state the heap solution and mention bucket sort as the linear option.",
+     "ref": "algo-heap"
+    },
+    {
+     "area": "algo",
+     "q": "Daily Temperatures (days until a warmer day): how does the monotonic stack work and why is it `O(n)`?",
+     "a": "The stack holds indices of days that have not found a warmer day yet, with temperatures decreasing from bottom to top. For each new day, while the new temperature is higher than the temperature at the top, pop that index and set its answer to `i - index`. Then push `i`. Each index is pushed once and popped at most once, so the total work is `O(n)` even with the inner while loop. The signal: 'next greater' or 'previous smaller' element.",
+     "ref": "algo-monotonic-stack"
+    },
+    {
+     "area": "algo",
+     "q": "3Sum: how do you get `O(n^2)` and avoid duplicate triplets?",
+     "a": "Sort the array. For each index `i`, run two pointers `lo = i + 1`, `hi = n - 1` to find pairs that sum to `-nums[i]`: if the sum is too small move `lo` right, if too large move `hi` left. That is `O(n)` per `i`, so `O(n^2)` total, plus `O(n log n)` for sorting. Duplicates: skip `i` if `nums[i] == nums[i-1]`, and after finding a triplet move `lo` and `hi` past equal values. Early exit: if `nums[i] > 0` no triplet can sum to 0.",
+     "ref": "algo-two-pointers"
+    },
+    {
+     "area": "sql",
+     "q": "How do you get the top 3 products by revenue in each category? What changes if ties should all be included?",
+     "a": "```sql\nWITH r AS (\n  SELECT category, product_id, revenue,\n         ROW_NUMBER() OVER (PARTITION BY category ORDER BY revenue DESC) AS rn\n  FROM product_revenue\n)\nSELECT * FROM r WHERE rn <= 3;\n```\n`LIMIT 3` alone gives the top 3 overall, not per group. If ties at the boundary should be included, use `RANK()` (or `DENSE_RANK()` for the top 3 distinct revenue values). Add a tie-breaker column to `ORDER BY` when you need a deterministic `ROW_NUMBER`.",
+     "ref": "sql-top-n"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) You compute `AVG(rating)` per restaurant after a `LEFT JOIN` to reviews. What happens to restaurants without reviews, and is that what you want?",
+     "a": "Their `rating` is `NULL`, and `AVG` ignores `NULL`, so the result is `NULL` for them, not 0. That is usually correct: no reviews is not the same as a 0 rating. If you need a value, decide explicitly, for example show `NULL` as 'no reviews', or use a smoothed (Bayesian) average. Never use `COALESCE(rating, 0)` before averaging: it would pull averages down.",
+     "ref": "sql-left-join-nulls"
+    },
+    {
+     "area": "stats",
+     "q": "Walk me through how you design an A/B test for a new feature.",
+     "a": "1. **Hypothesis**: what change, which user behavior, and why.\n2. **Metrics**: one primary metric, secondary metrics, and guardrails (latency, crashes, unsubscribes).\n3. **Randomization unit**: usually the user; it must match the analysis unit and avoid one user seeing both versions.\n4. **Sample size** from alpha, power, baseline variance and the MDE.\n5. **Duration**: at least one or two full weeks to cover weekly cycles and novelty.\n6. **Checks**: A/A test or sample ratio mismatch check, and a plan to not peek.\n7. **Decision rule** written before the test starts.",
+     "ref": "stats-ab-design"
+    },
+    {
+     "area": "ai",
+     "q": "Compare batch gradient descent, stochastic gradient descent and mini-batch gradient descent.",
+     "a": "**Batch GD** uses all data per step: exact gradient, smooth convergence, but slow and memory heavy for large data.\n**SGD** uses one example per step: very cheap and noisy; the noise can help escape poor local minima but needs a decaying learning rate.\n**Mini-batch** (for example 32 to 1024 examples) is the standard: it uses vectorized hardware well and gives a good balance of noise and speed.\nUpdate rule: `w = w - lr x gradient`.",
+     "ref": "ai-gradient-descent"
+    },
+    {
+     "area": "ai",
+     "q": "Your training loss explodes or oscillates, or decreases very slowly. What does that tell you about the learning rate, and what does Adam add?",
+     "a": "Exploding or oscillating loss means the learning rate is too high: steps overshoot the minimum. Very slow progress means it is too low. Use a learning rate finder or a sweep on a log scale, and schedules such as warmup and decay. Momentum averages past gradients to move faster along consistent directions and damp oscillation. Adam combines momentum with a per-parameter scale based on the running average of squared gradients, so parameters with small or rare gradients still move. It works well with little tuning; AdamW adds decoupled weight decay and is the default for transformers. Also scale input features, because unscaled features make the loss surface stretched and slow down plain gradient descent.",
+     "ref": "ai-gradient-descent"
+    }
+   ]
+  },
+  {
+   "day": 12,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Subarray Sum Equals K: why does a sliding window fail here, and how do prefix sums with a hash map solve it?",
+     "a": "A sliding window needs the sum to change monotonically when the window grows or shrinks. With negative numbers that is not true, so the window cannot decide when to shrink. Instead: a subarray `(j, i]` sums to `k` exactly when `prefix[i] - prefix[j] = k`. So while scanning, I keep a dict of how many times each prefix sum has occurred, and add `count[prefix - k]` to the answer before storing the current prefix. Start with `count[0] = 1`. Time `O(n)`, space `O(n)`.",
+     "ref": "algo-prefix-sum"
+    },
+    {
+     "area": "algo",
+     "q": "Search in a rotated sorted array: how does binary search still work?",
+     "a": "At any `mid`, at least one half, `[lo, mid]` or `[mid, hi]`, is sorted. I check which one by comparing `nums[lo] <= nums[mid]`. If the target lies inside the sorted half's range, I search that half; otherwise I search the other half. Each step still throws away half of the range, so it stays `O(log n)`. With duplicates the check `nums[lo] == nums[mid]` becomes ambiguous and the worst case degrades to `O(n)`.",
+     "ref": "algo-binary-search"
+    },
+    {
+     "area": "sql",
+     "q": "What do `LAG` and `LEAD` do? Give an example of day-over-day change per user.",
+     "a": "`LAG(col, n, default)` returns the value from `n` rows before the current row in the window order; `LEAD` returns the value `n` rows after. ```sql\nSELECT user_id, day, spend,\n       spend - LAG(spend) OVER (PARTITION BY user_id ORDER BY day) AS change\nFROM daily_spend;\n```\nThe first row per user gets `NULL`. Trap: `LAG` takes the previous row, not the previous calendar day. If days can be missing, check `day - LAG(day)` or join to a calendar.",
+     "ref": "sql-lag-lead"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) Your DAU numbers jump on the day daylight saving time changes and look off by a few hours compared with the business dashboard. What do you check?",
+     "a": "Time zones. Event timestamps are usually stored in UTC, while the business defines a day in local time. Convert before truncating, for example `DATE(event_ts AT TIME ZONE 'America/Los_Angeles')` in PostgreSQL. On daylight saving days a local day has 23 or 25 hours, which changes the count. Agree on one definition of 'day' for all dashboards, and document it.",
+     "ref": "sql-dates"
+    },
+    {
+     "area": "stats",
+     "q": "How do you analyze a conversion A/B test: 10,000 users per group, control 10.0%, treatment 10.8%?",
+     "a": "Use a two-proportion z-test. Difference `= 0.008`. `SE = sqrt(p1 (1-p1)/n1 + p2 (1-p2)/n2) = sqrt(0.09/10000 + 0.0963/10000)`, about `0.0043`. `z = 0.008 / 0.0043`, about `1.86`, so two-sided `p` is about 0.06. 95% CI: `0.008 +/- 1.96 x 0.0043`, about `[-0.0004, 0.0164]`. Not significant at 0.05. Report the relative lift (+8%) and the CI, and check guardrails before any decision.",
+     "ref": "stats-ab-analysis"
+    },
+    {
+     "area": "stats",
+     "q": "The result is statistically significant but the lift is 0.1%. Do you launch?",
+     "a": "Statistical significance means the effect is probably not zero; it does not mean it is worth it. Compare the effect, and its CI, with the practical threshold defined before the test, and with the cost: engineering maintenance, complexity, possible harm to guardrails. At very large scale, 0.1% of revenue can be worth a lot, so translate it into absolute impact. Also check that the effect is stable over time and not driven by novelty.",
+     "ref": "stats-ab-analysis"
+    },
+    {
+     "area": "ai",
+     "q": "Why does a neural network need non-linear activation functions? Compare sigmoid and ReLU.",
+     "a": "Without non-linearities, a stack of linear layers is still one linear function, so depth adds nothing. Sigmoid squashes to `(0, 1)` and saturates: for large inputs the gradient is close to 0, which causes vanishing gradients in deep networks. ReLU `max(0, x)` has gradient 1 for positive inputs, is cheap, and trains deep networks much faster. Its risk is 'dead' units that always output 0; variants like Leaky ReLU and GELU (used in transformers) help.",
+     "ref": "ai-neural-networks"
+    },
+    {
+     "area": "ai",
+     "q": "Explain backpropagation in a few sentences.",
+     "a": "Backpropagation computes the gradient of the loss with respect to every weight using the chain rule. The forward pass computes and stores the activations of each layer. The backward pass starts from the loss and moves layer by layer toward the input, multiplying local derivatives, so each gradient is computed once and reused. Its cost is about the same order as the forward pass. The gradients are then used by an optimizer such as SGD or Adam to update the weights.",
+     "ref": "ai-neural-networks"
+    }
+   ]
+  },
+  {
+   "day": 13,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Longest Repeating Character Replacement (replace at most `k` characters): what condition keeps the window valid, and why can `max_count` stay stale?",
+     "a": "A window is valid if `window_length - max_count <= k`, where `max_count` is the count of the most frequent character in the window: the other characters are the ones we must replace. When the window becomes invalid I move `left` one step. `max_count` does not need to decrease when the window shrinks: the answer only grows when a new, larger `max_count` appears, so a stale value never produces a wrong larger answer. Time `O(n)`, space `O(26)`.",
+     "ref": "algo-sliding-window"
+    },
+    {
+     "area": "algo",
+     "q": "Course Schedule: how do you detect whether all courses can be finished? Explain Kahn's algorithm.",
+     "a": "Model courses as a directed graph; finishing all courses is possible exactly when the graph has no cycle. Kahn's algorithm: compute the in-degree of each node and put all nodes with in-degree 0 in a queue. Pop a node, add it to the order, and decrease the in-degree of its neighbors; push any neighbor that reaches 0. If the order contains all `V` nodes there is no cycle. Time `O(V + E)`, space `O(V + E)`. The alternative is DFS with three colors (a gray node seen again means a cycle).",
+     "ref": "algo-topological-sort"
+    },
+    {
+     "area": "sql",
+     "q": "How do you compute a running total, and what is the difference between `ROWS` and `RANGE` frames?",
+     "a": "`SUM(amount) OVER (PARTITION BY user_id ORDER BY day ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`. `ROWS` counts physical rows. `RANGE` groups rows with the same `ORDER BY` value as peers, so tied rows all get the same running total that includes all of them. The default frame when `ORDER BY` is present is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, which surprises people when there are ties. Write the frame explicitly.",
+     "ref": "sql-running-totals"
+    },
+    {
+     "area": "sql",
+     "q": "How do you compute a 7-day rolling average of daily revenue, and what is the trap when some days have no rows?",
+     "a": "`AVG(revenue) OVER (ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)` on a table with one row per day. If days are missing, `6 PRECEDING` covers 7 rows, which can span more than 7 calendar days. Fix: join to a complete calendar and fill missing days with 0 first, or use a time-based frame where supported (`RANGE BETWEEN INTERVAL '6 days' PRECEDING AND CURRENT ROW`). Also decide what to show for the first 6 days, where the window is incomplete.",
+     "ref": "sql-running-totals"
+    },
+    {
+     "area": "stats",
+     "q": "What is the peeking problem, and how do you avoid it?",
+     "a": "Peeking means checking the p-value repeatedly during the test and stopping as soon as it is below 0.05. Each look is another chance for a false positive, so the real Type I error can be 20% to 30% instead of 5%. Fixes: fix the sample size and duration in advance and analyze once; or use a sequential method designed for repeated looks, such as group sequential designs with alpha spending (O'Brien-Fleming) or always-valid p-values. Monitoring guardrails for harm during the test is fine.",
+     "ref": "stats-ab-pitfalls"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) Your test is planned to detect a 2% lift. Leadership wants to detect a 1% lift. What happens to the sample size?",
+     "a": "Sample size scales with `1 / MDE^2`, so halving the MDE needs about 4 times as many users. If traffic is fixed, that means about 4 times the duration. Alternatives: reduce variance (CUPED, capping outliers), use a more sensitive metric that moves with the primary metric, or accept a larger MDE. Explain the trade-off in time and opportunity cost.",
+     "ref": "stats-power-mde"
+    },
+    {
+     "area": "ai",
+     "q": "What is an embedding, and why do we compare embeddings with cosine similarity?",
+     "a": "An embedding is a dense, low-dimensional vector learned so that similar items (words, users, videos) are close in the space. It replaces huge sparse one-hot vectors with something like 64 to 1024 dimensions. Cosine similarity `a.b / (|a| |b|)` compares the direction and ignores the length, which often encodes frequency or popularity rather than meaning. If vectors are normalized to length 1, cosine similarity equals the dot product, which makes fast nearest-neighbor search easy.",
+     "ref": "ai-embeddings"
+    },
+    {
+     "area": "ai",
+     "q": "How does word2vec learn word embeddings?",
+     "a": "It trains a shallow network on a fake prediction task. Skip-gram predicts the context words around a center word; CBOW predicts the center word from its context. Training uses negative sampling: push the center word vector toward vectors of real context words and away from randomly sampled words, which avoids an expensive softmax over the whole vocabulary. Words that appear in similar contexts end up with similar vectors (the distributional hypothesis). Limitation: one vector per word, so 'bank' (river) and 'bank' (money) share a vector; contextual models like BERT fix this. The same idea, called item2vec, learns item embeddings from sessions of user behavior.",
+     "ref": "ai-embeddings"
+    }
+   ]
+  },
+  {
+   "day": 14,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Rotting Oranges: why do you use multi-source BFS, and how do you get the number of minutes?",
+     "a": "All rotten oranges spread at the same time, so I put all of them in the queue at the start (multi-source BFS). BFS processes the grid level by level, and each level is one minute. I count fresh oranges first; each time one becomes rotten I decrease the count. At the end, if fresh oranges remain, return -1; otherwise return the number of levels processed. Running a separate BFS from each rotten orange would be slower and wrong for the 'same time' rule. Time `O(m n)`.",
+     "ref": "algo-graphs-bfs-dfs"
+    },
+    {
+     "area": "algo",
+     "q": "Koko Eating Bananas: what does 'binary search on the answer' mean, and when can you use it?",
+     "a": "Instead of searching in an array, I search over possible answers, here the eating speed from 1 to `max(piles)`. It works because the condition 'can finish in `h` hours at speed `s`' is monotonic: if speed `s` works, any faster speed also works. So I find the smallest `s` that works. Each check costs `O(n)` (sum of `ceil(pile / s)`), so total `O(n log M)`. Signal: 'minimum value such that a condition holds' with a monotonic check.",
+     "ref": "algo-binary-search"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) 'Find the second highest salary per department.' Which ranking function do you choose, and what do you return for a department with one employee?",
+     "a": "`DENSE_RANK() OVER (PARTITION BY dept ORDER BY salary DESC)` and keep rank 2, so that ties at the top do not hide the second distinct value. `ROW_NUMBER` would return the second row, which could have the same salary as the first. Departments with only one distinct salary have no rank 2. If the question wants them with `NULL`, `LEFT JOIN` the departments to the ranked result. Clarify this with the examiner.",
+     "ref": "sql-top-n"
+    },
+    {
+     "area": "sql",
+     "q": "How do you find users whose spend dropped for 3 consecutive days?",
+     "a": "Use `LAG` twice in a CTE, then filter:\n```sql\nWITH t AS (\n  SELECT user_id, day, spend,\n         LAG(spend, 1) OVER w AS s1, LAG(spend, 2) OVER w AS s2, LAG(spend, 3) OVER w AS s3\n  FROM daily_spend\n  WINDOW w AS (PARTITION BY user_id ORDER BY day)\n)\nSELECT DISTINCT user_id FROM t\nWHERE spend < s1 AND s1 < s2 AND s2 < s3;\n```\nThis assumes one row per user per day with no missing days; otherwise fill gaps with a calendar first.",
+     "ref": "sql-lag-lead"
+    },
+    {
+     "area": "stats",
+     "q": "What is a sample ratio mismatch (SRM), and what do you do if you find one?",
+     "a": "SRM means the observed split differs from the planned split more than chance allows, for example 50.8% vs 49.2% on millions of users. Test it with a chi-square goodness-of-fit test; a p-value below about 0.001 is a red flag. It signals a bug: broken assignment, a treatment that crashes or redirects some users before logging, bot filtering that differs between groups, or a late start in one arm. Do not trust the results. Find and fix the cause, then rerun.",
+     "ref": "stats-ab-pitfalls"
+    },
+    {
+     "area": "stats",
+     "q": "You test 20 metrics in one experiment and 1 is significant at 0.05. What do you say?",
+     "a": "With 20 independent tests at alpha 0.05, we expect about 1 false positive by chance, so this result alone is weak evidence. Corrections: Bonferroni (use `alpha / m`, simple but conservative) or Benjamini-Hochberg (controls the false discovery rate, more power). Best practice: decide one primary metric before the test, treat the others as secondary or exploratory, and confirm surprising findings in a follow-up test.",
+     "ref": "stats-ab-pitfalls"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) A ranking test on a two-sided marketplace (buyers and sellers) shows +5% bookings. Why might this overestimate the real effect?",
+     "a": "Treatment and control buyers compete for the same sellers and inventory, so the treatment can take bookings away from control. The units are not independent (SUTVA violation). The measured difference includes this transfer, and at full launch the total gain is smaller. Better designs: randomize by market or region (cluster), switchback tests over time, or budget-split designs; then compare total bookings.",
+     "ref": "stats-ab-design"
+    },
+    {
+     "area": "ai",
+     "q": "Gradient boosting overfits on your data. Which hyperparameters do you tune, and how?",
+     "a": "Lower the learning rate and add more trees with early stopping on a validation set; reduce tree depth or the number of leaves; increase the minimum samples per leaf; use row and column subsampling; and add L1/L2 regularization on the leaf weights (`lambda`, `alpha` in XGBoost). Tune with cross-validation or a random/Bayesian search, starting with learning rate plus number of trees, then depth. Also check for leakage features, which often look like overfitting.",
+     "ref": "ai-trees-boosting"
+    },
+    {
+     "area": "ai",
+     "q": "You have 100 million item embeddings. How do you find the nearest neighbors for a query fast?",
+     "a": "Exact search is `O(N d)` per query, which is too slow. Use approximate nearest neighbor (ANN) indexes such as HNSW graphs, IVF (cluster the space and search only the closest clusters), or product quantization to compress vectors. Libraries: FAISS, ScaNN, or a vector database. The trade-off is recall vs latency and memory: measure recall at k against exact search on a sample, and tune parameters like the number of probed clusters.",
+     "ref": "ai-embeddings"
+    },
+    {
+     "area": "ai",
+     "q": "What do dropout and batch normalization do, and how do they behave differently at training and inference time?",
+     "a": "Dropout randomly sets a fraction `p` of activations to zero during training, which prevents units from co-adapting and acts as regularization. At inference all units are used (with scaling so the expected activation is the same). Batch normalization normalizes each feature over the mini-batch, then applies a learned scale and shift. It stabilizes and speeds up training and allows higher learning rates. At inference it uses running averages of the mean and variance collected during training. A classic bug is forgetting `model.eval()` in PyTorch, so dropout and batch statistics stay in training mode. Transformers use layer normalization instead, which does not depend on the batch.",
+     "ref": "ai-neural-networks"
+    }
+   ]
+  },
+  {
+   "day": 15,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Subsets: describe the backtracking template and the complexity.",
+     "a": "At each index I choose: include the element or not. In code: append the current path to the result, then for each `j` from `start` to `n - 1`, add `nums[j]`, recurse with `start = j + 1`, and remove it again (backtrack). There are `2^n` subsets and copying each takes up to `O(n)`, so time is `O(n 2^n)`; recursion depth is `O(n)`. With duplicates in the input, sort first and skip `nums[j] == nums[j-1]` when `j > start`. A bitmask loop from 0 to `2^n - 1` is an iterative alternative.",
+     "ref": "algo-backtracking"
+    },
+    {
+     "area": "algo",
+     "q": "Non-overlapping Intervals (remove the fewest): why sort by end time, and why is greedy correct?",
+     "a": "Sort by end time and keep an interval if it starts at or after the end of the last kept interval; otherwise remove it. Exchange argument: the interval that ends first leaves the most room for the rest, so any optimal solution can swap its first interval for this one without getting worse. Sorting by start time fails: a long interval that starts early can block many short ones. Time `O(n log n)`. This is the classic activity selection problem.",
+     "ref": "algo-greedy"
+    },
+    {
+     "area": "sql",
+     "q": "When do you need a self-join? Give an example and the trick to avoid duplicate pairs.",
+     "a": "When you compare rows of the same table with each other: employees and their managers, pairs of users in the same group, or events of the same user within a time range. Example: pairs of users who bought the same product: `FROM purchases a JOIN purchases b ON a.product_id = b.product_id AND a.user_id < b.user_id`. `a.user_id < b.user_id` removes self-pairs and keeps each pair once. Self-joins can grow quadratically, so filter as early as possible.",
+     "ref": "sql-self-join"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) To get each user's previous order date, would you use `LAG` or a self-join? Why?",
+     "a": "`LAG(order_date) OVER (PARTITION BY user_id ORDER BY order_date)`. It reads the table once and is clear. A self-join version needs a join on `user_id` with `b.order_date < a.order_date` and then a `MAX`, which is more complex and can be quadratic per user. Self-joins are better when the condition is a range, like 'any other order within 7 days', not just the previous row.",
+     "ref": "sql-lag-lead"
+    },
+    {
+     "area": "stats",
+     "q": "Your A/B test is randomized by user, but the metric is click-through rate = clicks / impressions. Why is a standard t-test on impressions wrong?",
+     "a": "Impressions of the same user are correlated, so they are not independent observations. Treating each impression as a unit underestimates the variance, gives too small p-values and too many false positives. The metric is a ratio of two per-user sums, `sum(clicks) / sum(impressions)`. Use the **delta method** to estimate its variance at the user level, or a bootstrap that resamples users. Alternatively, use a per-user metric like the average of per-user CTR, but note that it answers a different question.",
+     "ref": "stats-ratio-metrics"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) Your colleague says 'p = 0.20, so the feature has no effect'. How do you respond?",
+     "a": "Failing to reject the null is not proof of no effect. The test may simply lack power: the confidence interval probably includes both zero and meaningful effects. I would look at the CI and the power for the MDE we care about. If the CI is narrow around zero, we can say the effect is likely small; if it is wide, the result is inconclusive. Equivalence testing can formally show that an effect is smaller than a margin.",
+     "ref": "stats-hypothesis-tests"
+    },
+    {
+     "area": "ai",
+     "q": "Compare collaborative filtering and content-based recommendation. How do you handle cold start?",
+     "a": "Collaborative filtering learns from the user-item interaction matrix (for example matrix factorization): users who liked similar items get similar recommendations. It needs no item features but fails for new users and items. Content-based uses item features (text, category, creator) and the user's history; it works for new items but recommends narrow, similar content. Cold start: use content features or embeddings for new items, popularity or onboarding questions for new users, exploration (bandits), and hybrid models that combine both signals.",
+     "ref": "ai-recommenders"
+    },
+    {
+     "area": "ai",
+     "q": "Why do large recommender systems use a retrieval stage and a ranking stage?",
+     "a": "Scoring billions of items with a heavy model for every request is too slow. **Retrieval** (candidate generation) uses cheap methods, such as two-tower embeddings with ANN search, co-occurrence, or follow graphs, to pick a few hundred to a few thousand candidates with high recall. **Ranking** applies a rich model with many features (often predicting several outcomes like click, watch time, like) to order these candidates precisely. A re-ranking step then adds business rules: diversity, freshness, policy filters.",
+     "ref": "ai-recommenders"
+    }
+   ]
+  },
+  {
+   "day": 16,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Coin Change (fewest coins): why does greedy fail, and what is the DP?",
+     "a": "Greedy (take the largest coin first) fails for coins `[1, 3, 4]` and amount 6: greedy gives 4+1+1 (3 coins), the optimum is 3+3 (2 coins). DP: `dp[0] = 0`, and for each amount `a`, `dp[a] = min(dp[a - c] + 1)` over coins `c <= a`. If `dp[amount]` is still infinity, return -1. Time `O(amount x number_of_coins)`, space `O(amount)`. It is an unbounded knapsack: each coin can be used many times.",
+     "ref": "algo-dp-1d"
+    },
+    {
+     "area": "algo",
+     "q": "LRU Cache: how do you get `O(1)` for both `get` and `put`?",
+     "a": "Combine a hash map with a doubly linked list. The map gives `O(1)` lookup from key to node; the list keeps usage order, with the most recent at the head and the least recent at the tail. `get` moves the node to the head. `put` inserts or updates at the head, and if the capacity is exceeded, removes the tail node and its key. A doubly linked list allows `O(1)` removal from the middle. In Python, `collections.OrderedDict` with `move_to_end` and `popitem(last=False)` gives the same behavior; examiners often ask for the manual version too.",
+     "ref": "algo-design"
+    },
+    {
+     "area": "sql",
+     "q": "How do you define and compute Day-7 retention? What choices change the number?",
+     "a": "Typical definition: of users who signed up (or were first active) on day 0, the share that is active exactly on day 7. ```sql\nSELECT COUNT(DISTINCT a.user_id) * 1.0 / COUNT(DISTINCT s.user_id) AS d7\nFROM signups s\nLEFT JOIN activity a\n  ON a.user_id = s.user_id AND a.day = s.signup_day + 7;\n```\n(date arithmetic syntax depends on the engine). Choices: exact day 7 vs any day in days 1 to 7 (rolling or 'unbounded' retention), what counts as active, the cohort definition, and excluding cohorts too young to have a day 7.",
+     "ref": "sql-retention"
+    },
+    {
+     "area": "sql",
+     "q": "Why must the denominator of a retention metric be fixed at the cohort, and what goes wrong with recent cohorts?",
+     "a": "Retention is a share of a fixed starting group, so the denominator is all users in the cohort, including those who never came back. Computing it from the activity table only would drop non-returning users. That is why the cohort is the left side of a `LEFT JOIN`. Recent cohorts have not reached day 7 yet (right censoring). If you include them, they count as not retained and the metric falls artificially. Filter to cohorts with `signup_day <= today - 7`.",
+     "ref": "sql-retention"
+    },
+    {
+     "area": "stats",
+     "q": "What is CUPED and why does it reduce variance?",
+     "a": "CUPED uses a pre-experiment covariate `X`, typically the same metric for the same user before the test, to adjust the outcome: `Y_adj = Y - theta (X - mean(X))` with `theta = cov(X, Y) / var(X)`. Because `X` is measured before randomization, it is independent of the treatment, so the estimate stays unbiased. The variance is multiplied by `1 - rho^2`, where `rho` is the correlation between `X` and `Y`. With `rho = 0.7`, the variance halves, which is like doubling the sample size.",
+     "ref": "stats-cuped"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) A new feature shows +6% engagement in week 1 and +1% in week 3. What is going on, and what do you report?",
+     "a": "Likely a novelty effect: users explore a new, visible feature at first, and the effect fades. (The opposite, a primacy effect, happens when users first resist a change.) Check the effect by days since first exposure and by new vs existing users, since new users have no novelty. Report the stabilized effect, not the average over the whole test, and consider a longer test or a long-term holdout.",
+     "ref": "stats-ab-pitfalls"
+    },
+    {
+     "area": "ai",
+     "q": "Why do modern language models use subword tokenization like BPE instead of words or characters?",
+     "a": "Word vocabularies explode in size and cannot handle unknown or rare words. Characters give tiny vocabularies but very long sequences and weak units of meaning. Byte Pair Encoding starts from characters (or bytes) and repeatedly merges the most frequent adjacent pair, so common words become one token and rare words split into known pieces. There are no out-of-vocabulary words. Trade-off: some languages or domains (for example Korean or Persian text, code, numbers) can need more tokens per word, which raises cost and limits context.",
+     "ref": "ai-nlp-basics"
+    },
+    {
+     "area": "ai",
+     "q": "Compare TF-IDF features with neural embeddings for text classification.",
+     "a": "TF-IDF weights each word by its frequency in the document times the log inverse document frequency, giving a sparse, interpretable vector. With logistic regression it is fast, a strong baseline, and works with little data. It ignores word order and synonyms ('car' and 'automobile' are unrelated). Neural embeddings, especially contextual ones from transformers, capture meaning and context and usually win on accuracy, but they cost more compute and are harder to interpret. Start with TF-IDF as a baseline.",
+     "ref": "ai-nlp-basics"
+    }
+   ]
+  },
+  {
+   "day": 17,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Validate a BST: why is checking `left.val < node.val < right.val` at each node not enough? What is the correct approach?",
+     "a": "The BST rule applies to whole subtrees, not just children. Example: root 5, left child 3, and 3 has a right child 7. Each parent-child check passes, but 7 is in the left subtree of 5. Correct: pass bounds down the recursion, `valid(node, low, high)`, where going left sets `high = node.val` and going right sets `low = node.val`. Alternative: an inorder traversal must be strictly increasing. Both are `O(n)` time and `O(h)` space. Use `-inf` and `inf` as initial bounds, not fixed integers.",
+     "ref": "algo-bst"
+    },
+    {
+     "area": "algo",
+     "q": "K Closest Points to Origin: compare a max-heap of size `k` with quickselect.",
+     "a": "Max-heap of size `k` (in Python, push negative distances): for each point, push it and pop the farthest when the size exceeds `k`. Time `O(n log k)`, space `O(k)`, works on a stream. Quickselect partitions around a pivot until the first `k` positions hold the closest points: average `O(n)`, worst `O(n^2)` (random pivots make that unlikely), modifies the input, needs all data in memory. Use the squared distance `x^2 + y^2`; the square root is not needed for comparison.",
+     "ref": "algo-heap"
+    },
+    {
+     "area": "sql",
+     "q": "How do you build a funnel (view, add to cart, purchase) where steps must happen in order?",
+     "a": "First compute, per user, the first time of each step, then require each step to be after the previous one:\n```sql\nWITH s AS (\n  SELECT user_id,\n    MIN(CASE WHEN event = 'view' THEN ts END) AS t_view,\n    MIN(CASE WHEN event = 'cart' THEN ts END) AS t_cart,\n    MIN(CASE WHEN event = 'purchase' THEN ts END) AS t_buy\n  FROM events GROUP BY user_id\n)\nSELECT COUNT(t_view) AS viewed,\n  COUNT(CASE WHEN t_cart > t_view THEN 1 END) AS carted,\n  COUNT(CASE WHEN t_buy > t_cart AND t_cart > t_view THEN 1 END) AS bought\nFROM s;\n```\nReport step conversion (`carted / viewed`) and overall conversion. Using the first time of each step is a simplification; a strict version checks the order within a session or time window.",
+     "ref": "sql-funnels"
+    },
+    {
+     "area": "sql",
+     "q": "A funnel shows more purchases than add-to-cart events at the user level. What are the possible causes?",
+     "a": "Users can buy without the cart step (buy now button, reorder), so the funnel definition does not match the product paths. Logging issues: the cart event is missing on some platforms or app versions, or events are deduplicated differently. Counting differences: events counted instead of distinct users, or time windows that differ between steps. Check the funnel by platform and app version, and decide whether the funnel should be strict (ordered) or loose (did each step at any time).",
+     "ref": "sql-funnels"
+    },
+    {
+     "area": "stats",
+     "q": "How do you interpret a coefficient in multiple linear regression, and what is omitted variable bias?",
+     "a": "The coefficient `b_j` is the expected change in `y` for a one-unit increase in `x_j`, holding the other features in the model constant. It is an association, not a causal effect, unless the design supports causality. Omitted variable bias: if a variable that affects `y` and is correlated with `x_j` is left out, `b_j` absorbs part of its effect. Example: ice cream sales appear to cause drownings because temperature is omitted. In A/B tests randomization removes this bias, which is why experiments are the gold standard.",
+     "ref": "stats-regression"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) Planned 50/50 split, observed 10,000 vs 10,400 users. Is this a sample ratio mismatch?",
+     "a": "Expected count per group is 10,200. Chi-square `= (200^2 / 10200) x 2`, about `7.84` with 1 degree of freedom, so `p` is about 0.005. With a threshold like `p < 0.01` (many teams use 0.001), this is a likely SRM and the results should not be trusted until the cause is found. Check assignment logs, redirects, crashes in one arm, and bot filtering.",
+     "ref": "stats-ab-pitfalls"
+    },
+    {
+     "area": "ai",
+     "q": "Write the scaled dot-product attention formula and explain each part, including why we divide by `sqrt(d_k)`.",
+     "a": "`Attention(Q, K, V) = softmax(Q K^T / sqrt(d_k)) V`. Each token has a query (what it looks for), a key (what it offers) and a value (the content). `Q K^T` scores how much each token should attend to each other token; softmax turns the scores into weights that sum to 1; the output is the weighted average of the values. Dot products grow with the dimension `d_k` (variance about `d_k`), which pushes softmax into saturated regions with tiny gradients. Dividing by `sqrt(d_k)` keeps the scores at unit scale. In a decoder, a causal mask sets future positions to `-inf` before softmax.",
+     "ref": "ai-attention-transformer"
+    },
+    {
+     "area": "ai",
+     "q": "Why multi-head attention, and what is the cost of self-attention in sequence length?",
+     "a": "Multi-head attention runs several attention operations in parallel on lower-dimensional projections, so different heads can learn different relations (syntax, position, coreference). The outputs are concatenated and projected back. Self-attention compares every token with every other token: time and memory `O(n^2 d)` for sequence length `n`. This is why long contexts are expensive. Mitigations: FlashAttention (exact, memory-efficient), sparse or sliding-window attention, and the KV cache during generation.",
+     "ref": "ai-attention-transformer"
+    }
+   ]
+  },
+  {
+   "day": 18,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Longest Increasing Subsequence: give the `O(n^2)` DP and the `O(n log n)` method.",
+     "a": "`O(n^2)`: `dp[i]` = length of the LIS ending at `i` = `1 + max(dp[j])` over `j < i` with `nums[j] < nums[i]`; answer `max(dp)`. `O(n log n)`: keep `tails`, where `tails[k]` is the smallest possible tail of an increasing subsequence of length `k + 1`. For each number, binary search (`bisect_left`) its position in `tails` and replace that value, or append if it is larger than all. The answer is `len(tails)`. `tails` is not itself an LIS, only its length is correct; reconstructing the sequence needs parent pointers.",
+     "ref": "algo-dp-1d"
+    },
+    {
+     "area": "algo",
+     "q": "How does union-find work, and what makes it almost `O(1)` per operation?",
+     "a": "Each element points to a parent; the root identifies the set. `find(x)` follows parents to the root; `union(a, b)` links one root to the other. Two optimizations: **path compression** (during `find`, point nodes directly to the root) and **union by rank or size** (attach the smaller tree under the larger). Together they give amortized `O(alpha(n))` per operation, where `alpha` is the inverse Ackermann function, below 5 for any practical `n`. Use it for connected components with incremental edges, cycle detection in undirected graphs, and Kruskal's minimum spanning tree.",
+     "ref": "algo-union-find"
+    },
+    {
+     "area": "sql",
+     "q": "What are the common traps when computing a ratio like click-through rate in SQL?",
+     "a": "1. **Integer division**: `clicks / impressions` with integers gives 0 in some engines; multiply by `1.0` or cast.\n2. **Division by zero**: use `NULLIF(impressions, 0)` in the denominator.\n3. **Ratio of sums vs average of ratios**: `SUM(clicks) / SUM(impressions)` weights by volume; `AVG(clicks * 1.0 / impressions)` gives each user equal weight. They answer different questions; say which you use.\n4. **Join fan-out** inflating numerator or denominator; aggregate each side at the right grain first.",
+     "ref": "sql-ratios"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) Find users who made a second purchase within 7 days of a previous purchase. Write the idea.",
+     "a": "Self-join purchases to themselves on the same user, with the second purchase strictly later and within 7 days:\n```sql\nSELECT DISTINCT a.user_id\nFROM purchases a\nJOIN purchases b\n  ON b.user_id = a.user_id\n AND b.ts > a.ts\n AND b.ts <= a.ts + INTERVAL '7 days';\n```\nUsing `b.ts > a.ts` avoids matching a row with itself. An alternative with `LEAD(ts)` and a check on the gap is cheaper, since the next purchase is enough to decide.",
+     "ref": "sql-self-join"
+    },
+    {
+     "area": "stats",
+     "q": "Explain difference-in-differences. What is the key assumption, and how do you write it as a regression?",
+     "a": "Compare the change over time in the treated group with the change over time in a control group: `DiD = (T_after - T_before) - (C_after - C_before)`. The control group's change estimates what would have happened to the treated group without treatment. Key assumption: **parallel trends**, without treatment both groups would have moved in parallel. Regression: `y = b0 + b1 treated + b2 post + b3 (treated x post) + e`; `b3` is the DiD estimate. Use standard errors clustered by unit (for example by city).",
+     "ref": "stats-causal-did"
+    },
+    {
+     "area": "stats",
+     "q": "How do you check the parallel trends assumption, and what do you do if it looks violated?",
+     "a": "Plot both groups over several pre-periods: the lines should move in parallel before the treatment. More formally, run an event-study regression with leads and lags; the pre-period coefficients should be close to zero. If violated: choose a better control group (similar markets), use synthetic control (a weighted combination of control units that matches the pre-period), add group-specific trends, or match on pre-period behavior. Also watch for other events at the same time as the treatment, which DiD cannot separate.",
+     "ref": "stats-causal-did"
+    },
+    {
+     "area": "ai",
+     "q": "Compare greedy decoding, beam search, temperature, top-k and top-p sampling.",
+     "a": "**Greedy** takes the most likely token each step: deterministic, but repetitive and can miss better sequences.\n**Beam search** keeps the `b` best partial sequences: good for translation, but bland for open-ended text.\n**Temperature** divides logits by `T` before softmax: `T < 1` is sharper and safer, `T > 1` is more random.\n**Top-k** samples from the `k` most likely tokens; **top-p** (nucleus) samples from the smallest set whose probability sum is at least `p`, so the set size adapts to the model's confidence.\nFor factual tasks use low temperature; for creative tasks use higher temperature with top-p.",
+     "ref": "ai-pretraining-decoding"
+    },
+    {
+     "area": "ai",
+     "q": "Compare causal language modeling (GPT style) and masked language modeling (BERT style).",
+     "a": "Causal LM predicts the next token from the tokens before it, using a causal mask. It is naturally generative and is the objective behind GPT-style chat models. Masked LM hides about 15% of tokens and predicts them from both sides, so it learns bidirectional representations that are strong for classification, retrieval embeddings and tagging, but it does not generate text naturally. Encoder-decoder models like T5 use a span corruption objective and fit sequence-to-sequence tasks such as translation and summarization.",
+     "ref": "ai-pretraining-decoding"
+    }
+   ]
+  },
+  {
+   "day": 19,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Product of Array Except Self without division: how and why not use division?",
+     "a": "Answer `i` is the product of everything left of `i` times everything right of `i`. One pass from the left stores prefix products in the output array; a second pass from the right multiplies by a running suffix product. Time `O(n)`, extra space `O(1)` besides the output. Division (total product / `nums[i]`) breaks with zeros: one zero makes all other answers 0 but its own answer non-zero, and two zeros make all answers 0. It is also forbidden in the original problem.",
+     "ref": "algo-prefix-sum"
+    },
+    {
+     "area": "algo",
+     "q": "Why does BFS give the shortest path in an unweighted grid or graph, and why should you mark nodes visited when you enqueue them?",
+     "a": "BFS explores nodes in order of distance: all nodes at distance `d` are processed before any node at distance `d + 1`. So the first time a node is reached, it is reached by a shortest path. Marking visited at enqueue time prevents the same node from being added many times by different neighbors, which can blow up the queue. Marking at dequeue time is still correct but slower. For weighted edges BFS is wrong; use Dijkstra (non-negative weights) or 0-1 BFS (weights 0 and 1). Time `O(V + E)`, or `O(m n)` for a grid.",
+     "ref": "algo-graphs-bfs-dfs"
+    },
+    {
+     "area": "sql",
+     "q": "How do you find streaks of consecutive active days per user? Explain the 'date minus row number' trick.",
+     "a": "For one row per user per active day, number the days per user in order. For consecutive days, `day - ROW_NUMBER()` is constant, so it identifies the streak (the island):\n```sql\nWITH d AS (\n  SELECT user_id, day,\n         day - ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) * INTERVAL '1 day' AS grp\n  FROM (SELECT DISTINCT user_id, day FROM activity) x\n)\nSELECT user_id, MIN(day) AS start_day, MAX(day) AS end_day, COUNT(*) AS len\nFROM d GROUP BY user_id, grp;\n```\nDeduplicate first: two rows on the same day would break the trick. The alternative is `LAG` to flag a new streak when the gap is more than 1 day, then a running `SUM` of the flags.",
+     "ref": "sql-gaps-islands"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) Product says 'Day-7 retention dropped from 40% to 34% this week'. Before analyzing user behavior, what do you check in the metric itself?",
+     "a": "1. Are the latest cohorts complete, or are some users not yet 7 days old (right censoring)?\n2. Did the definition of 'active' or the event logging change (new app version, a missing event)?\n3. Did the cohort mix change, for example a marketing campaign that brought in low-intent users, or a new country?\n4. Time zone or date boundary changes.\nThen segment by acquisition channel, platform and country to find where the drop is concentrated.",
+     "ref": "sql-retention"
+    },
+    {
+     "area": "stats",
+     "q": "When would you use propensity score matching, regression discontinuity and instrumental variables?",
+     "a": "| Method | Use when | Key assumption |\n|---|---|---|\n| Propensity score matching | Treatment is chosen by users; you observe the drivers of that choice | No unobserved confounders; overlap |\n| Regression discontinuity | Treatment is assigned by a cutoff on a score (for example credit score at least 700) | Units just above and below the cutoff are comparable; no manipulation of the score |\n| Instrumental variable | There is a variable that shifts treatment but affects the outcome only through treatment | Relevance and exclusion restriction |\n\nRD estimates a local effect at the cutoff; IV estimates the effect for compliers (LATE).",
+     "ref": "stats-causal-psm-rd-iv"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) In CUPED, how do you choose the covariate, and what if many users have no pre-period data?",
+     "a": "Choose a pre-experiment variable that is strongly correlated with the outcome, usually the same metric in the weeks before the test. It must not be affected by the treatment, so never use data from after assignment. For users without history (new users), set the covariate to a constant such as 0 and add an indicator for 'has no history', or apply CUPED only to the subgroup with history. The estimator stays unbiased; only the variance reduction is smaller for that group.",
+     "ref": "stats-cuped"
+    },
+    {
+     "area": "ai",
+     "q": "Describe the steps of RLHF and how DPO differs.",
+     "a": "1. **SFT**: fine-tune the pretrained model on high-quality instruction and response examples.\n2. **Reward model**: humans compare pairs of responses; train a model to predict which one is preferred.\n3. **RL**: optimize the policy with PPO to maximize the reward, with a KL penalty to the SFT model so it does not drift into reward hacking or gibberish.\n**DPO** skips the separate reward model and the RL loop: it uses the preference pairs directly with a classification-style loss that increases the likelihood of preferred over rejected responses relative to a reference model. It is simpler and more stable.",
+     "ref": "ai-fine-tuning-rlhf"
+    },
+    {
+     "area": "ai",
+     "q": "What is LoRA, and why is it popular for fine-tuning large models?",
+     "a": "LoRA freezes the pretrained weights and learns a low-rank update for selected weight matrices: `W' = W + B A`, where `A` and `B` have a small rank `r` (for example 8 or 16). Only a tiny fraction of parameters is trained (often below 1%), so memory and compute drop a lot, and one base model can serve many small adapters. QLoRA also quantizes the frozen base model to 4 bits. Quality is usually close to full fine-tuning for adaptation tasks; full fine-tuning can still win when the domain shift is large.",
+     "ref": "ai-fine-tuning-rlhf"
+    }
+   ]
+  },
+  {
+   "day": 20,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Longest Common Subsequence: state, recurrence and complexity. How can you reduce the space?",
+     "a": "`dp[i][j]` = LCS length of `a[:i]` and `b[:j]`. If `a[i-1] == b[j-1]`, then `dp[i][j] = dp[i-1][j-1] + 1`; otherwise `dp[i][j] = max(dp[i-1][j], dp[i][j-1])`. Row 0 and column 0 are 0. Time and space `O(m n)`. Each row only needs the previous row, so two rows (or one row plus a saved diagonal value) give `O(min(m, n))` space, but then you cannot reconstruct the subsequence itself. Edit distance uses the same table shape.",
+     "ref": "algo-dp-2d"
+    },
+    {
+     "area": "algo",
+     "q": "Find All Anagrams of `p` in `s`: how do you check each window in `O(1)` instead of rebuilding a counter?",
+     "a": "Use a fixed window of length `len(p)` and keep a count array of 26 letters for the window. When the window moves, increment the new character and decrement the leaving one. Comparing two 26-length arrays is `O(26)`, which is constant, so the total is `O(n)`. An even tighter version keeps a `matches` counter of how many letters have equal counts, updated in `O(1)` per move. Rebuilding a `Counter` per window would be `O(n k)`.",
+     "ref": "algo-sliding-window"
+    },
+    {
+     "area": "sql",
+     "q": "A table has duplicate user records with different `updated_at` values. How do you keep only the latest record per user?",
+     "a": "```sql\nWITH r AS (\n  SELECT *, ROW_NUMBER() OVER (\n    PARTITION BY user_id ORDER BY updated_at DESC, ingest_id DESC) AS rn\n  FROM users_raw\n)\nSELECT * FROM r WHERE rn = 1;\n```\n`DISTINCT` does not work, because the rows differ in some columns. Add a tie-breaker to the `ORDER BY` so the result is deterministic when two rows have the same timestamp. Before deduplicating, check why duplicates exist (retries, late updates, joins) and normalize keys (trim, lower case).",
+     "ref": "sql-dedup-cleaning"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) The step conversion from 'view' to 'cart' looks very low on Android only. How do you decide whether it is a real product issue or a data issue?",
+     "a": "Check data first: is the cart event logged on all Android app versions? Compare event volumes before and after the last release, and compare with server-side data (for example the cart table), which does not depend on client logging. If logging is fine, segment by app version, device, country and traffic source, and look at session recordings or error logs for the cart button. A sudden change aligned with a release suggests a bug; a constant gap suggests a design or user-mix difference.",
+     "ref": "sql-funnels"
+    },
+    {
+     "area": "stats",
+     "q": "How would you define success metrics for a new 'comment reply' feature in a short-video app?",
+     "a": "Start from the goal: more meaningful conversations, which should increase engagement and retention.\n- **Primary**: share of active users who reply to at least one comment per week, or replies per active user.\n- **Secondary**: comment threads with at least 2 replies, creator response rate, time spent in comments.\n- **Guardrails**: reports and blocks per comment, toxic comment rate, overall watch time (the feature should not pull time from videos), app latency.\n- **Long term**: 28-day retention of users who reply vs not, checked with an experiment, not only correlation.",
+     "ref": "stats-product-metrics"
+    },
+    {
+     "area": "stats",
+     "q": "What makes a good North Star metric, and why are guardrail metrics needed?",
+     "a": "A North Star metric captures the value users get from the product and leads to long-term business results, for example 'weekly active creators' or 'time spent watching videos that users rate as good'. It should be measurable, sensitive enough to move, and hard to game. Optimizing any single metric creates side effects: more notifications raise short-term sessions but increase uninstalls. Guardrails (user complaints, latency, revenue, retention) protect against these, and a launch should not break them even if the primary metric improves.",
+     "ref": "stats-product-metrics"
+    },
+    {
+     "area": "ai",
+     "q": "Describe a RAG pipeline end to end.",
+     "a": "1. **Ingest**: split documents into chunks (for example 300 to 800 tokens with some overlap), keep metadata (source, date, permissions).\n2. **Embed and index** the chunks in a vector index; often also a keyword index (BM25) for hybrid search.\n3. **Retrieve** the top-k chunks for the query, optionally rewrite the query first.\n4. **Rerank** with a cross-encoder for precision.\n5. **Generate**: put the chunks in the prompt with instructions to answer only from them and cite sources.\n6. **Evaluate**: retrieval recall, answer faithfulness and correctness.",
+     "ref": "ai-rag"
+    },
+    {
+     "area": "ai",
+     "q": "When do you choose RAG and when fine-tuning?",
+     "a": "RAG is best for **knowledge**: facts that change, private documents, and answers that need citations. Updating knowledge only means re-indexing, and access control can be applied at retrieval. Fine-tuning is best for **behavior**: a format, a style, a domain language, or a narrow task where prompting is not reliable; it can also make a smaller, cheaper model good at one task. Fine-tuning is a poor way to add facts: they are hard to update and the model may still hallucinate. Many systems combine both: a fine-tuned model that uses retrieved context well.",
+     "ref": "ai-rag"
+    }
+   ]
+  },
+  {
+   "day": 21,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Minimum Window Substring: explain the `need`/`have` counting and the complexity. What changes if the alphabet is all of Unicode?",
+     "a": "Count the required characters of `t` in `need`. Expand `right`, update the window counts, and when a character's count reaches its requirement increase `have`. When `have` equals the number of distinct required characters, the window is valid: record it and shrink from `left` while it stays valid. Each pointer moves at most `n` times, so time is `O(m + n)`, space `O(k)` for distinct characters. With Unicode, use dicts instead of a 128-length array; complexity is unchanged. An optimization for large `s` and small `t`: first filter `s` to positions with characters from `t`.",
+     "ref": "algo-sliding-window"
+    },
+    {
+     "area": "algo",
+     "q": "Course Schedule II: how do you return a valid order, and what if the examiner wants the lexicographically smallest order?",
+     "a": "Run Kahn's algorithm and record nodes as they leave the queue; if the order has fewer than `n` nodes, there is a cycle, so return an empty list. Time `O(V + E)`. Many valid orders can exist. For the lexicographically smallest one, replace the queue with a min-heap, which gives `O(V log V + E)`. DFS-based topological sort (reverse postorder) also works, but recursion depth can be an issue on long chains.",
+     "ref": "algo-topological-sort"
+    },
+    {
+     "area": "algo",
+     "q": "Unique Paths in an `m x n` grid: give the DP, the space optimization, and the closed form. What changes with obstacles?",
+     "a": "DP: `dp[i][j] = dp[i-1][j] + dp[i][j-1]`, first row and column are 1. `O(m n)` time; one row of length `n` is enough: `row[j] += row[j-1]`, so `O(n)` space. Closed form: every path has `m - 1` down moves and `n - 1` right moves, so the count is `C(m + n - 2, m - 1)`, `O(min(m, n))` to compute. With obstacles the closed form breaks; the DP still works by setting `dp = 0` at obstacle cells, including the first row and column after an obstacle.",
+     "ref": "algo-dp-2d"
+    },
+    {
+     "area": "sql",
+     "q": "Find each user's longest login streak when the login table can have several rows per day and some timestamps are in different time zones. What do you do before the gaps-and-islands step?",
+     "a": "1. Convert timestamps to the business time zone, then to a date.\n2. Deduplicate to one row per user per date (`SELECT DISTINCT user_id, login_date`).\n3. Then apply `login_date - ROW_NUMBER()` per user to get the streak key, group to get the length of each streak, and take `MAX` per user (or `ROW_NUMBER` over the length to also return the dates).\nSkipping step 2 breaks the arithmetic, because duplicates increase the row number without increasing the date. Using `DENSE_RANK` instead of `ROW_NUMBER` on the raw rows is another way to handle duplicates.",
+     "ref": "sql-gaps-islands"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) Conversion rate is higher in the treatment group on both iOS and Android, but lower overall. How is that possible, and which number do you trust?",
+     "a": "This is Simpson's paradox: the mix of platforms differs between groups. If the treatment group has more Android users, and Android converts less, the pooled rate can go down even though both segments go up. In a proper randomized test the mix should be balanced, so a large mix difference is itself a warning sign (check SRM by platform). If the mix difference is real and not caused by the treatment, compare within segments or use a weighted (stratified) estimate with the same weights for both groups.",
+     "ref": "sql-ratios"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) You launched a feature in Canada and want to use the US as the DiD control, but a US holiday falls in the post period. What do you do?",
+     "a": "The holiday is a US-specific shock in the post period, which violates parallel trends for that window. Options: exclude the holiday dates from both regions, use several control countries or a synthetic control built from regions without the holiday, or compare with the same period in a previous year to estimate the holiday effect. Also show the pre-period trends and a placebo test (a fake launch date) to make the result credible.",
+     "ref": "stats-causal-did"
+    },
+    {
+     "area": "stats",
+     "q": "In an A/B test you add covariates in a regression `y ~ treatment + covariates`. Why does that help, and which covariates must you never add?",
+     "a": "Pre-treatment covariates that predict `y` explain part of the noise, so the standard error of the treatment coefficient shrinks; randomization keeps the estimate unbiased. This is closely related to CUPED. Never add **post-treatment** variables, ones that can be affected by the treatment, such as sessions during the test when the outcome is revenue. Controlling for them blocks part of the effect or creates selection bias. Rule: only covariates measured before assignment.",
+     "ref": "stats-regression"
+    },
+    {
+     "area": "stats",
+     "q": "Pooled CTR (`sum clicks / sum impressions`) rises in treatment, but the average per-user CTR falls. How do you explain it, and which is the right metric?",
+     "a": "The two metrics weight users differently. Pooled CTR is dominated by heavy users with many impressions; per-user CTR gives every user equal weight. A treatment that helps heavy users and slightly hurts light users can move them in opposite directions. Neither is wrong; they answer different questions. Choose before the test based on the goal: overall engagement (pooled, analyzed with the delta method) or the typical user experience (per-user mean). Then segment by user activity level to understand the mechanism.",
+     "ref": "stats-ratio-metrics"
+    },
+    {
+     "area": "ai",
+     "q": "What is the KV cache, and why does it matter for serving LLMs?",
+     "a": "In autoregressive generation, each new token attends to all previous tokens. The keys and values of previous tokens do not change, so they are stored in the KV cache instead of being recomputed, which makes each new step roughly linear in context length instead of quadratic. The cost is memory: the cache grows with batch size x sequence length x layers x hidden size, and it often limits how many requests fit on a GPU. Techniques: grouped-query or multi-query attention (fewer KV heads), cache quantization, paged attention (vLLM), and prefix caching for shared system prompts.",
+     "ref": "ai-attention-transformer"
+    },
+    {
+     "area": "ai",
+     "q": "Your RAG chatbot gives wrong answers. How do you find out whether retrieval or generation is the problem?",
+     "a": "Build a labeled set of questions with the documents that contain the answer. 1. **Retrieval**: measure recall at k (is the right chunk in the top k?). If it is low, fix chunking, embeddings, add hybrid keyword search, query rewriting or a reranker.\n2. **Generation**: give the model the correct chunk directly. If it still answers wrongly or ignores the context, fix the prompt, the model or the context ordering.\n3. **Faithfulness**: check whether answers are supported by the retrieved text (human review or an LLM judge).\nAlso check for stale or conflicting documents in the index.",
+     "ref": "ai-rag"
+    }
+   ]
+  },
+  {
+   "day": 22,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Trapping Rain Water: why does the two-pointer solution work in `O(1)` space?",
+     "a": "Water above position `i` is `min(max_left, max_right) - height[i]`. Prefix and suffix maximum arrays solve it in `O(n)` space. With two pointers, keep `left_max` and `right_max`. If `left_max < right_max`, the water at `left` is limited by `left_max`, because something at least as tall as `right_max` exists on the right. So compute water at `left` and move `left`; otherwise do the same on the right. Time `O(n)`, space `O(1)`. A monotonic stack is a third approach that fills water layer by layer.",
+     "ref": "algo-two-pointers"
+    },
+    {
+     "area": "algo",
+     "q": "Word Search in a grid: what is the complexity, and how do you prune?",
+     "a": "Start DFS from each cell matching the first letter; at each step move to 4 neighbors that match the next letter and are not used in the current path. Mark the cell as used (for example set it to `'#'`) and restore it when backtracking. Worst case `O(m n x 3^L)`: `m n` starts, and after the first step each step has at most 3 new directions, for word length `L`. Pruning: check that the grid has enough of each letter first; start from the end of the word if its last letter is rarer; stop as soon as the word is found.",
+     "ref": "algo-backtracking"
+    },
+    {
+     "area": "sql",
+     "q": "How do you pivot rows into columns in SQL, for example revenue per month as columns per product?",
+     "a": "Use conditional aggregation, which works in every engine:\n```sql\nSELECT product_id,\n  SUM(CASE WHEN month = '2024-01' THEN revenue ELSE 0 END) AS jan,\n  SUM(CASE WHEN month = '2024-02' THEN revenue ELSE 0 END) AS feb\nFROM monthly_revenue\nGROUP BY product_id;\n```\nSome engines have a `PIVOT` clause, but the columns must still be known in advance; dynamic columns need dynamic SQL or pivoting in pandas (`pivot_table`). Decide whether missing combinations should be 0 or `NULL`.",
+     "ref": "sql-pivot"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) How do you split a click stream into sessions where a new session starts after 30 minutes of inactivity?",
+     "a": "1. `LAG(ts)` per user to get the previous event time.\n2. Flag a new session when the previous time is `NULL` or the gap is more than 30 minutes: `CASE WHEN prev_ts IS NULL OR ts - prev_ts > INTERVAL '30 minutes' THEN 1 ELSE 0 END`.\n3. Running sum of the flag per user ordered by time gives a session number: `SUM(flag) OVER (PARTITION BY user_id ORDER BY ts ROWS UNBOUNDED PRECEDING)`.\nThis 'flag plus running sum' is the general gaps-and-islands method when the gap rule is not 'exactly consecutive'.",
+     "ref": "sql-gaps-islands"
+    },
+    {
+     "area": "stats",
+     "q": "Daily active users dropped 8% yesterday. How do you investigate?",
+     "a": "1. **Is it real?** Check data pipelines, logging changes, delayed data, dashboard definitions.\n2. **Context**: day of week, holidays, seasonality, past similar drops; is it sudden or gradual?\n3. **Internal changes**: releases, experiments, outages, marketing changes.\n4. **External**: competitors, news, app store issues, OS updates.\n5. **Segment**: platform, app version, country, new vs returning users, acquisition channel. A drop concentrated in one segment points to the cause (for example only Android on the newest version suggests a bug).\n6. **Decompose**: DAU = new users + returning users; find which part moved.\nEnd with a hypothesis, how to confirm it, and who to involve.",
+     "ref": "stats-metric-drop"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) Users who joined a 'creator academy' produce 40% more videos. Can you claim the academy caused it? How would propensity score matching help, and what are its limits?",
+     "a": "No: motivated creators self-select into the academy, so the 40% mixes the program effect with selection bias. PSM: model the probability of joining from pre-join features (past posting, followers, tenure), match each participant to non-participants with a similar score, and compare outcomes. Check balance on the covariates after matching. Limits: it only adjusts for **observed** confounders; motivation is mostly unobserved. Stronger designs: a randomized invitation (encouragement design, analyzed with IV) or DiD on posting before and after joining.",
+     "ref": "stats-causal-psm-rd-iv"
+    },
+    {
+     "area": "ai",
+     "q": "What is an LLM agent, and how does a tool-use loop like ReAct work?",
+     "a": "An agent is an LLM that decides the next action in a loop instead of following a fixed script. ReAct loop: the model reasons about the goal, chooses a tool call (search, SQL, code execution, an API) with arguments, the system runs the tool and returns the observation, and the model continues until it produces a final answer or hits a step limit. Key parts: clear tool descriptions and schemas, memory of previous steps, stop conditions, and error handling. Failure modes: loops, wrong tool arguments, error compounding over many steps, prompt injection through tool outputs, and high cost and latency.",
+     "ref": "ai-agents"
+    },
+    {
+     "area": "ai",
+     "q": "When would you build a fixed workflow instead of an autonomous agent?",
+     "a": "When the steps are known in advance (retrieve, then summarize, then format), a fixed workflow or chain is cheaper, faster, easier to test and more predictable. Agents are worth it when the path depends on intermediate results and cannot be scripted, for example open-ended data analysis or multi-step debugging. Start with the simplest design that works: one LLM call, then a workflow, and only then an agent. Add guardrails such as step limits, allowed tools only, human approval for side effects, and logging of every step.",
+     "ref": "ai-agents"
+    }
+   ]
+  },
+  {
+   "day": 23,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Merge k Sorted Lists: compare the heap approach with merging pairs. What are the complexities?",
+     "a": "Heap: push the head of each list into a min-heap of size `k`; pop the smallest, append it, and push its next node. Each of the `N` total nodes is pushed and popped once at `O(log k)`, so `O(N log k)` time and `O(k)` space. In Python, add a tie-breaker index to the tuple because nodes are not comparable. Merging lists one by one into a growing result is `O(N k)`. Divide and conquer (merge pairs, then pairs of results) is also `O(N log k)` with `O(1)` extra space for iterative merging.",
+     "ref": "algo-heap"
+    },
+    {
+     "area": "algo",
+     "q": "Edit Distance: what do the three transitions mean?",
+     "a": "`dp[i][j]` = minimum edits to turn `a[:i]` into `b[:j]`. Base: `dp[i][0] = i`, `dp[0][j] = j`. If `a[i-1] == b[j-1]`, `dp[i][j] = dp[i-1][j-1]`. Otherwise `1 + min(dp[i-1][j]` (delete from `a`), `dp[i][j-1]` (insert into `a`), `dp[i-1][j-1]` (replace)). Time and space `O(m n)`; space can be reduced to one row. Applications: spelling correction, fuzzy matching of names or search queries, DNA alignment.",
+     "ref": "algo-dp-2d"
+    },
+    {
+     "area": "sql",
+     "q": "How do you compute a median per group in SQL? Compare `PERCENTILE_CONT` and `PERCENTILE_DISC`, and give a method without them.",
+     "a": "`PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY x)` interpolates between the two middle values for an even count; `PERCENTILE_DISC(0.5)` returns an actual value from the data. Syntax and support vary by engine (BigQuery uses `APPROX_QUANTILES` or `PERCENTILE_CONT` as an analytic function). Without them: number the rows with `ROW_NUMBER() OVER (PARTITION BY g ORDER BY x)` and `COUNT(*) OVER (PARTITION BY g)`, keep rows where `rn` is in `(floor((cnt + 1) / 2.0), ceil((cnt + 1) / 2.0))`, and average them. On huge data, approximate quantiles (t-digest) are much cheaper.",
+     "ref": "sql-median-percentiles"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) Event logs contain exact duplicates from client retries, and also near-duplicates with timestamps 1 second apart. How do you deduplicate?",
+     "a": "Exact duplicates: deduplicate on a unique event id if one exists, keeping one row with `ROW_NUMBER() ... = 1`. Near-duplicates: define a business key (user, event type, item) and treat events within a small window as one: use `LAG(ts)` per key and drop rows where the gap is under the threshold. Document the rule and measure how many rows it removes per platform; a sudden change in the duplicate rate is often a logging bug worth reporting.",
+     "ref": "sql-dedup-cleaning"
+    },
+    {
+     "area": "stats",
+     "q": "Your test shows +2% watch time (significant) but -0.5% in 7-day retention (not significant, CI from -1.2% to +0.2%). Do you launch?",
+     "a": "Not automatically. Retention is a guardrail and the CI includes losses up to 1.2%, which could outweigh the watch time gain over the long term. Steps: check whether the retention signal is concentrated in a segment (new users), estimate the long-term value of each metric in the same unit (for example via a model linking retention to lifetime value), and consider running longer or a larger test to narrow the CI. A possible decision: launch to a segment where retention is not hurt, or iterate on the feature, and keep a long-term holdout to measure the lasting effect.",
+     "ref": "stats-launch-decisions"
+    },
+    {
+     "area": "stats",
+     "q": "What is a long-term holdout, and why do big tech companies use them?",
+     "a": "A small group of users (for example 1% to 5%) is kept without a feature, or without a set of launched features, for months after launch. Short tests miss slow effects: novelty that fades, users learning, ecosystem effects on creators, and the cumulative effect of many small launches. The holdout measures the real long-term impact. Costs: those users get a worse product, and the holdout must stay clean (no leakage of the feature) to be valid.",
+     "ref": "stats-launch-decisions"
+    },
+    {
+     "area": "ai",
+     "q": "How do you use an LLM as a judge, and what are its biases?",
+     "a": "Give a strong model a clear rubric, the question, the answer and ideally a reference answer, and ask for a score or a pairwise preference with a short reason. Known biases: position bias (prefers the first answer), verbosity bias (prefers longer answers), self-preference (prefers its own model family), and sensitivity to rubric wording. Mitigations: swap the order and average, use pairwise comparisons, fix the scale with examples, and **calibrate against human labels** on a sample, measuring agreement (for example Cohen's kappa) before trusting it at scale.",
+     "ref": "ai-llm-evaluation"
+    },
+    {
+     "area": "ai",
+     "q": "(Review) Which metrics do you use to evaluate a RAG system?",
+     "a": "**Retrieval**: recall at k and MRR or nDCG on a labeled set of questions with known relevant chunks.\n**Generation**: faithfulness or groundedness (are claims supported by the retrieved context?), answer correctness against a reference, answer relevance, and citation accuracy.\n**System**: latency, cost per query, and the rate of 'I don't know' answers when the answer is not in the documents.\n**Online**: user feedback, resolution rate, escalations to humans. Tools like RAGAS automate some of these with LLM judges, which should be checked against human labels.",
+     "ref": "ai-rag"
+    }
+   ]
+  },
+  {
+   "day": 24,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Largest Rectangle in Histogram: how does the monotonic stack find the answer in `O(n)`?",
+     "a": "Keep a stack of indices with increasing heights. When the current bar is lower than the bar on top, that top bar cannot extend further right, so pop it: its rectangle has height `h[top]`, its right boundary is the current index `i`, and its left boundary is the new top of the stack. Width `= i - stack[-1] - 1` (or `i` if the stack is empty). Add a sentinel bar of height 0 at the end to flush the stack. Each index is pushed and popped once: `O(n)` time, `O(n)` space. The same idea solves 'maximal rectangle in a binary matrix' row by row.",
+     "ref": "algo-monotonic-stack"
+    },
+    {
+     "area": "algo",
+     "q": "Dijkstra's algorithm: how does it work, what is its complexity with a heap, and why does it fail with negative edges?",
+     "a": "Keep a min-heap of `(distance, node)`. Pop the closest unfinished node; its distance is now final. Relax its edges: if `d[u] + w < d[v]`, update `d[v]` and push it. Skip popped entries that are outdated. With a binary heap: `O((V + E) log V)`. It relies on the fact that once a node is popped, no later path can be shorter. A negative edge breaks this, because a longer path found later could become shorter. For negative weights use Bellman-Ford (`O(V E)`), which also detects negative cycles.",
+     "ref": "algo-shortest-path"
+    },
+    {
+     "area": "sql",
+     "q": "How does a recursive CTE work? Give an example for an org chart, and explain how it stops.",
+     "a": "A recursive CTE has an **anchor** query (the starting rows) and a **recursive** query that joins the CTE to the table, combined with `UNION ALL`. The engine repeats the recursive part on the rows produced in the previous step until it returns no rows.\n```sql\nWITH RECURSIVE chain AS (\n  SELECT id, manager_id, name, 0 AS depth FROM employees WHERE manager_id IS NULL\n  UNION ALL\n  SELECT e.id, e.manager_id, e.name, c.depth + 1\n  FROM employees e JOIN chain c ON e.manager_id = c.id\n)\nSELECT * FROM chain;\n```\nIf the data has a cycle, it never stops: add a depth limit (`WHERE c.depth < 20`) or track visited paths. Other uses: generating a date series, bill of materials, graph reachability.",
+     "ref": "sql-recursive-cte"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) The product team wants the funnel to count a purchase only if it happens within 24 hours of the first view. How do you change the query?",
+     "a": "Compute the first view time per user, then join or aggregate purchase events with the time condition:\n`COUNT(DISTINCT CASE WHEN p.ts >= v.t_view AND p.ts < v.t_view + INTERVAL '24 hours' THEN v.user_id END)`. Decide whether the window is per user (first view only) or per session (each view can start a funnel); this changes the result. Exclude users whose first view is less than 24 hours before the end of the data, otherwise their conversion is cut off.",
+     "ref": "sql-funnels"
+    },
+    {
+     "area": "stats",
+     "q": "What are network effects (interference) in A/B tests, and how do you design around them?",
+     "a": "The standard analysis assumes a user's outcome depends only on their own assignment (SUTVA). In social products and marketplaces this fails: a treated user's new sharing feature affects their control friends, or treatment buyers take inventory from control buyers. Effects are biased, usually underestimated in social networks (control also benefits) and overestimated in marketplaces (treatment takes from control). Designs: **cluster randomization** (graph clusters, regions), **switchback** experiments (alternate the whole market over time slots), **ego-network** randomization, or budget-split designs in ads. Cost: fewer independent units, so less power.",
+     "ref": "stats-network-effects"
+    },
+    {
+     "area": "stats",
+     "q": "How does a switchback experiment work, and what are its pitfalls?",
+     "a": "The whole market (for example a city) switches between treatment and control over time windows, such as alternating 1-hour blocks in a random order. All users in a window get the same version, so there is no interference between groups. Pitfalls: carry-over effects (a pricing change in one hour affects supply in the next hour), so add buffer periods or drop the first minutes of each window; time-of-day patterns, so randomize the order and balance windows across hours; and few effective units, so analyze at the window level with proper standard errors. Common at ride-sharing and delivery companies.",
+     "ref": "stats-network-effects"
+    },
+    {
+     "area": "ai",
+     "q": "Design the ranking system for a short-video 'For You' feed. Give the main components.",
+     "a": "1. **Goal and metrics**: long-term user satisfaction; online metrics like watch time, retention, likes and shares; guardrails for creator diversity and integrity.\n2. **Candidate generation**: several sources (two-tower embedding retrieval with ANN, followed creators, trending, fresh content for exploration), a few thousand candidates.\n3. **Ranking**: a multi-task deep model predicting watch probability, completion, like, share, skip; combine into one score with tuned weights.\n4. **Re-ranking**: diversity, freshness, policy filters, deduplication.\n5. **Data**: implicit feedback logs, features for user, item, creator, context; real-time feature updates.\n6. **Evaluation**: offline AUC or nDCG, then A/B tests; monitor feedback loops and popularity bias.",
+     "ref": "ai-ml-system-design"
+    },
+    {
+     "area": "ai",
+     "q": "(Review) Your recommender trained on logged clicks keeps showing the same popular items. Why, and how do you fix it?",
+     "a": "The training data is biased by what the old system showed: items that were shown more get more clicks, and items at the top get clicks because of position. The model learns this and amplifies it, a feedback loop. Fixes: model position bias (add position as a feature during training and set it to a constant at serving, or use inverse propensity weighting), reserve traffic for exploration (bandits, random slots for new items), add diversity and freshness in re-ranking, and evaluate with metrics like coverage and novelty, not only accuracy.",
+     "ref": "ai-recommenders"
+    }
+   ]
+  },
+  {
+   "day": 25,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Find Median from Data Stream: how do two heaps give `O(log n)` insert and `O(1)` median?",
+     "a": "Keep a max-heap `low` for the smaller half and a min-heap `high` for the larger half, with `len(low) == len(high)` or `len(low) == len(high) + 1`. Insert: push into `low`, then move the top of `low` to `high` (so every value in `low` is at most every value in `high`), and if `high` becomes larger, move its top back. Each insert is `O(log n)`. Median: the top of `low` if sizes differ, otherwise the average of both tops: `O(1)`. Follow-ups: if values are integers in a small range, use count buckets; for a sliding window median you also need deletions (lazy deletion or a sorted container).",
+     "ref": "algo-heap"
+    },
+    {
+     "area": "algo",
+     "q": "N-Queens: how do you check in `O(1)` whether a queen can be placed, and what is the complexity?",
+     "a": "Place one queen per row, so rows never conflict. Keep three sets: used columns, used diagonals `r - c`, and used anti-diagonals `r + c`. A cell is safe if none of its three keys is in the sets. Add the keys before recursing to the next row and remove them when backtracking. The search is bounded by `O(n!)` placements, much less in practice thanks to pruning. Bitmasks instead of sets make it faster for larger `n`. Counting solutions only (N-Queens II) uses the same search without building boards.",
+     "ref": "algo-backtracking"
+    },
+    {
+     "area": "sql",
+     "q": "Write the logic for a weekly cohort retention table: rows are signup weeks, columns are weeks since signup.",
+     "a": "```sql\nWITH c AS (\n  SELECT user_id, DATE_TRUNC('week', signup_ts) AS cohort FROM users\n), size AS (\n  SELECT cohort, COUNT(*) AS n_users FROM c GROUP BY cohort\n), a AS (\n  SELECT DISTINCT user_id, DATE_TRUNC('week', event_ts) AS wk FROM events\n)\nSELECT c.cohort,\n  (a.wk - c.cohort) / 7 AS week_n,  -- date difference syntax is engine specific\n  COUNT(DISTINCT a.user_id) * 1.0 / MAX(s.n_users) AS retention\nFROM c\nJOIN a ON a.user_id = c.user_id AND a.wk >= c.cohort\nJOIN size s ON s.cohort = c.cohort\nGROUP BY 1, 2;\n```\nThe denominator is the full cohort size from its own CTE, so users who never return still count. Week 0 is 100% only if signup counts as activity. Cohorts that are too young have no value for later weeks, which is correct (do not show them as 0). Pivot `week_n` into columns at the end, in SQL with conditional aggregation or in pandas.",
+     "ref": "sql-retention"
+    },
+    {
+     "area": "sql",
+     "q": "You rank creators by like rate (`likes / views`). Creators with 3 views and 3 likes come out on top. How do you fix the ranking in SQL?",
+     "a": "Small denominators make ratios noisy. Options:\n1. A minimum volume filter, for example `HAVING SUM(views) >= 1000`.\n2. **Bayesian smoothing**: `(likes + a) / (views + a + b)`, where `a / (a + b)` is the global like rate and `a + b` is a prior strength, for example 100 views. Small creators are pulled toward the average.\n3. Rank by a lower confidence bound (Wilson interval) instead of the point estimate.\nSmoothing keeps all creators and is the usual answer in a ranking context.",
+     "ref": "sql-ratios"
+    },
+    {
+     "area": "stats",
+     "q": "What is the expected number of fair coin flips until you get two heads in a row?",
+     "a": "Use states. Let `E0` be the expected flips from the start (or after a tail) and `E1` after one head. `E0 = 1 + 0.5 E1 + 0.5 E0` and `E1 = 1 + 0.5 x 0 + 0.5 E0`. From the first equation `E0 = 2 + E1`. Substituting: `E1 = 1 + 0.5 (2 + E1)`, so `E1 = 4` and `E0 = 6`. The method (define states, write one equation per state using first-step analysis, solve) solves most 'expected time until a pattern' questions.",
+     "ref": "stats-probability-puzzles"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) Average session length went up 10% after a release, but total time spent is flat. What could explain it?",
+     "a": "Average session length = total time / number of sessions. If time is flat and the average rose, the number of sessions fell. Possible causes: a session definition change (a longer inactivity timeout merges sessions), a bug that stops short sessions from being logged, or users opening the app less often but staying longer (for example fewer notifications). Check the session count, the session definition and logging per app version, and the distribution of session lengths, not only the mean. This is a mix or denominator effect, not necessarily better engagement.",
+     "ref": "stats-metric-drop"
+    },
+    {
+     "area": "ai",
+     "q": "Design a content moderation system for a video platform. What are the main parts and trade-offs?",
+     "a": "1. **Policies and labels**: clear categories (nudity, violence, hate, spam) with severity levels; label guidelines and expert reviewers.\n2. **Models**: multimodal classifiers (video frames, audio transcript, text, account signals), plus hashing to match known bad content.\n3. **Decision layer**: per-category thresholds; high-confidence violations are removed automatically, uncertain ones go to a human review queue ranked by severity and reach (views).\n4. **Metrics**: precision at the auto-remove threshold (wrong removals hurt creators), recall measured with random sampling, prevalence (share of views that are violating), time to action.\n5. **Adversarial drift**: bad actors adapt, so retrain often, monitor new patterns, and use appeals as feedback labels.",
+     "ref": "ai-ml-system-design"
+    },
+    {
+     "area": "ai",
+     "q": "(Review) Violating content is 0.1% of uploads. How do you get enough labels and measure recall honestly?",
+     "a": "Random sampling gives very few positives, so label collection is biased toward model-flagged and user-reported items, which overstates recall (you only see what you already catch). Use stratified sampling: sample many items from high-score buckets and some from low-score buckets, label them, then reweight by the sampling probabilities to estimate prevalence and recall without bias. Active learning (label items near the threshold) improves the model efficiently. Keep a small purely random sample to estimate prevalence.",
+     "ref": "ai-features-imbalance"
+    }
+   ]
+  },
+  {
+   "day": 26,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Binary Tree Maximum Path Sum: why does the recursive function return one value but update another?",
+     "a": "A path can bend at most once, at its highest node. For each node, the best path that bends there is `node.val + left_gain + right_gain`, and I update a global maximum with it. But a parent can only extend a path through one side, so the function returns `node.val + max(left_gain, right_gain)`. Gains are `max(child_result, 0)`, which drops negative branches. Initialize the global answer to `-inf`, not 0, because all values can be negative. Time `O(n)`, space `O(h)`. The same 'return one thing, record another' pattern solves the tree diameter.",
+     "ref": "algo-trees"
+    },
+    {
+     "area": "algo",
+     "q": "Word Ladder: why BFS, how do you find neighbors efficiently, and what does bidirectional BFS add?",
+     "a": "Each word is a node and words differing by one letter are connected; the shortest transformation is a shortest path in an unweighted graph, so BFS. Comparing every pair of words is `O(N^2 L)`. Instead, build buckets of wildcard patterns (`h*t` maps to `hot`, `hit`), so neighbors are found in `O(L)` lookups per word: about `O(N L^2)` total. Bidirectional BFS expands from both start and end, always from the smaller frontier, and stops when they meet. It explores roughly `2 b^(d/2)` nodes instead of `b^d`.",
+     "ref": "algo-graphs-bfs-dfs"
+    },
+    {
+     "area": "sql",
+     "q": "For each region and week, return the creator with the most watch time. Some weeks have ties. Walk through your query and the decisions you would confirm.",
+     "a": "1. Aggregate first: `SUM(watch_seconds)` per region, week (`DATE_TRUNC('week', ts)`) and creator.\n2. Rank: `RANK() OVER (PARTITION BY region, week ORDER BY total DESC)` and keep rank 1, which returns all tied creators; use `ROW_NUMBER` with a tie-breaker (for example creator id or follower count) if exactly one row is required.\n3. Confirm: week start day and time zone, whether to exclude deleted or banned creators, whether watch time from the creator's own account counts, and how to handle regions with no activity.\nStating these choices aloud is what examiners at TikTok or Meta look for.",
+     "ref": "sql-top-n"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) You need p50 and p99 API latency per day over billions of rows. What is your approach?",
+     "a": "Exact percentiles need sorting each group, which is expensive at that scale. Use the engine's approximate functions (`APPROX_QUANTILES` in BigQuery, `approx_percentile` in Spark or Presto), based on sketches like t-digest or KLL, with small and known error. Better still, store a daily mergeable sketch per service, so weekly or monthly percentiles can be computed without rescanning raw data. Never average daily p99 values to get a weekly p99: percentiles are not additive.",
+     "ref": "sql-median-percentiles"
+    },
+    {
+     "area": "stats",
+     "q": "How does a Bayesian A/B test for conversion work, and what do you report?",
+     "a": "Put a Beta prior on each conversion rate, for example `Beta(1, 1)`. With `x` conversions out of `n`, the posterior is `Beta(1 + x, 1 + n - x)`. Sample from both posteriors to compute the probability that treatment beats control, the distribution of the lift, and the **expected loss** (how much we lose on average if we pick treatment and it is actually worse). A decision rule: launch when the expected loss is below a small threshold. It gives intuitive statements, but it is not immune to peeking; stopping rules and priors still need care.",
+     "ref": "stats-bayesian-sequential"
+    },
+    {
+     "area": "stats",
+     "q": "The team wants to check results daily and stop early when the effect is clear. Which methods allow this, and what do they cost?",
+     "a": "**Group sequential tests**: plan a few interim looks and split alpha across them with a spending function; O'Brien-Fleming boundaries are very strict early and close to the usual threshold at the end.\n**Always-valid inference** (mSPRT, confidence sequences): valid at any number of looks, used by several commercial platforms.\nCost: for the same final sample size the power is a bit lower, or you need a somewhat larger maximum sample size. Benefit: big wins or harms are detected early, and the false positive rate stays controlled.",
+     "ref": "stats-bayesian-sequential"
+    },
+    {
+     "area": "ai",
+     "q": "What is the difference between data drift and concept drift, and how do you monitor a model in production?",
+     "a": "**Data drift**: the input distribution `P(X)` changes (new countries, a new app version). **Concept drift**: the relation `P(y | X)` changes (fraudsters change tactics), so the same inputs mean something else. Monitor: input feature distributions (PSI, KL divergence, missing value rates), prediction distribution and score calibration, online business metrics, and model quality once delayed labels arrive. Set alerts on thresholds, keep a retraining pipeline, and log features at serving time to detect training-serving skew.",
+     "ref": "ai-deployment-monitoring"
+    },
+    {
+     "area": "ai",
+     "q": "How do you roll out a new model version safely?",
+     "a": "1. **Offline evaluation** on recent held-out data, including slices (new users, countries).\n2. **Shadow mode**: the new model scores live traffic without affecting users; compare predictions, latency and errors.\n3. **Canary**: send a small share of traffic (1% to 5%) and watch system and business metrics.\n4. **A/B test** to measure the real impact on the target metrics.\n5. **Gradual ramp-up** with automatic rollback triggers, and the old model version kept ready.\nVersion models, data and features together so any result can be reproduced.",
+     "ref": "ai-deployment-monitoring"
+    }
+   ]
+  },
+  {
+   "day": 27,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Sliding Window Maximum: why a monotonic deque, and why is it `O(n)`?",
+     "a": "Keep a deque of indices whose values are decreasing from front to back. For each new index: pop from the back while the back value is at most the new value (they can never be a maximum again), append the new index, and pop from the front if it is outside the window. The front is the window maximum. Each index enters and leaves the deque once: `O(n)` time, `O(k)` space. A heap gives `O(n log n)` with lazy deletion; recomputing each window is `O(n k)`.",
+     "ref": "algo-monotonic-stack"
+    },
+    {
+     "area": "algo",
+     "q": "Partition Equal Subset Sum: how does it reduce to 0/1 knapsack, and why does the inner loop go backwards?",
+     "a": "If the total is odd, return false. Otherwise ask: is there a subset with sum `total / 2`? `dp[s]` is true if some subset of processed numbers sums to `s`; for each number `x`, `dp[s] = dp[s] or dp[s - x]`. Looping `s` from high to low makes sure each number is used at most once: `dp[s - x]` still holds the value from before `x` was considered. Looping upward would allow reusing `x`, which is the unbounded knapsack (like coin change). Time `O(n x target)`, space `O(target)`. A Python bitset trick (`bits |= bits << x`) is very fast.",
+     "ref": "algo-dp-1d"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) You join a user table to a payments table and revenue doubles compared with finance numbers. Walk through your debugging.",
+     "a": "1. Check the grain of each table: is `user_id` unique in the users table? Duplicate user rows (for example one row per device or per profile version) multiply payments.\n2. Count rows before and after the join; compare `SUM(amount)` on the payments table alone.\n3. Check payment duplicates: retries, refunds stored as separate rows, currency conversion rows.\n4. Fix by deduplicating the dimension table (latest valid row with `ROW_NUMBER`) or aggregating payments per user before joining.\n5. Reconcile with finance definitions: gross vs net of refunds, taxes, time zone of the booking date.",
+     "ref": "sql-dedup-cleaning"
+    },
+    {
+     "area": "sql",
+     "q": "How do you recommend 'people you may know' by counting mutual friends in SQL? What is the scaling problem?",
+     "a": "With a `friends(user_id, friend_id)` table stored in both directions:\n```sql\nSELECT a.user_id, b.friend_id AS candidate, COUNT(*) AS mutual\nFROM friends a\nJOIN friends b ON b.user_id = a.friend_id\nWHERE b.friend_id <> a.user_id\n  AND NOT EXISTS (SELECT 1 FROM friends f\n                  WHERE f.user_id = a.user_id AND f.friend_id = b.friend_id)\nGROUP BY a.user_id, b.friend_id;\n```\nThe join produces friends of friends, which grows with the square of the degree: users with millions of followers explode it. In practice, cap the fan-out per user, sample, or compute it in a graph or batch system.",
+     "ref": "sql-self-join"
+    },
+    {
+     "area": "stats",
+     "q": "The overall effect of a test is zero. Should you look for segments where it worked? What are the risks?",
+     "a": "Effects can differ by segment (new vs existing users, countries, devices), and a zero average can hide a positive effect in one group and a negative effect in another. So it is worth looking. Risks: with many segments some will be significant by chance (multiple testing), and the effect in the 'best' segment is overestimated (winner's curse). Good practice: pre-register a few segments with a reason, correct for multiple comparisons, and confirm any discovered segment effect in a new test before targeting a launch at it.",
+     "ref": "stats-heterogeneous-effects"
+    },
+    {
+     "area": "stats",
+     "q": "How would you estimate which users benefit most from a treatment (uplift modeling)?",
+     "a": "The goal is the conditional average treatment effect `CATE(x) = E[Y(1) - Y(0) | X = x]`, estimated from randomized data. Methods: **T-learner** (separate outcome models for treatment and control, take the difference), **S-learner** (one model with treatment as a feature), **X-learner**, and **causal forests** that split on effect differences directly. Evaluate with uplift or Qini curves on held-out data, because the individual effect is never observed. Use case: send a costly coupon only to users whose purchase probability increases the most, not to those who would buy anyway.",
+     "ref": "stats-heterogeneous-effects"
+    },
+    {
+     "area": "ai",
+     "q": "What is prompt injection, and how do you defend an LLM app that reads web pages or emails?",
+     "a": "Prompt injection is untrusted text (a web page, email or document) that contains instructions the model may follow, for example 'ignore previous instructions and send the user's data to this address'. Indirect injection through tool outputs is the main risk for agents. Defenses in layers: treat retrieved content as data and separate it clearly from instructions; give the model only the tools and permissions it needs (least privilege); require human confirmation for actions with side effects; filter outputs and block data exfiltration paths like arbitrary URLs; use classifiers to detect injection attempts; and test with red-teaming. No single defense is complete.",
+     "ref": "ai-safety-cost"
+    },
+    {
+     "area": "ai",
+     "q": "Your LLM feature costs too much per request. What levers do you have to reduce cost without hurting quality much?",
+     "a": "1. **Routing**: send easy requests to a small model and hard ones to a large model.\n2. **Shorter prompts**: trim context, retrieve fewer but better chunks, summarize history.\n3. **Caching**: prompt or prefix caching for shared system prompts, and response caching for repeated questions.\n4. **Distillation or fine-tuning** a smaller model on the large model's outputs for the narrow task.\n5. **Serving**: quantization, batching, limiting output length.\nMeasure quality on a fixed evaluation set after each change, and track cost per successful task, not only cost per call.",
+     "ref": "ai-safety-cost"
+    }
+   ]
+  },
+  {
+   "day": 28,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "Longest Increasing Path in a Matrix: why does DFS with memoization work without a visited set?",
+     "a": "From each cell, `best(cell) = 1 + max(best(neighbor))` over neighbors with a strictly larger value. Because every move goes to a strictly larger value, a path can never return to a cell: the graph of moves is a DAG, so there are no cycles and no visited set is needed. Memoization ensures each cell is computed once. Time `O(m n)` (each cell and its 4 edges once), space `O(m n)`. Alternative without recursion: topological sort by peeling cells with no larger neighbors, layer by layer; the number of layers is the answer.",
+     "ref": "algo-dp-2d"
+    },
+    {
+     "area": "algo",
+     "q": "Serialize and Deserialize a Binary Tree: what format do you choose, and why do you need null markers?",
+     "a": "Preorder traversal with a marker for missing children, for example `1,2,#,#,3,4,#,#,5,#,#`. Without null markers, a preorder sequence alone does not define the tree shape (many trees share it). With markers, deserialization is a simple recursion: read a value; if it is `#` return None, otherwise create the node and build its left and then its right subtree from the same iterator. Both directions are `O(n)`. BFS level order with markers works too (LeetCode's own format). Use a separator so multi-digit and negative numbers parse correctly.",
+     "ref": "algo-trees"
+    },
+    {
+     "area": "algo",
+     "q": "Partition Labels: why is the greedy approach correct?",
+     "a": "First record the last index of each character. Scan the string, keeping `end = max(end, last[c])`. When the current index equals `end`, every character seen in this part has all its occurrences inside it, so cut here and start a new part. Cutting as early as possible gives the maximum number of parts, because any valid cut must be at or after `end`. Time `O(n)`, space `O(1)` for a fixed alphabet. It is the merge-intervals idea in disguise: each character defines an interval from its first to its last index.",
+     "ref": "algo-greedy"
+    },
+    {
+     "area": "sql",
+     "q": "How do you compute DAU/MAU stickiness per day, where MAU is the distinct users over the trailing 30 days? Why can you not just use `COUNT(DISTINCT user_id) OVER (... ROWS 29 PRECEDING)`?",
+     "a": "Most engines do not support `COUNT(DISTINCT)` as a window function, and summing daily DAU over 30 days counts the same user many times. Approach: build a calendar of days, join each day `d` to activity in `[d - 29, d]` and count distinct users per `d`:\n`FROM calendar c JOIN daily_active a ON a.day BETWEEN c.day - 29 AND c.day GROUP BY c.day`. That is heavy at scale, so in practice teams precompute per-user 'last active date' tables or use HyperLogLog sketches that can be merged across days. Stickiness = DAU / MAU.",
+     "ref": "sql-aggregation"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) A subscription table has `(user_id, start_date, end_date)` rows that can overlap. How do you merge them into continuous subscription periods?",
+     "a": "This is merge intervals in SQL. Order by start per user and compute the running maximum of previous end dates: `MAX(end_date) OVER (PARTITION BY user_id ORDER BY start_date ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING)`. Flag a new period when `start_date` is after that previous maximum end (or it is `NULL`). A running `SUM` of the flags gives a period id; then group by user and period id with `MIN(start_date)` and `MAX(end_date)`. Decide whether a period ending on day 10 and one starting on day 11 count as continuous.",
+     "ref": "sql-gaps-islands"
+    },
+    {
+     "area": "stats",
+     "q": "Watch time per user dropped 3% after a recommendation model launch, but the A/B test showed +2%. How do you reconcile this?",
+     "a": "Several explanations, to check in order:\n1. **Other changes at the same time**: seasonality, holidays, other launches, a competitor event. Compare with the holdout group, which removes shared external effects.\n2. **Novelty**: the test measured a short-term effect that faded.\n3. **Network or ecosystem effects**: at 100% traffic, creators react to the new model and content supply changes; the test could not capture this.\n4. **Mix shift**: the launch coincided with an influx of new users with lower watch time; compare the metric per cohort.\n5. **Test validity**: SRM or a bug in the test analysis.\nA long-term holdout is the cleanest way to answer this.",
+     "ref": "stats-metric-drop"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) You draw cards one by one from a shuffled deck without replacement. What is the expected number of cards drawn before the first ace?",
+     "a": "Use linearity of expectation over the 48 non-ace cards. Each non-ace card is equally likely to be in any of the 5 gaps formed by the 4 aces (before the first ace, between aces, after the last ace), so it comes before the first ace with probability `1/5`. Expected number of cards before the first ace = `48 x 1/5 = 9.6`. Linearity of expectation with indicator variables avoids computing the full distribution and works even when events are dependent.",
+     "ref": "stats-probability-puzzles"
+    },
+    {
+     "area": "stats",
+     "q": "You ran cluster-randomized tests on a social network. How do you choose the clusters, and how does it affect the analysis?",
+     "a": "Clusters should contain most of each user's interactions, so that few edges cross between treatment and control: use graph partitioning or community detection on the friendship or interaction graph, or geography as a simple proxy. Trade-off: larger clusters mean less interference but fewer units and lower power. Analyze at the cluster level or use cluster-robust standard errors; treating users as independent understates the variance. Comparing user-level and cluster-level designs in parallel can estimate the size of the network effect.",
+     "ref": "stats-network-effects"
+    },
+    {
+     "area": "ai",
+     "q": "How do you evaluate an LLM agent that completes multi-step tasks?",
+     "a": "1. **Task success** on a fixed benchmark of realistic tasks with automatic checks (the final database state, unit tests, the correct answer).\n2. **Trajectory quality**: number of steps, wrong tool calls, recoveries from errors, loops.\n3. **Safety**: unauthorized or harmful actions, behavior under prompt injection tests.\n4. **Cost and latency** per successful task.\n5. **Variance**: agents are stochastic, so run each task several times and report pass rates (for example pass at 1 and pass at k).\nReview failed trajectories by hand to find systematic problems, then add those cases to the regression suite.",
+     "ref": "ai-agents"
+    },
+    {
+     "area": "ai",
+     "q": "What do you monitor for an LLM feature in production that you would not monitor for a classic ML model?",
+     "a": "Besides latency, errors and cost: **quality signals** without labels, such as user feedback, regeneration and copy rates, and an LLM judge on a sample of conversations; **safety**: policy violation rates, jailbreak and injection attempts, personal data in outputs; **hallucination** rate on factual answers, for RAG measured by groundedness; **drift in inputs**, such as new topics and languages, using embedding clustering; and **provider changes**: a model version update can change behavior, so pin versions and rerun the evaluation suite before switching.",
+     "ref": "ai-deployment-monitoring"
+    }
+   ]
+  },
+  {
+   "day": 29,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "In a coding round you must sessionize a click log in plain Python (new session after 30 minutes of inactivity). How do you structure the solution, and what is the complexity?",
+     "a": "1. Group events by user (`defaultdict(list)`), `O(n)`.\n2. Sort each user's events by timestamp, `O(n log n)` total; skip this if the log is already sorted.\n3. Scan each list: start a new session when the gap to the previous event is more than 30 minutes; emit `(user, session_id, start, end, n_events)`.\nTalk about edge cases: equal timestamps, unsorted input, timestamps as strings (parse once), and very large input (stream sorted by user and time, `O(1)` memory per user). This mirrors the SQL pattern of `LAG` plus a running sum of new-session flags.",
+     "ref": "algo-data-processing"
+    },
+    {
+     "area": "algo",
+     "q": "First Missing Positive in `O(n)` time and `O(1)` extra space: how do you use the array itself as a hash table?",
+     "a": "The answer is in `[1, n + 1]`. Place each value `v` in `1..n` at index `v - 1` by swapping (cyclic sort): while `1 <= nums[i] <= n` and `nums[nums[i] - 1] != nums[i]`, swap. Then the first index `i` with `nums[i] != i + 1` gives the answer `i + 1`; if all match, the answer is `n + 1`. Each swap puts one value in its final place, so total swaps are at most `n`: `O(n)`. The `!=` check prevents infinite loops on duplicates. A set would be `O(n)` space, which is not allowed here.",
+     "ref": "algo-hashing"
+    },
+    {
+     "area": "algo",
+     "q": "Maximum Profit in Job Scheduling (weighted intervals): what is the DP and why do you need binary search?",
+     "a": "Sort jobs by end time. `dp[i]` = best profit using the first `i` jobs. For job `i`, either skip it (`dp[i-1]`) or take it and add the best profit of jobs that end at or before its start: `profit[i] + dp[j]`, where `j` is found by binary search on the sorted end times (`bisect_right`). `dp[i] = max(dp[i-1], profit[i] + dp[j])`. Time `O(n log n)`. Greedy by end time works only for the unweighted case (maximum number of intervals); with weights, a long high-profit job may beat several short ones.",
+     "ref": "algo-dp-1d"
+    },
+    {
+     "area": "sql",
+     "q": "Translate these SQL patterns to pandas: `GROUP BY` with `HAVING`, a window `SUM ... OVER (PARTITION BY ...)`, and `ROW_NUMBER` for top-1 per group.",
+     "a": "```python\n# GROUP BY + HAVING\ng = df.groupby('user_id')['amount'].sum()\ng = g[g > 100]\n# window SUM OVER (PARTITION BY user_id): keeps all rows\ndf['user_total'] = df.groupby('user_id')['amount'].transform('sum')\n# ROW_NUMBER ... = 1, latest row per user\ndf['rn'] = df.groupby('user_id')['ts'].rank(method='first', ascending=False)\nlatest = df[df['rn'] == 1]\n# or: df.sort_values('ts').groupby('user_id').tail(1)\n```\n`agg` collapses groups like `GROUP BY`; `transform` keeps the row count like a window function. Running totals are `groupby().cumsum()`; `LAG` is `groupby().shift(1)`.",
+     "ref": "sql-pandas-equivalents"
+    },
+    {
+     "area": "sql",
+     "q": "How do you do a `LEFT JOIN` anti-join and check join fan-out in pandas?",
+     "a": "```python\nm = users.merge(orders, on='user_id', how='left', indicator=True)\nno_orders = m[m['_merge'] == 'left_only']\n# protect against fan-out: fail if the right side is not unique\nusers.merge(profiles, on='user_id', how='left', validate='one_to_one')\n```\n`indicator=True` adds a `_merge` column (`both`, `left_only`, `right_only`). `validate` raises an error when the key is not unique as expected, which catches the double counting bug early. Also remember: pandas `NaN` keys do match each other in `merge`, while SQL `NULL` keys never match.",
+     "ref": "sql-pandas-equivalents"
+    },
+    {
+     "area": "stats",
+     "q": "In a product sense exam you are asked 'Should we launch feature X?'. What structure do you follow?",
+     "a": "1. **Clarify**: what the feature is, who it is for, and the goal it serves.\n2. **Metrics**: a primary success metric tied to the goal, secondary metrics, and guardrails; say why each one.\n3. **Experiment design**: unit, sample size and duration, risks like network effects or novelty.\n4. **Analysis**: significance and practical size, segments, trade-offs between metrics.\n5. **Decision**: a clear recommendation with conditions (launch, iterate, or do not launch) and what to monitor after launch.\nThink aloud, state assumptions, and quantify where you can.",
+     "ref": "stats-case-framework"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) A stakeholder says the Bayesian test showed 'a 94% probability that B is better', so they want to launch. What else do you check?",
+     "a": "94% chance of being better says nothing about how much better: check the posterior of the lift and the expected loss if B is actually worse. A tiny expected gain may not justify the cost. Check the prior: a flat prior on a small sample can be overconfident; a sensible prior from past tests shrinks extreme results. Also check guardrail metrics, SRM, novelty, and whether the team stopped as soon as the number looked good, which inflates errors in Bayesian tests too.",
+     "ref": "stats-bayesian-sequential"
+    },
+    {
+     "area": "stats",
+     "q": "An examiner asks: 'Instagram-style Stories usage is up 20%, but feed posts are down 10%. Is that good or bad?'",
+     "a": "Clarify the goal: total user value and engagement across the app, not one surface. Possible cannibalization: users moved posting from feed to Stories. Analyze: total content created and consumed per user, total time spent, creator retention, and how audiences (viewers) responded; segment by user type, because heavy creators and casual users may behave differently. Use experiment data if Stories was launched with a test, to separate cannibalization from trend. Conclude: it is good if total engagement and retention went up or stayed flat while users prefer the new format; bad if total value or ad revenue dropped.",
+     "ref": "stats-case-framework"
+    },
+    {
+     "area": "ai",
+     "q": "How would you evaluate a new AI feature, for example an LLM that writes video captions for creators, end to end?",
+     "a": "1. **Define success**: adoption (creators who accept captions), quality (edits needed), downstream impact (views, engagement), and safety.\n2. **Offline evaluation**: a labeled set of videos with human-rated captions; rubric-based human and LLM-judge scores for accuracy, relevance and policy compliance; slices by language and content type.\n3. **Red-teaming** for harmful or wrong captions.\n4. **Online A/B test** with creators as the unit: acceptance rate, edit distance between suggestion and final caption, video performance, time to post, guardrails like reports.\n5. **Monitoring** after launch: quality samples, cost and latency per caption, and drift.",
+     "ref": "ai-ml-system-design"
+    },
+    {
+     "area": "ai",
+     "q": "(Review) A fraud model's precision fell from 80% to 60% over two months, while the input feature distributions look stable. What is the likely cause, and what do you do?",
+     "a": "Stable inputs with worse performance points to **concept drift**: fraudsters changed behavior, so the same features now mean something different. Another option is label change: the definition or the investigation process for fraud labels changed. Actions: check the performance by segment and over time to find where it degrades, review recent false positives with the fraud team, retrain on recent labeled data with a higher weight on new data, and set up a scheduled retraining and a performance alert on delayed labels.",
+     "ref": "ai-deployment-monitoring"
+    }
+   ]
+  },
+  {
+   "day": 30,
+   "qa": [
+    {
+     "area": "algo",
+     "q": "(Review) Give the problem signals that point to each of these patterns: hash map, sliding window, two pointers, binary search, heap, monotonic stack, BFS, DP.",
+     "a": "| Signal in the problem | Pattern |\n|---|---|\n| 'Have I seen X before', counts, pairs with a target sum | hash map |\n| Longest or shortest contiguous subarray or substring with a condition | sliding window |\n| Sorted array, pairs, in-place rearrangement | two pointers |\n| Sorted input, or 'minimum value such that' with a monotonic check | binary search |\n| Top k, k-th largest, merge k streams, running median | heap |\n| Next greater or smaller element, spans | monotonic stack |\n| Shortest path with unit weights, levels, spreading | BFS |\n| Count ways, min or max over choices with overlapping subproblems | DP |",
+     "ref": "algo-recognize"
+    },
+    {
+     "area": "algo",
+     "q": "Car Fleet: why does sorting by position solve it, and what is the complexity?",
+     "a": "Compute each car's arrival time `(target - position) / speed`. Sort cars by position from closest to the target to farthest. A car behind cannot pass the car ahead; if it would arrive sooner or at the same time, it joins that fleet and takes its (slower) time. So scanning from the front, a new fleet starts only when a car's time is strictly greater than the current fleet's time. Time `O(n log n)` for sorting, `O(n)` space. It is a monotonic stack idea in disguise: count the increasing maxima of arrival times.",
+     "ref": "algo-sorting-intervals"
+    },
+    {
+     "area": "algo",
+     "q": "From raw event logs `(user_id, creator_id, event, ts)`, find the top 10 creators by watch time, where watch time is the gap between a 'play' and the next 'pause' or 'stop' of the same user. How would you approach it in Python?",
+     "a": "1. Sort events by user and time (or group by user, then sort each group).\n2. Scan each user's events with a state: when a 'play' starts, store `(creator, start_ts)`; when the next 'pause' or 'stop' comes, add `ts - start_ts` to that creator in a `defaultdict(float)`. A new 'play' without a stop closes the previous one; cap unrealistic gaps (for example more than 4 hours) as bad data.\n3. Take the top 10 with `heapq.nlargest(10, totals.items(), key=...)`, `O(C log 10)`.\nTotal `O(n log n)` for sorting. State the data assumptions aloud: clock skew, missing stops, duplicate events.",
+     "ref": "algo-data-processing"
+    },
+    {
+     "area": "sql",
+     "q": "What is your step-by-step approach when you get a SQL question in a live exam?",
+     "a": "1. Restate the question and confirm definitions (active user, time zone, ties, how to treat `NULL`).\n2. Check the grain and keys of each table, and think about duplicates and fan-out.\n3. Sketch the steps as CTEs (filter, aggregate, rank, final select) before writing.\n4. Write clear SQL with good names, and explain choices like `LEFT` vs `INNER JOIN` or `RANK` vs `ROW_NUMBER`.\n5. Test against a tiny example in your head, including edge cases (no rows, ties, `NULL`).\n6. Mention performance and how you would validate the result (row counts, reconcile with a known total).",
+     "ref": "sql-exam-approach"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) What does `SUM(x) OVER (ORDER BY day)` return when several rows share the same `day`, and how do you get a strict row-by-row running total?",
+     "a": "With `ORDER BY` and no frame, the default frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`, so all rows with the same `day` are peers and all of them get the total up to the end of that day. For a row-by-row total, write `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` and add a tie-breaker column to `ORDER BY` so the order is deterministic. Usually the cleaner answer is to aggregate to one row per day first, then apply the running sum.",
+     "ref": "sql-running-totals"
+    },
+    {
+     "area": "sql",
+     "q": "(Review) Explain the difference between classic (exact day N), rolling (day N or later) and bracket retention, and when to use each.",
+     "a": "**Classic** day-N retention: active exactly on day N; precise but noisy, and sensitive to weekly patterns.\n**Rolling** (unbounded): active on day N or any later day; always higher, good for 'did they come back at all', but it changes as new data arrives.\n**Bracket**: active at least once in a window, for example days 7 to 13 (week 1); smoother and common for weekly products.\nChoose based on the product's natural usage frequency, state the definition, and keep it fixed when comparing over time.",
+     "ref": "sql-retention"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) You have 50,000 users per week, baseline conversion 5%, and want to detect a 5% relative lift. Roughly how long should the test run?",
+     "a": "Absolute MDE `= 0.05 x 0.05 = 0.0025`. Variance `p (1-p) = 0.0475`. `n per group ~= 16 x 0.0475 / 0.0025^2 = 0.76 / 0.00000625`, about 121,600 users per group, so about 243,000 total. With 50,000 new users per week, that is about 5 weeks. If that is too long: accept a larger MDE, use CUPED or a more sensitive metric, or increase traffic allocation. Run whole weeks to avoid day-of-week bias.",
+     "ref": "stats-power-mde"
+    },
+    {
+     "area": "stats",
+     "q": "(Review) Name five A/B testing pitfalls you would check before trusting a result.",
+     "a": "1. **Sample ratio mismatch** (broken randomization or logging).\n2. **Peeking** and early stopping without a sequential method.\n3. **Multiple testing** across many metrics or segments.\n4. **Novelty or primacy effects**; too short a test, or not full weeks.\n5. **Interference** between units (network or marketplace effects), or a unit of analysis that does not match the unit of randomization (ratio metrics without the delta method).\nAlso: outliers dominating mean metrics, and a test population that is not representative of the launch population.",
+     "ref": "stats-ab-pitfalls"
+    },
+    {
+     "area": "stats",
+     "q": "In the final round you get an open product question you have never seen. How do you stay structured under pressure?",
+     "a": "Use the same skeleton every time: clarify the goal and the user, define metrics (primary, secondary, guardrail), form hypotheses, describe the data or experiment you would use, and end with a decision and next steps. Say your assumptions aloud and ask one or two clarifying questions instead of guessing. Prioritize: name the 2 or 3 most likely explanations first, not a list of 15. Quantify with rough numbers when you can, and summarize your answer in one sentence at the end.",
+     "ref": "stats-case-framework"
+    },
+    {
+     "area": "ai",
+     "q": "(Review) Your model does well in offline validation but poorly after deployment. List the likely causes in order of how often they happen.",
+     "a": "1. **Leakage** in offline features or the split (future information, random split on time-dependent data, the same user in train and test).\n2. **Training-serving skew**: features computed differently online, missing values, stale features.\n3. **Distribution shift** between the validation period and live traffic.\n4. **Feedback loops**: the model changes the data it is evaluated on.\n5. **Metric mismatch**: the offline metric does not reflect the online goal.\nPlain overfitting is less common when validation was done correctly; check the first two first.",
+     "ref": "ai-bias-variance"
+    },
+    {
+     "area": "ai",
+     "q": "(Review) Walk through a transformer decoder block and explain what each part contributes.",
+     "a": "Input token embeddings plus positional information (learned, sinusoidal, or rotary embeddings, since attention itself ignores order). Each block: **masked multi-head self-attention** (mixes information across tokens, only from the past), a **residual connection** and **layer normalization**, then a position-wise **feed-forward network** (expands and projects back, where much of the knowledge is stored), again with residual and normalization. Residual connections keep gradients flowing in deep stacks; normalization stabilizes training. The final layer maps to vocabulary logits, and generation samples one token at a time using the KV cache.",
+     "ref": "ai-attention-transformer"
+    },
+    {
+     "area": "ai",
+     "q": "(Review) What is your general template for any ML system design question?",
+     "a": "1. **Clarify** the business goal, users, scale and latency requirements.\n2. **Frame** the ML task: target label, prediction unit, and the online metric it should move.\n3. **Data**: sources, labels (implicit or human), sampling, leakage risks.\n4. **Features and model**: start with a simple baseline, then the main model and why.\n5. **Offline evaluation**: metrics, slices, a baseline comparison.\n6. **Serving**: architecture (retrieval and ranking, batch or real time), latency and cost.\n7. **Online evaluation and monitoring**: A/B test, drift, feedback loops, retraining.\n8. **Risks**: fairness, safety, privacy. Keep the trade-offs explicit throughout.",
+     "ref": "ai-ml-system-design"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,157 @@
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from libx import Exam  # noqa: F401  (Exam is created inside stats_common.start)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from stats_common import start, Q
+
+# Day 8 statistics: focus hypothesis tests (z-test for proportions, Welch t-test, exact binomial test, p-value
+# meaning, type I/II errors). Review: confidence intervals (Q4).
+ex = start(8, ["cookie", "tips"])
+
+Q(ex, "Is the retention drop real?", minutes=7,
+  prompt="In `cookie`, test whether 7-day retention differs between `gate_30` and `gate_40`.\n"
+         "1. Write H0 and H1 in words.\n"
+         "2. Compute the two-proportion z statistic with the **pooled** SE by hand, and the two-sided p-value.\n"
+         "3. Check with `statsmodels.stats.proportion.proportions_ztest`.\n"
+         "4. Decide at `alpha = 0.05`.",
+  stub="# cookie is loaded in the setup\n",
+  hint1="Signal: two independent groups, a 0/1 metric, 'is the difference real'. Topic: the two-proportion "
+        "z-test; under H0 both groups share one rate, so the SE uses the pooled rate.",
+  hint2="1. Counts `k30, n30, k40, n40`. 2. `p_pool = (k30 + k40) / (n30 + n40)`. 3. `se = sqrt(p_pool (1 - "
+        "p_pool) (1/n30 + 1/n40))`. 4. `z = (p40 - p30) / se`, `p = 2 * st.norm.sf(abs(z))`. 5. "
+        "`proportions_ztest([k40, k30], [n40, n30])`.",
+  solution='''from statsmodels.stats.proportion import proportions_ztest
+g = cookie.groupby("version")["retention_7"].agg(["sum", "count"])
+k30, n30 = g.loc["gate_30"]
+k40, n40 = g.loc["gate_40"]
+p30, p40 = k30 / n30, k40 / n40
+p_pool = (k30 + k40) / (n30 + n40)
+se = np.sqrt(p_pool * (1 - p_pool) * (1 / n30 + 1 / n40))
+z = (p40 - p30) / se
+print(f"p30 {p30:.4f}  p40 {p40:.4f}  pooled {p_pool:.4f}")
+print(f"z {z:.3f}   two-sided p {2 * st.norm.sf(abs(z)):.4f}")
+z_sm, p_sm = proportions_ztest([k40, k30], [n40, n30])
+print(f"statsmodels: z {z_sm:.3f}   p {p_sm:.4f}")''',
+  out="""p30 0.1902  p40 0.1820  pooled 0.1861
+z -3.164   two-sided p 0.0016
+statsmodels: z -3.164   p 0.0016""",
+  why="H0: both versions have the same 7-day retention. H1: they differ (two-sided, because a change in either "
+      "direction matters). Under H0 there is one common rate, so the SE uses the pooled rate; for the CI (day 6) "
+      "we used the unpooled SE because there we do not assume H0. A difference of 0.82 points is about 3.2 "
+      "standard errors from 0, which would happen by chance only about 2 times in 1,000 if H0 were true. "
+      "Reject H0. The test is valid because players were randomised and counts are large.",
+  pm="The drop in 7-day retention with the gate at level 40 is very unlikely to be luck (p = 0.002): if the "
+     "two versions were truly equal, a gap this big would appear only about 2 times in 1,000 experiments. "
+     "Keep the gate at level 30.",
+  mistakes="Using a one-sided test because the result came out negative (decide the direction before the test). "
+           "Saying 'p = 0.002 means a 0.2% chance that H0 is true'. Forgetting the factor 2 for a two-sided "
+           "p-value.",
+  learn=["stats-hypothesis-tests", "stats-ab-analysis"])
+
+Q(ex, "Do smokers tip differently?", minutes=6,
+  prompt="Using `tips`, let `tip_pct = 100 * tip / total_bill`.\n"
+         "1. Print the mean tip_pct, sd and n for smokers and non-smokers.\n"
+         "2. Run a two-sided **Welch** t-test and print t and p.\n"
+         "3. Also print the result of the Student t-test (equal variances). Why do they differ, and which would you "
+         "report?",
+  stub="# tips is loaded in the setup\n",
+  hint1="Signal: a numeric metric, two independent groups, different spreads. Topic: the two-sample t-test, "
+        "Welch version (`equal_var=False`).",
+  hint2="1. `x = 100 * tips.tip / tips.total_bill`; split by `tips.smoker == 'Yes'`. 2. `st.ttest_ind(a, b, "
+        "equal_var=False)`. 3. Same with `equal_var=True`. 4. Compare the sds.",
+  solution='''x = 100 * tips["tip"] / tips["total_bill"]
+smk, non = x[tips["smoker"] == "Yes"], x[tips["smoker"] == "No"]
+for name, v in (("smokers", smk), ("non-smokers", non)):
+    print(f"{name:<12} mean {v.mean():.2f}  sd {v.std():.2f}  n {len(v)}")
+w = st.ttest_ind(smk, non, equal_var=False)
+s = st.ttest_ind(smk, non, equal_var=True)
+print(f"Welch:   t {w.statistic:.3f}  p {w.pvalue:.3f}")
+print(f"Student: t {s.statistic:.3f}  p {s.pvalue:.3f}")''',
+  out="""smokers      mean 16.32  sd 8.51  n 93
+non-smokers  mean 15.93  sd 3.99  n 151
+Welch:   t 0.411  p 0.682
+Student: t 0.480  p 0.632""",
+  why="The Welch test does not assume equal variances, and here the smokers' tip rates are much more spread "
+      "out (sd about 8.5 versus 4.0, partly because of the one 71% tip). Student's test pools the variances and "
+      "is wrong when spreads and group sizes differ; Welch is the safe default and loses almost nothing when the "
+      "variances are equal. Neither test finds a significant difference at 5%. 'Not significant' does not mean "
+      "'no difference': it means the data cannot distinguish a small difference from zero with 93 smokers.",
+  pm="We see no clear difference in tip rate between smokers and non-smokers: the average gap is about "
+     "0.4 points, which is well within what chance alone produces with this sample. We cannot rule out a small "
+     "difference, though.",
+  mistakes="Using Student's t-test by default. Reading p > 0.05 as proof of no effect. Forgetting that one "
+           "extreme value (71%) can inflate the sd; a rank test or a bootstrap is a good robustness check.",
+  learn=["stats-hypothesis-tests", "stats-choosing-a-test"])
+
+Q(ex, "60 heads in 100 flips", minutes=6,
+  prompt="A friend flips a coin 100 times and gets 60 heads.\n"
+         "1. Run an exact two-sided binomial test of H0: the coin is fair (`st.binomtest`).\n"
+         "2. Compute the normal-approximation p-value too.\n"
+         "3. Simulate 200,000 sets of 100 fair flips (`rng = np.random.default_rng(0)`) and print how often the "
+         "result is at least as extreme as 60 (60 or more, or 40 or fewer).\n"
+         "4. Which statements about this p-value are TRUE? (a) It is the probability that the coin is fair. "
+         "(b) It is the probability of a result at least this extreme if the coin is fair. (c) A smaller p-value "
+         "means a bigger bias. (d) At `alpha = 0.05` we would wrongly reject a fair coin 5% of the time.",
+  hint1="Signal: one sample of yes/no outcomes against a known rate. Topic: the exact binomial test, the "
+        "p-value definition and the type I error rate.",
+  hint2="1. `st.binomtest(60, 100, 0.5).pvalue`. 2. `z = (60 - 50) / sqrt(100 * 0.25)`, p = `2 * "
+        "st.norm.sf(z)`. 3. `h = rng.binomial(100, 0.5, 200_000)`; `((h >= 60) | (h <= 40)).mean()`. 4. Go "
+        "through each statement with the definition.",
+  solution='''print(f"exact binomial p {st.binomtest(60, 100, 0.5).pvalue:.4f}")
+z = (60 - 50) / np.sqrt(100 * 0.5 * 0.5)
+print(f"normal approx: z {z:.2f}  p {2 * st.norm.sf(z):.4f}   with continuity correction p {2 * st.norm.sf((59.5 - 50) / 5):.4f}")
+rng = np.random.default_rng(0)
+h = rng.binomial(100, 0.5, 200_000)
+print(f"simulated p {((h >= 60) | (h <= 40)).mean():.4f}")''',
+  out="""exact binomial p 0.0569
+normal approx: z 2.00  p 0.0455   with continuity correction p 0.0574
+simulated p 0.0567""",
+  why="The p-value is `P(data at least this extreme | H0)`, computed assuming the coin is fair. The exact test "
+      "gives 0.057, so at alpha 0.05 we do not reject. The plain normal approximation (0.046) would reject: "
+      "with a discrete count, the continuity correction (0.057) matches the exact answer much better, which is "
+      "why exact or simulated p-values are preferred for small counts. Statements: (b) and (d) are true. (a) "
+      "is false: the p-value assumes H0, it cannot give the probability of H0 (that needs a prior, as in "
+      "Bayes). (c) is false: p mixes effect size and sample size; a tiny bias with a huge n gets a tiny p.",
+  pm="Sixty heads out of a hundred is a bit unusual for a fair coin but not rare enough to call it biased: a "
+     "fair coin gives a result this lopsided about 6% of the time. We would need more flips to be sure.",
+  mistakes="Saying 'there is a 5.7% chance the coin is fair'. Using a one-sided test without a reason decided in "
+           "advance. Trusting the normal approximation near the 0.05 boundary with small counts.",
+  learn=["stats-hypothesis-tests", "stats-distributions"])
+
+Q(ex, "The CI and the test agree", minutes=6, review=True,
+  prompt="Review of confidence intervals. In `cookie`, look at **1-day** retention (`retention_1`).\n"
+         "1. Compute the difference `gate_40 - gate_30` and its 95% CI (unpooled SE).\n"
+         "2. Compute the two-sided p-value of the pooled two-proportion z-test.\n"
+         "3. Explain how the CI and the p-value tell the same story.",
+  stub="# cookie is loaded in the setup\n",
+  hint1="Signal: the same comparison as a range and as a test. Topic: the duality between a 95% CI and a test "
+        "at alpha 0.05.",
+  hint2="1. Same code as day 6 Q2, with `retention_1`. 2. Same code as Q1 above. 3. Does the CI contain 0? Is "
+        "p above 0.05?",
+  solution='''g = cookie.groupby("version")["retention_1"].agg(["sum", "count"])
+(k30, n30), (k40, n40) = g.loc["gate_30"], g.loc["gate_40"]
+p30, p40 = k30 / n30, k40 / n40
+d = p40 - p30
+se_u = np.sqrt(p30 * (1 - p30) / n30 + p40 * (1 - p40) / n40)
+pp = (k30 + k40) / (n30 + n40)
+se_p = np.sqrt(pp * (1 - pp) * (1 / n30 + 1 / n40))
+print(f"p30 {p30:.4f}  p40 {p40:.4f}  diff {100 * d:.2f} pp")
+print(f"95% CI [{100 * (d - 1.96 * se_u):.2f}, {100 * (d + 1.96 * se_u):.2f}] pp")
+print(f"z {d / se_p:.3f}   p {2 * st.norm.sf(abs(d / se_p)):.4f}")''',
+  out="""p30 0.4482  p40 0.4423  diff -0.59 pp
+95% CI [-1.24, 0.06] pp
+z -1.784   p 0.0744""",
+  why="A 95% CI collects every effect size that a two-sided test at 5% would *not* reject. Here the CI just "
+      "includes 0 and the p-value is just above 0.05, so both say: 'a small drop is likely, but no effect is "
+      "still plausible'. (The match is not perfect to the last digit because the CI uses the unpooled SE and "
+      "the test the pooled one.) The CI is more informative: it shows that the effect is somewhere between about 1.2 "
+      "points down and 0.06 points up, so even the best case is basically no gain.",
+  pm="Day-1 retention is about 0.6 points lower with the gate at level 40, but this one is borderline: it "
+     "could still be chance (p = 0.07). Together with the clear drop in 7-day retention, it points the same "
+     "way: moving the gate did not help.",
+  mistakes="Calling p = 0.07 'a trend toward significance' and treating it as a win. Thinking the CI and the "
+           "test can give opposite answers in general. Ignoring that 1-day and 7-day retention are correlated "
+           "metrics (not two independent pieces of evidence).",
+  learn=["stats-confidence-intervals", "stats-hypothesis-tests"])
+
+ex.save()
