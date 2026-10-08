@@ -30,9 +30,10 @@
     - title: Bivariate analysis and false positives
       categories: [eda]
       summary: Use simple comparisons without getting fooled by chance findings or loose interpretation.
-    - title: "Correlation: Pearson and Spearman"
+    - title: Correlation and agreement
       categories: [eda, stats-methods]
-      summary: Compare linear vs rank-based relationships and know when each one earns trust.
+      summary: Learn why two methods can correlate strongly and still disagree, then choose Pearson, Spearman, Bland-Altman, ICC, or kappa with the right question in mind.
+      url: /blog/correlation-and-agreement.html
     - title: Handling missing data
       categories: [feature-eng]
       summary: Start with missingness mechanisms before reaching for imputation recipes.

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#4a7a5c" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)" />
 
     {%- seo -%}
@@ -27,22 +27,21 @@
       rel="stylesheet"
     />
     {%- comment -%}
-      home.css loaded FIRST (only for the .footer + .pill + .socials styles
-      that the unified footer needs). main.css and post.css load after so
-      the editorial nav, body typography, and tokens win on every shared
-      selector.
+      home.css loaded FIRST (for the shared header, footer, .pill and
+      .socials styles). main.css and post.css load after so body
+      typography and tokens win on every shared selector.
     {%- endcomment -%}
     <link rel="stylesheet" href="{{ '/styles/home.css' | relative_url }}" />
     <link rel="stylesheet" href="{{ '/styles/main.css' | relative_url }}" />
     <link rel="stylesheet" href="{{ '/styles/post.css' | relative_url }}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Roboto:wght@400;500;700;800&display=swap"
       rel="stylesheet"
     />
   </head>
   <body>
-    {% include site-nav.html %}
+    {% include home-nav.html %}
 
     <main>
       {{ content }}

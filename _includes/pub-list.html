@@ -1,0 +1,30 @@
+{%- comment -%}
+  Publication list (styles in home.css). Pass the items as `pubs`,
+  e.g. {% include pub-list.html pubs=site.data.publications %}.
+{%- endcomment -%}
+<ol class="pub-list">
+  {%- for pub in include.pubs -%}
+    {%- case pub.kind -%}
+      {%- when "journal" -%}{%- assign tag = "Journal" -%}{%- assign tag_class = "pub-tag" -%}
+      {%- when "poster" -%}{%- assign tag = "Poster" -%}{%- assign tag_class = "pub-tag" -%}
+      {%- else -%}{%- assign tag = "In preparation" -%}{%- assign tag_class = "pub-tag pub-tag--muted" -%}
+    {%- endcase -%}
+    <li class="pub">
+      <span class="{{ tag_class }}">{{ tag }}</span>
+      <p class="pub-title">{{ pub.title }}</p>
+      <p class="pub-meta">{{ pub.authors }} · {{ pub.venue }}</p>
+      {%- if pub.links -%}
+        <p class="pub-links">
+          {%- for link in pub.links -%}
+            {%- assign first_char = link.url | slice: 0, 1 -%}
+            {%- if first_char == "/" -%}
+              <a href="{{ link.url | relative_url }}" target="_blank" rel="noopener">{{ link.label }} →</a>
+            {%- else -%}
+              <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }} →</a>
+            {%- endif -%}
+          {%- endfor -%}
+        </p>
+      {%- endif -%}
+    </li>
+  {%- endfor -%}
+</ol>

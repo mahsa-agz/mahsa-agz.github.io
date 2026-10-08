@@ -1,13 +1,13 @@
 /* =============================================================
    POST LAYOUT ,  extends main.css
    Editorial reading experience: Fraunces display, Inter body,
-   tight measure, generous whitespace, terracotta accents.
+   tight measure, generous whitespace, green accents.
    ============================================================= */
 
 .post-index {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--sp-9) var(--sp-5) var(--sp-8);
+  padding: var(--section-gap) var(--sp-5) var(--section-gap);
 }
 
 .post-index__header {
@@ -16,10 +16,10 @@
 }
 
 .post-index__title {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: clamp(2.6rem, 7vw, 4rem);
-  font-weight: 500;
-  letter-spacing: -0.025em;
+  font-weight: 400;
+  letter-spacing: 0;
   line-height: 1.05;
   margin: var(--sp-3) 0 var(--sp-4);
   color: var(--ink);
@@ -293,7 +293,7 @@
 .post {
   max-width: 68ch;
   margin: 0 auto;
-  padding: var(--sp-8) var(--sp-5) var(--sp-9);
+  padding: var(--section-gap) var(--sp-5) var(--sp-8);
 }
 
 .post__cover {
@@ -346,10 +346,10 @@
 }
 
 .post__title {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: clamp(2.4rem, 6vw, 3.4rem);
-  font-weight: 500;
-  letter-spacing: -0.025em;
+  font-weight: 400;
+  letter-spacing: 0;
   line-height: 1.08;
   margin: 0 0 var(--sp-4);
   color: var(--ink);
@@ -632,6 +632,86 @@
 .fig-curve     { stroke: var(--rose); stroke-width: 2; fill: none; }
 .fig-curve-muted { stroke: var(--ink-soft); stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
 
+/* ---------- Post teaching aids ---------- */
+.post__body .compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-4);
+  margin: var(--sp-5) 0 var(--sp-6);
+}
+
+.post__body .compare-card {
+  padding: var(--sp-4);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 86%, white) 0%,
+    var(--bg) 100%
+  );
+  box-shadow: var(--shadow-soft);
+}
+
+.post__body .compare-card--accent {
+  border-color: color-mix(in srgb, var(--rose) 28%, var(--hairline));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--rose-soft) 58%, white) 0%,
+    var(--bg) 100%
+  );
+}
+
+.post__body .compare-card h3 {
+  margin-top: 0;
+}
+
+.post__body .compare-card p {
+  text-align: left;
+  text-justify: auto;
+  hyphens: manual;
+}
+
+.post__body .compare-card ul {
+  margin-bottom: 0;
+}
+
+.post__body .rule-box {
+  margin: var(--sp-5) 0;
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid color-mix(in srgb, var(--rose) 24%, var(--hairline));
+  border-left: 4px solid var(--rose);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--rose-soft) 40%, white);
+}
+
+.post__body .rule-box p {
+  margin-bottom: 0;
+  text-align: left;
+  text-justify: auto;
+  hyphens: manual;
+}
+
+.post__body .method-checklist {
+  list-style: none;
+  padding: 0;
+  margin: var(--sp-5) 0;
+}
+
+.post__body .method-checklist li {
+  display: grid;
+  grid-template-columns: 1.2rem 1fr;
+  gap: var(--sp-2);
+  align-items: start;
+  margin-bottom: var(--sp-3);
+}
+
+.post__body .method-checklist li::before {
+  content: ">";
+  color: var(--rose);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
 /* ---------- Tables (cheat sheet) ---------- */
 .post__body .table-wrap {
   overflow-x: auto;
@@ -677,4 +757,10 @@
 .post__body table code {
   white-space: nowrap;
   font-size: 0.88em;
+}
+
+@media (max-width: 720px) {
+  .post__body .compare-grid {
+    grid-template-columns: 1fr;
+  }
 }

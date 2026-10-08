@@ -1,0 +1,28 @@
+# Publications ,  used by the homepage preview (featured: true) and
+# the full list on /publications/. Order here is the display order.
+# kind: journal | poster | preparation
+- title: "Computer Vision-Based Monocular 3D Human Pose Estimation and Ergonomic Risk Assessment: The Impact of Model Variants and Camera Views on Kinematic Accuracy and Ergonomic Assessment Validity"
+  authors: "<strong>Aghazadeh M</strong>, Xiong S"
+  venue: "<em>International Journal of Industrial Ergonomics</em>, 116 (2026), 104061"
+  kind: journal
+  featured: true
+  links:
+    - { label: "DOI", url: "https://doi.org/10.1016/j.ergon.2026.104061" }
+
+- title: "Differential Clinical Prediction of Inattention and Hyperactivity in Children Using Task-Based Digital Phenotyping"
+  authors: "Kweon K, <strong>Aghazadeh M</strong>, Kwon SA, Park S, Cho K"
+  venue: "Poster, <em>Biennial International Congress on Mental Health 2026</em>, Singapore"
+  kind: poster
+  featured: true
+  links:
+    - { label: "Poster (PDF)", url: "/assets/publications/bicomh-2026-poster.pdf" }
+
+- title: "Cross-Task Stylus Pressure as a Digital Motor Correlate of Clinician-Rated Hyperactivity in Children"
+  authors: "<strong>Aghazadeh M</strong>, et al."
+  venue: "Manuscript in preparation, targeted at <em>JMIR</em>"
+  kind: preparation
+
+- title: "ErgoYar: Design and Usability Evaluation of a Mobile Application for Video-Based Automated REBA and RULA Assessment"
+  authors: "<strong>Aghazadeh M</strong>, Xiong S"
+  venue: "In preparation"
+  kind: preparation

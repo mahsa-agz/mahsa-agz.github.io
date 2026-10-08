@@ -1,17 +1,15 @@
 {%- comment -%}
   Universal footer ,  same on the homepage AND every subpage.
-  Nav items pull from _data/nav.yml. On the homepage they jump to
-  in-page section anchors (#about / #work / #blog / #top); on every
-  other page they're full URLs.
+  Nav items pull from _data/nav.yml and always go to their page URL.
 {%- endcomment -%}
 <footer class="footer" id="contact">
   <div class="footer-inner">
     <div class="footer-brand">
       <a class="logo footer-logo" href="{{ '/' | relative_url }}">Mahsa<span>.</span></a>
       <p>
-        Data scientist based in Daejeon, South Korea. I design
-        experiments, validate the data, run the analysis, and ship
-        the result as something people can actually use.
+        Data scientist working on behavioral AI and digital health.
+        I design experiments, validate the data, run the analysis,
+        and ship the result as something people can actually use.
       </p>
       <div class="socials">
         <a href="mailto:{{ site.email }}" aria-label="Email Mahsa">
@@ -36,25 +34,15 @@
       <a class="pill solid-pill" href="mailto:{{ site.email }}">Email Me</a>
     </div>
     <div class="copyright">
-      &copy; <span id="year"></span> Mahsa Aghazadeh. Built in Daejeon.
+      &copy; <span id="year"></span> Mahsa Aghazadeh. Open to relocation.
     </div>
     <nav class="footer-nav" aria-label="Footer navigation">
       {%- for item in site.data.nav.items -%}
-        {%- assign target = item.url -%}
-        {%- if page.url == "/" -%}
-          {%- case item.label -%}
-            {%- when "Home"     -%}{%- assign target = "#top"     -%}
-            {%- when "About"    -%}{%- assign target = "#about"   -%}
-            {%- when "Projects" -%}{%- assign target = "#work"    -%}
-            {%- when "Blog"     -%}{%- assign target = "#blog"    -%}
-            {%- when "Contact"  -%}{%- assign target = "#contact" -%}
-          {%- endcase -%}
-        {%- endif -%}
-        {%- assign first_char = target | slice: 0, 1 -%}
+        {%- assign first_char = item.url | slice: 0, 1 -%}
         {%- if first_char == "#" -%}
-          <a href="{{ target }}">{{ item.label }}</a>
+          <a href="{{ item.url }}">{{ item.label }}</a>
         {%- else -%}
-          <a href="{{ target | relative_url }}">{{ item.label }}</a>
+          <a href="{{ item.url | relative_url }}">{{ item.label }}</a>
         {%- endif -%}
       {%- endfor -%}
     </nav>

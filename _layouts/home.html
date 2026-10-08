@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#c4677a" />
+    <meta name="theme-color" content="#4a7a5c" />
 
     {%- seo -%}
 
@@ -14,7 +14,9 @@
         "name": "Mahsa Aghazadeh",
         "url": "{{ site.url }}/",
         "email": "mailto:{{ site.email }}",
-        "jobTitle": "Data Scientist",
+        "jobTitle": "Data Scientist, Deputy Team Lead",
+        "worksFor": { "@type": "Organization", "name": "3R Innovation" },
+        "knowsAbout": ["Digital phenotyping", "Multimodal machine learning", "Computer vision", "Clinical decision support"],
         "alumniOf": [
           { "@type": "CollegeOrUniversity", "name": "KAIST" },
           { "@type": "CollegeOrUniversity", "name": "Amirkabir University of Technology" }
@@ -48,7 +50,6 @@
   </head>
   <body>
     {% include home-nav.html %}
-    {%- comment -%} home-nav is the Oswald-style nav used only on the homepage {%- endcomment -%}
 
     <main>
       {{ content }}

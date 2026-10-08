@@ -12,6 +12,24 @@ document.querySelectorAll('a[href="#top"]').forEach((link) => {
   });
 });
 
+// ===== Mobile menu =====
+// The ☰ button opens the header nav as a dropdown on narrow screens.
+const menuBtn = document.querySelector("[data-menu-toggle]");
+if (menuBtn) {
+  const header = menuBtn.closest(".site-header");
+  const setOpen = (open) => {
+    header.classList.toggle("is-open", open);
+    menuBtn.setAttribute("aria-expanded", String(open));
+    menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  };
+  menuBtn.addEventListener("click", () => {
+    setOpen(!header.classList.contains("is-open"));
+  });
+  header.querySelectorAll(".nav a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
+}
+
 // ===== Year =====
 const yearEl = document.getElementById("year");
 if (yearEl) yearEl.textContent = new Date().getFullYear();

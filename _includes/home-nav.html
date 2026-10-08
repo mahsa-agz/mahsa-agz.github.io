@@ -1,22 +1,25 @@
 {%- comment -%}
-  Homepage header ,  Oswald wordmark style (matches home.css).
-  Item labels come from _data/nav.yml; on the homepage they jump to
-  in-page sections (Section anchors), not to the subpage URLs.
+  Site header ,  Oswald wordmark style (styles in home.css), used on
+  every page. Items come from _data/nav.yml and always go to their
+  page URL; "#contact" jumps to the footer, which every page has.
 {%- endcomment -%}
 <header class="site-header" id="top">
   <div class="header-inner">
     <a class="logo" href="{{ '/' | relative_url }}">Mahsa<span>.</span></a>
-    <nav class="nav" aria-label="Main navigation">
+    <nav class="nav" id="site-nav" aria-label="Main navigation">
       {%- for item in site.data.nav.items -%}
-        {%- assign target = item.url -%}
-        {%- case item.label -%}
-          {%- when "About"    -%}{%- assign target = "#about"   -%}
-          {%- when "Projects" -%}{%- assign target = "#work"    -%}
-          {%- when "Blog"     -%}{%- assign target = "#blog"    -%}
-          {%- when "Contact"  -%}{%- assign target = "#contact" -%}
-          {%- when "Home"     -%}{%- assign target = "#top"     -%}
-        {%- endcase -%}
-        <a href="{{ target }}">{{ item.label }}</a>
+        {%- assign first_char = item.url | slice: 0, 1 -%}
+        {%- assign is_current = false -%}
+        {%- if item.url == page.url -%}
+          {%- assign is_current = true -%}
+        {%- elsif item.url != "/" and first_char != "#" and page.url contains item.url -%}
+          {%- assign is_current = true -%}
+        {%- endif -%}
+        {%- if first_char == "#" -%}
+          <a href="{{ item.url }}">{{ item.label }}</a>
+        {%- else -%}
+          <a href="{{ item.url | relative_url }}"{% if is_current %} aria-current="page"{% endif %}>{{ item.label }}</a>
+        {%- endif -%}
       {%- endfor -%}
     </nav>
     <div class="header-actions">
@@ -39,6 +42,6 @@
         </svg>
       </button>
     </div>
-    <button class="menu-toggle" aria-label="Open menu">☰</button>
+    <button class="menu-toggle" type="button" aria-label="Open menu" aria-controls="site-nav" aria-expanded="false" data-menu-toggle>☰</button>
   </div>
 </header>
