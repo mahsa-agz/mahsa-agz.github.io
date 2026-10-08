@@ -982,7 +982,7 @@ main {
    ABOUT PANEL ,  split layout: text + currently + toolkit
    ============================================================= */
 .about-panel {
-  background: var(--surface);
+  /* background: var(--surface); */
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
   padding: var(--sp-7);
