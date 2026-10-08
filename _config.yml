@@ -10,6 +10,10 @@ email: mahsa.agzdh@gmail.com
 github_username: mahsa-agz
 linkedin_url: https://www.linkedin.com/in/mahsaagz
 
+# Set to true to show the Blog in the menu, footer and homepage again.
+# Post URLs keep working either way.
+show_blog: false
+
 # Posts live under /blog/<slug>.html so existing URLs keep working.
 permalink: /blog/:slug.html
 

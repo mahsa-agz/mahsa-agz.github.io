@@ -15,7 +15,9 @@ permalink: /404.html
     </p>
     <div class="hero__cta">
       <a class="btn btn--primary" href="{{ '/' | relative_url }}">Back home</a>
+      {%- if site.show_blog %}
       <a class="btn btn--ghost" href="{{ '/blog/' | relative_url }}">Read blog</a>
+      {%- endif %}
     </div>
   </div>
 </section>

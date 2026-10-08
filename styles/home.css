@@ -733,6 +733,8 @@ img { max-width: 100%; display: block; }
    NOTES / LATEST (blog teaser)
    ============================================================= */
 .latest { padding: var(--section-gap) 0 64px; }
+/* Whatever section ends the homepage keeps space above the footer. */
+main > section:last-child { padding-bottom: 64px; }
 .latest-panel {
   max-width: 90%;
   margin: 0 auto;

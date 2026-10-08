@@ -8,6 +8,7 @@
     <a class="logo" href="{{ '/' | relative_url }}">Mahsa<span>.</span></a>
     <nav class="nav" id="site-nav" aria-label="Main navigation">
       {%- for item in site.data.nav.items -%}
+        {%- if item.url == "/blog/" and site.show_blog != true -%}{%- continue -%}{%- endif -%}
         {%- assign first_char = item.url | slice: 0, 1 -%}
         {%- assign is_current = false -%}
         {%- if item.url == page.url -%}
