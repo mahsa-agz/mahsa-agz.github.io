@@ -48,3 +48,14 @@ Read `plan.py` (SECTIONS: the exact section ids and their order). Keep EVERY id 
 Overwrite `site/content/en/<tab>.json` with {"title": ..., "intro": "2 lines max", "sections": [...]} keeping all
 section ids from plan.py in order. Validate the JSON, check every `#id` link exists in plan.py SECTIONS (any tab),
 and report briefly.
+
+## Addition: "Explain simply" dropdown (field `explain`)
+The cards are good but very short. Add to EVERY section a new field `"explain"` (markdown, about 90 to 170 words)
+that the site shows in a collapsed dropdown "Explain simply" under the card. It explains the same idea for someone
+who did not get it from the short card:
+- Start from the everyday situation, then build the idea step by step in very simple words, as if explaining to a
+  smart friend who has never studied it. One everyday analogy is welcome (e.g. a queue at a bakery for a stack/queue).
+- Walk through the card's own example slowly (same numbers), saying why each step happens.
+- End with one sentence: "In short: ...".
+- No new jargon; if a term is needed, explain it in a few words. No code blocks (inline code is fine). No `$` math,
+  no em or en dashes, no emojis. Do not change id, title, summary or body of any section.

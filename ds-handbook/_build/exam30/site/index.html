@@ -6,8 +6,9 @@
 /* Layout: a study handbook. Sticky top bar (name, tabs, search, language); in each tab a section index on the
    side and the reading column; the plan tab is a 30-day board plus the mistake log. */
 :root {
-  --paper: #f6f7f4;
-  --card: #ffffff;
+  color-scheme: light;
+  --paper: #ffffff;
+  --card: #f7f8f5;
   --ink: #1d2433;
   --ink-soft: #4a5468;
   --rule: #d9ddd3;
@@ -23,20 +24,8 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --radius: 10px;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #13171c; --card: #1b2027; --ink: #e7eae4; --ink-soft: #a9b1bd; --rule: #2e353f;
-    --accent: #4fd1b5; --accent-ink: #0b1714; --mark: #6b5a17; --easy: #68d391; --medium: #f6c26b;
-    --hard: #fc8181; --code-bg: #20262e; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #13171c; --card: #1b2027; --ink: #e7eae4; --ink-soft: #a9b1bd; --rule: #2e353f;
-  --accent: #4fd1b5; --accent-ink: #0b1714; --mark: #6b5a17; --easy: #68d391; --medium: #f6c26b;
-  --hard: #fc8181; --code-bg: #20262e; color-scheme: dark;
-}
 * { box-sizing: border-box; }
-body { background: var(--paper); color: var(--ink); font: 17px/1.6 var(--font-body); }
+body { background: var(--paper); color: var(--ink); font: 19px/1.75 var(--font-body); }
 :lang(fa) body, body.fa { font-family: "Vazirmatn", var(--font-body); }
 body.ko { font-family: "Noto Sans KR", var(--font-body); word-break: keep-all; }
 a { color: var(--accent); }
@@ -74,6 +63,9 @@ h1 { font-size: 2rem; margin: 0 0 8px; }
 .section .sid { font: 400 0.75rem var(--font-mono); color: var(--ink-soft); }
 .section .summary { color: var(--ink-soft); margin: 0 0 12px; max-width: 72ch; }
 .prose { max-width: 78ch; }
+.explain { margin-top: 14px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--card); max-width: 78ch; }
+.explain summary { cursor: pointer; padding: 10px 14px; font-weight: 600; color: var(--accent); }
+.explain .prose { padding: 0 16px 12px; }
 .prose h3 { font-size: 1.15rem; margin: 22px 0 6px; }
 .prose p, .prose li { max-width: 72ch; }
 .prose table { border-collapse: collapse; font-size: 0.92rem; }

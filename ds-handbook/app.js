@@ -142,6 +142,7 @@
         <h2>${esc(s.title)} <span class="sid">#${esc(s.id)}</span></h2>
         ${s.summary ? `<p class="summary">${esc(s.summary)}</p>` : ""}
         <div class="prose">${md(s.body)}</div>
+        ${s.explain ? `<details class="explain" id="explain-${esc(s.id)}"><summary>${esc(T("explain_simply", "Explain simply"))}</summary><div class="prose">${md(s.explain)}</div></details>` : ""}
       </section>`).join("");
     return `<div class="layout">
       <aside class="toc"><details open><summary class="toc-title">${esc(T("contents", "Contents"))}</summary>${toc}</details></aside>

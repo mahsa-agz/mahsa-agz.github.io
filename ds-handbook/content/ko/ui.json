@@ -42,5 +42,6 @@
  "t_mistake-log": "오답 노트",
  "t_full-loop": "전체 시험 루프",
  "open_colab": "Colab에서 열기",
- "start_here": "여기서 시작 (Colab)"
+ "start_here": "여기서 시작 (Colab)",
+ "explain_simply": "쉽게 설명"
 }
