@@ -1,4 +1,4 @@
-# Projects ,  shown as cards on the homepage (featured: true, in order)
+# Projects, shown as cards on the homepage (featured: true, in order)
 # and on /work/ (all, in order). Links starting with "/" are site pages.
 - title: "PDSS multimodal pipeline"
   badge: "3R Innovation · current"
@@ -14,15 +14,32 @@
   links:
     - { label: "Read more", url: "/about/#experience" }
 
+- title: "Memory-efficient money-laundering detection"
+  badge: "Independent project"
+  image: "/assets/images/projects/aml_pipeline.webp"
+  alt: "Detection and explanation pipeline for money-laundering alerts"
+  desc: >-
+    Showed that a fixed-size memory per account is a possible alternative
+    to a full transaction graph: on the TransXion benchmark (3M
+    transactions), XGBoost test average precision rose from 0.237 to
+    0.364, close to graph neural networks (approximate comparison). An
+    explanation layer (RAG, an LLM explainer and automated checks)
+    describes each alert for an analyst.
+  tags: [Anomaly Detection, XGBoost, RAG, LLM]
+  featured: true
+  links:
+    - { label: "GitHub", url: "https://github.com/mahsa-agz/memory-efficient-aml-detection" }
+
 - title: "CV-based ergonomic risk assessment"
   badge: "M.Sc. thesis · published"
   image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=760&q=85"
   alt: "Computer vision ergonomic assessment thesis project"
   desc: >-
-    Validated monocular 3D pose estimation (MediaPipe, MMPose) against
-    8-camera optical motion capture across three camera views, and
-    measured when kinematic error changes REBA / RULA risk decisions.
-    ICCs of 0.87 (REBA) and 0.92 (RULA).
+    Benchmarked monocular 3D pose estimation (MediaPipe, MMPose) against
+    optical motion capture across three camera views and nine tasks with
+    different levels of occlusion, and measured when kinematic error
+    changes REBA / RULA risk scores. MediaPipe reached ICC 0.87 (REBA)
+    and 0.92 (RULA).
   tags: [Computer Vision, Pose Estimation, REBA / RULA]
   featured: true
   links:
@@ -39,7 +56,7 @@
   tags: [Recommenders, Contrastive Learning, PyTorch]
   featured: true
   links:
-    - { label: "GitHub", url: "https://github.com/mahsa-agz/MusicRecSys" }
+    - { label: "GitHub", url: "https://github.com/mahsa-agz/Music-Recommendation-System" }
 
 - title: "ErgoYar"
   badge: "Mobile app"
@@ -48,7 +65,7 @@
   desc: >-
     Mobile app that turns a smartphone video into per-frame REBA / RULA
     scores with an annotated pose overlay, built for non-experts. Pilot
-    usability study: SUS 80.5 (excellent band).
+    usability study: mean SUS 80.5 (good usability).
   tags: [Flutter, FastAPI, Supabase, HCI]
   links:
     - { label: "Read more", url: "/about/#research" }
@@ -57,9 +74,11 @@
   image: "https://images.unsplash.com/photo-1555255707-c07966088b7b?auto=format&fit=crop&w=760&q=85"
   alt: "Facial expression recognition project"
   desc: >-
-    A small ensemble (MobileNet + ShuffleNet) for facial expression
-    recognition. Grad-CAM for interpretability, tuned to run on the edge.
-  tags: [Computer Vision, Ensemble Learning, Edge Deployment]
+    An ensemble of three compact CNNs (ShuffleNet, MobileNet, SqueezeNet)
+    on FER-2013 that came within 1.6 points of EfficientNet-B3 accuracy
+    with 59% less training time and 44% fewer MACs; Grad-CAM guided the
+    choice of complementary architectures.
+  tags: [Computer Vision, Ensemble Learning, Efficient Deep Learning]
   links:
     - { label: "GitHub", url: "https://github.com/mahsa-agz/EnsembleEFT" }
 
