@@ -457,6 +457,12 @@ img { max-width: 100%; display: block; }
   object-fit: cover;
   display: block;
 }
+/* figures and app screenshots: show the whole image, no cropping */
+.project-card__image img.is-contain {
+  object-fit: contain;
+  background: #fff;
+  padding: 8px;
+}
 .project-badge {
   position: absolute;
   top: 14px;

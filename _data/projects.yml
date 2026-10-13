@@ -2,8 +2,9 @@
 # and on /work/ (all, in order). Links starting with "/" are site pages.
 - title: "PDSS multimodal pipeline"
   badge: "3R Innovation · current"
-  image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=760&q=85"
-  alt: "Multimodal sensor data and pediatric screening"
+  image: "/assets/images/projects/pdss_pipeline.webp"
+  fit: contain
+  alt: "Multimodal pipeline: eye tracking, keyboard, stylus and voice feed a personal baseline that flags unusual sessions"
   desc: >-
     Digital-phenotyping pipeline for the Pediatric Digital Sensor Study:
     eye-tracking, keyboard, stylus and voice recordings from 103 children
@@ -17,6 +18,7 @@
 - title: "Memory-efficient money-laundering detection"
   badge: "Independent project"
   image: "/assets/images/projects/aml_pipeline.webp"
+  fit: contain
   alt: "Detection and explanation pipeline for money-laundering alerts"
   desc: >-
     Showed that a fixed-size memory per account is a possible alternative
@@ -32,8 +34,9 @@
 
 - title: "CV-based ergonomic risk assessment"
   badge: "M.Sc. thesis · published"
-  image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=760&q=85"
-  alt: "Computer vision ergonomic assessment thesis project"
+  image: "/assets/images/projects/ergoyar_app.webp"
+  fit: contain
+  alt: "ErgoYar app screens: overview, body-part scores with suggestions, and joint-angle details"
   desc: >-
     Benchmarked monocular 3D pose estimation (MediaPipe, MMPose) against
     optical motion capture across three camera views and nine tasks with
@@ -83,8 +86,9 @@
     - { label: "GitHub", url: "https://github.com/mahsa-agz/EnsembleEFT" }
 
 - title: "MoodMate"
-  image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=760&q=85"
-  alt: "Mood tracking application project"
+  image: "/assets/images/projects/moodmate_app.webp"
+  fit: contain
+  alt: "MoodMate app screens: sign-up, check-in questions, suggestions and mood charts"
   desc: >-
     Knowledge-based mental-health app that tracks emotional patterns,
     sleep, diet, activity and weather, then uses a rule-based inference
@@ -92,6 +96,7 @@
   tags: [Knowledge Systems, Java, JESS, MySQL]
   links:
     - { label: "GitHub", url: "https://github.com/mahsa-agz/MoodMate" }
+    - { label: "Video", url: "https://youtu.be/iavCDZHl71o" }
 
 - title: "Music & Mental Health"
   image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=760&q=85"
