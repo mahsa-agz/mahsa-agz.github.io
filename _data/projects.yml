@@ -31,7 +31,7 @@
   links:
     - { label: "GitHub", url: "https://github.com/mahsa-agz/memory-efficient-aml-detection" }
 
-- title: "ErgoYar: computer vision-based ergonomic risk assessment"
+- title: "ErgoYar: CV-based ergonomic risk assessment"
   badge: "M.Sc. thesis · published"
   image: "/assets/images/projects/ergoyar_app.webp"
   fit: contain
@@ -50,8 +50,8 @@
     - { label: "Read more", url: "/about/#research" }
 
 - title: "Cold-Start Music Recommender"
-  image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=760&q=85"
-  alt: "Music recommendation system project"
+  image: "/assets/images/projects/music_recommender.webp"
+  alt: "Content tower for every song and co-occurrence tower in training, linked by a contrastive loss; HR@5 0.77 against 0.53 for content-KNN"
   desc: >-
     CCFCRec on 1M Yahoo! Music interactions, tested on a strict cold-start
     split of 25,295 unseen songs. HR@5 of 0.768, 1.46× a content-KNN
