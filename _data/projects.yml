@@ -57,7 +57,6 @@
     split of 25,295 unseen songs. HR@5 of 0.768, 1.46× a content-KNN
     baseline; an ablation shows the contrastive loss drives the gain.
   tags: [Recommenders, Contrastive Learning, PyTorch]
-  featured: true
   links:
     - { label: "GitHub", url: "https://github.com/mahsa-agz/Music-Recommendation-System" }
 
