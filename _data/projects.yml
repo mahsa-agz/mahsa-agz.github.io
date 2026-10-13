@@ -2,9 +2,8 @@
 # and on /work/ (all, in order). Links starting with "/" are site pages.
 - title: "PDSS multimodal pipeline"
   badge: "3R Innovation · current"
-  image: "/assets/images/projects/pdss_pipeline.webp"
-  fit: contain
-  alt: "Multimodal pipeline: eye tracking, keyboard, stylus and voice feed a personal baseline that flags unusual sessions"
+  image: "/assets/images/projects/pdss_overview.webp"
+  alt: "Tasks (attention, numeracy, literacy) produce eye-tracking, stylus, voice and keyboard data, which feed modelling and explanation of ADHD symptoms and quality of life"
   desc: >-
     Digital-phenotyping pipeline for the Pediatric Digital Sensor Study:
     eye-tracking, keyboard, stylus and voice recordings from 103 children
@@ -32,7 +31,7 @@
   links:
     - { label: "GitHub", url: "https://github.com/mahsa-agz/memory-efficient-aml-detection" }
 
-- title: "CV-based ergonomic risk assessment"
+- title: "ErgoYar: computer vision-based ergonomic risk assessment"
   badge: "M.Sc. thesis · published"
   image: "/assets/images/projects/ergoyar_app.webp"
   fit: contain
@@ -40,10 +39,11 @@
   desc: >-
     Benchmarked monocular 3D pose estimation (MediaPipe, MMPose) against
     optical motion capture across three camera views and nine tasks with
-    different levels of occlusion, and measured when kinematic error
-    changes REBA / RULA risk scores. MediaPipe reached ICC 0.87 (REBA)
-    and 0.92 (RULA).
-  tags: [Computer Vision, Pose Estimation, REBA / RULA]
+    different levels of occlusion; MediaPipe reached ICC 0.87 (REBA) and
+    0.92 (RULA). Built the result into ErgoYar, a mobile app that scores
+    ergonomic risk from video and recommends posture adjustments (mean
+    SUS 80.5 with first-time users).
+  tags: [Computer Vision, Pose Estimation, Flutter, FastAPI, HCI]
   featured: true
   links:
     - { label: "Paper", url: "https://doi.org/10.1016/j.ergon.2026.104061" }
@@ -60,21 +60,10 @@
   links:
     - { label: "GitHub", url: "https://github.com/mahsa-agz/Music-Recommendation-System" }
 
-- title: "ErgoYar"
-  badge: "Mobile app"
-  image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=760&q=85"
-  alt: "Mobile ergonomic assessment app"
-  desc: >-
-    Mobile app that turns a smartphone video into per-frame REBA / RULA
-    scores with an annotated pose overlay, built for non-experts. Pilot
-    usability study: mean SUS 80.5 (good usability).
-  tags: [Flutter, FastAPI, Supabase, HCI]
-  links:
-    - { label: "Read more", url: "/about/#research" }
-
 - title: "EnsembleEFT"
-  image: "https://images.unsplash.com/photo-1555255707-c07966088b7b?auto=format&fit=crop&w=760&q=85"
-  alt: "Facial expression recognition project"
+  image: "/assets/images/projects/ensembleeft.webp"
+  fit: contain
+  alt: "Confusion matrices and Grad-CAM maps for ShuffleNet, MobileNet and SqueezeNet on FER-2013"
   desc: >-
     An ensemble of three compact CNNs (ShuffleNet, MobileNet, SqueezeNet)
     on FER-2013 that came within 1.6 points of EfficientNet-B3 accuracy
@@ -98,8 +87,8 @@
     - { label: "Video", url: "https://youtu.be/iavCDZHl71o" }
 
 - title: "Music & Mental Health"
-  image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=760&q=85"
-  alt: "Music and mental health analysis project"
+  image: "/assets/images/projects/music_mental_health.webp"
+  alt: "Median OCD, depression and insomnia scores by hours of daily music listening, next to headphones and music notes"
   desc: >-
     Statistical study on how music habits, listening contexts, and genre
     preferences relate to self-reported anxiety, depression, insomnia and
