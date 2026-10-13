@@ -16,8 +16,7 @@ permalink: /about/
       Technology) and <strong>data science</strong> (M.Sc., KAIST, Human Factors and Ergonomics Lab).
     </p>
     <p>
-      My work moves between research and engineering: validating
-      computer-vision pipelines against ground-truth motion capture,
+      My work moves between research and engineering: benchmarking computer-vision pipelines against ground-truth motion capture,
       building the data infrastructure that turns raw sensor recordings
       into something a clinician or researcher can act on, and
       shipping the result as a tool the intended user can actually
@@ -79,18 +78,14 @@ permalink: /about/
     </div>
     <div class="entry__body">
       <h3 class="entry__title">
-        Pediatric Digital Sensor Study (PDSS)
+        DrSimon Engine &amp; Pediatric Digital Sensor Study (PDSS)
       </h3>
       <p class="entry__lede">
-        Building the digital-phenotyping pipeline that turns raw
-        sensor recordings from 103 children into a dataset clinicians
-        and researchers can analyze.
+        Building a multimodal system that turns raw sensor recordings into features and models clinicians and researchers can use, and that describes user behaviour as a sequence of events and detects anomalies.
       </p>
       <ul class="entry__list">
         <li>
-          Designed and built the per-(child × task) feature pipeline:
-          four sensor modalities (eye-tracking, keyboard, stylus,
-          voice), ~30 tasks per child, 14,500+ raw files, ~1,500
+          Designed and built the per-(child × task) feature pipeline for 103 children: four sensor modalities (eye-tracking, keyboard, stylus, voice), ~30 tasks per child, 14,500+ raw files, ~1,500
           features per row.
         </li>
         <li>
@@ -113,17 +108,13 @@ permalink: /about/
           population model.
         </li>
         <li>
-          Trained K-SADS ADHD models on the resulting features:
-          inattention classification reached AUC 0.72 (LogReg on VST
-          core features); hyperactivity classification reached F2
-          0.65 (LogReg on AST + VST + Flanker core); hyperactivity
-          severity regression reached Pearson <em>r</em> = 0.54
-          (ElasticNet on aggregate features).
+          Predicted clinician-rated ADHD hyperactivity (ROC AUC 0.76, F2 0.65) and inattention (ROC AUC 0.72, F2 0.66) from five attention tasks, comparing 9 models with nested cross-validation and selecting by F2 rather than accuracy; hyperactivity severity regression reached Pearson <em>r</em> = 0.54.
         </li>
         <li>
-          Working alongside our project manager on product-side
-          tasks (scoping, sizing and writing up decisions) to
-          learn the part of the work that lives upstream of the code.
+          Analysed, in 103 children across three tasks, which of 51 stylus measures reflect the child rather than the task, using mixed-effects models, ICC and variance decomposition; manuscript in preparation.
+        </li>
+        <li>
+          Mentor team members and review analyses; working alongside our project manager on product-side tasks (scoping, sizing and writing up decisions).
         </li>
       </ul>
     </div>
@@ -184,8 +175,7 @@ permalink: /about/
       </p>
       <ul class="entry__list">
         <li>
-          Compared MediaPipe and MMPose against an 8-camera OptiTrack
-          reference across three camera views (front, 45°, side) and
+          Compared MediaPipe and MMPose against an OptiTrack motion-capture reference across three camera views (front, 45°, side) and
           nine static and dynamic industrial tasks with different levels
           of occlusion (20 participants).
         </li>
@@ -454,10 +444,10 @@ permalink: /about/
     <li class="award">
       <p class="award__year">2015</p>
       <div>
-        <h3 class="award__title">Merit-Based Fee-Waiver Scholarship</h3>
-        <p class="award__org">Amirkabir University of Technology</p>
+        <h3 class="award__title">Iranian National University Entrance Exam</h3>
+        <p class="award__org">Admitted to Amirkabir University of Technology</p>
         <p class="award__note">
-          Ranked in the top 2% in Iran's National University Entrance Exam (Konkur).
+          Ranked in the top 2% of candidates nationwide (Konkur).
         </p>
       </div>
     </li>
