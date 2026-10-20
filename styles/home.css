@@ -237,45 +237,14 @@ img { max-width: 100%; display: block; }
   box-shadow: 0 0 0 4px #fff, 0 0 0 8px var(--pink-light), 0 10px 30px rgba(0, 0, 0, .18);
 }
 
-.hero-copy .role {
-  font-family: Oswald, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #fff;
-  opacity: 0.85;
-  margin: 0 0 10px;
-}
 .hero-copy h1 {
   font-family: Oswald, sans-serif;
   font-weight: 400;
   font-size: 40px;
   line-height: 1.1;
-  margin: 0 0 8px;
-  color: #fff;
-}
-.hero-copy .pronunciation {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  flex-wrap: wrap;
   margin: 0;
   color: #fff;
 }
-.hero-copy .pron-ipa {
-  font-family: Roboto, monospace;
-  font-size: 12px;
-  opacity: 0.7;
-  letter-spacing: 0.02em;
-}
-.hero-copy .pron-korean {
-  font-family: "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", Roboto, sans-serif;
-  font-size: 17px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-
 .hero-info {
   position: relative; z-index: 2;
   width: 920px; max-width: 90%;
@@ -1048,7 +1017,6 @@ main > section:last-child { padding-bottom: 64px; }
     gap: 16px;
   }
   .hero-copy h1 { font-size: 32px; }
-  .hero-copy .pronunciation { justify-content: center; }
   .hero-info {
     grid-template-columns: 1fr;
     gap: 18px;
