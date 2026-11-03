@@ -1,9 +1,13 @@
----
-layout: default
-title: ریاضی هوش مصنوعی
-description: "A Persian, step-by-step course in the math behind AI and machine learning, from functions to Transformers, with interview missions."
-permalink: /ai-math/
----
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ریاضی هوش مصنوعی</title>
+<meta name="description" content="A Persian, step-by-step course in the math behind AI and machine learning, from functions to Transformers, with interview missions.">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<script>
+  // same saved theme as the rest of the site
+  try { var t = localStorage.getItem('theme'); if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  window.SITE_MENU = "<details class=\"sitemenu\"><summary aria-label=\"Site menu\">☰ Mahsa</summary><nav><a href=\"/\">Home</a><a href=\"/about/\">About</a><a href=\"/work/\">Projects</a><a href=\"/publications/\">Publications</a><a href=\"/#contact\">Contact</a></nav></details>";
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap">
 <style>
@@ -109,25 +113,41 @@ permalink: /ai-math/
 .aimath .ladder.have { border-color: var(--green); }
 .aimath details summary { cursor: pointer; }
 .aimath details[open] summary { margin-bottom: 6px; }
-.aimath .wrap.wide { max-width: 1080px; }
-.aimath .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 8px 28px; align-items: start; }
-.aimath .sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 16px; }
+/* Responsive: home and notebook fill wide screens; in a lesson, reading cards stay ~760px, picture cards spread out */
+.aimath .wrap.wide { max-width: 1440px; }
+.aimath .wrap.player { max-width: 1200px; }
+.aimath .wrap.player .card:not(.t-play) { max-width: 760px; margin-inline: auto; width: 100%; }
+.aimath .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 8px 32px; align-items: start; }
+.aimath .sheets { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; }
 .aimath .go { max-width: 760px; }
+.aimath .t-play .txt, .aimath .t-play .pic { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 @media (min-width: 900px) { .aimath .card h2 { font-size: 26px; } .aimath { font-size: 18px; } }
+@media (min-width: 1000px) {
+  .aimath .card.t-play { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 40px; align-items: start; }
+  .aimath .t-play .txt { position: sticky; top: 24px; }
+}
+@media (min-width: 1100px) { .aimath .wrap { padding-left: 40px; padding-right: 40px; } }
+
+/* Small site menu in the top corner (only on the personal site) */
+.aimath .tl-end { display: flex; gap: 8px; align-items: center; }
+.aimath .sitemenu { position: relative; direction: ltr; }
+.aimath .sitemenu summary { list-style: none; height: 40px; margin: 0; padding: 0 12px; display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); font: 600 14px "Inter", system-ui, sans-serif; }
+.aimath .sitemenu summary::-webkit-details-marker { display: none; }
+.aimath .sitemenu[open] summary { margin: 0; border-color: var(--accent); }
+.aimath .sitemenu nav { position: absolute; left: 0; top: 46px; z-index: 30; min-width: 170px; display: flex; flex-direction: column; padding: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 18%, transparent); }
+.aimath .sitemenu a { padding: 8px 12px; border-radius: 8px; color: var(--ink); text-decoration: none; font: 500 14px "Inter", system-ui, sans-serif; line-height: 1.4; }
+.aimath .sitemenu a:hover, .aimath .sitemenu a:focus-visible { background: var(--soft); }
 
 </style>
+<!--standalone-->
 <style>
-.aimath .wrap { padding-left: 0; padding-right: 0; }
-.aimath #theme { display: none; }
-.aimath .topline { justify-content: flex-start; }
-.aimath .hello h1 { display: none; }
-.page-header--fa .page-header__title { font-family: "Vazirmatn", var(--font-heading); }
+:root { --page: #ffffff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --page: #0f1419; color-scheme: dark; } }
+:root[data-theme="dark"] { --page: #0f1419; color-scheme: dark; }
+body { background: var(--page); margin: 0; }
 </style>
+<!--/standalone-->
 
-<header class="page-header page-header--fa" data-reveal>
-  <p class="eyebrow"><span class="eyebrow__dot"></span>Course · AI Math</p>
-  <h1 class="page-header__title" dir="rtl" lang="fa">ریاضی هوش مصنوعی</h1>
-</header>
 <div class="aimath" id="aimath">
 <div class="wrap" id="app" dir="rtl" lang="fa"></div>
 <div class="foot" id="foot" dir="rtl" hidden><button class="go" id="go">ادامه</button></div>

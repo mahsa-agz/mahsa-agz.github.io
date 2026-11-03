@@ -52,7 +52,8 @@ function home() {
   stop(); foot.hidden = true;
   app.className = 'wrap wide';
   app.innerHTML = `
-    <div class="topline"><button class="nb" id="nb">دفترچه‌ی خلاصه</button><button class="theme" id="theme" aria-label="روشن یا تیره">◐</button></div>
+    <div class="topline"><button class="nb" id="nb">دفترچه‌ی خلاصه</button>
+      <div class="tl-end"><button class="theme" id="theme" aria-label="روشن یا تیره">◐</button>${window.SITE_MENU || ''}</div></div>
     <div class="hello"><h1>ریاضی هوش مصنوعی</h1><p>هر روز یک درس کوتاه. از پایه شروع می‌کنیم.</p></div>
     <div class="grid">${COURSE.map(chapterHTML).join('')}</div>`;
   app.querySelectorAll('[data-id]').forEach(b => b.onclick = () => start(b.dataset.id, +b.dataset.p));
@@ -98,7 +99,7 @@ function show(L, p, seq, ci) {
   stop();
   if (ci >= seq.length) return finish(L, p);
   const c = seq[ci];
-  app.className = 'wrap';
+  app.className = 'wrap player'; // picture cards spread out; reading cards stay narrow (see CSS)
   app.innerHTML = `<div class="top"><button class="close" id="x" aria-label="بستن">✕</button>
     <div class="prog"><i style="width:${(100 * ci) / seq.length}%"></i></div></div>${goalBar(L)}<div class="card" id="card"></div>`;
   $('#x').onclick = home;
@@ -106,6 +107,7 @@ function show(L, p, seq, ci) {
   go.textContent = ci === seq.length - 1 ? 'تمام' : 'ادامه';
   go.disabled = false;
   go.onclick = () => show(L, p, seq, ci + 1);
+  $('#card').classList.add('t-' + c.t);
   const r = CARDS[c.t](c, $('#card'), { L, lock: () => { go.disabled = true; }, unlock: () => { go.disabled = false; } });
   if (typeof r === 'function') stopW = r;
   scrollTo(0, 0);

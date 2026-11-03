@@ -18,8 +18,9 @@ const CARDS = {
 
   // interactive picture: { title, body, w: host => cleanup }
   play: (c, el) => {
-    el.innerHTML = `${tag('امتحان کنید')}<h2>${c.title}</h2><p>${c.body}</p>`;
-    return c.w(el);
+    // text and picture in their own boxes so wide screens can put them side by side
+    el.innerHTML = `<div class="txt">${tag('امتحان کنید')}<h2>${c.title}</h2><p>${c.body}</p></div><div class="pic"></div>`;
+    return c.w(el.querySelector('.pic'));
   },
 
   // formula with every symbol named: { title, intro, toks:[{s, c, l}], read, note }
