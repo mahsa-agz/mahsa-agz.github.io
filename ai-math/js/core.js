@@ -50,10 +50,11 @@ const stop = () => { if (stopW) { stopW(); stopW = null; } };
 
 function home() {
   stop(); foot.hidden = true;
+  app.className = 'wrap wide';
   app.innerHTML = `
     <div class="topline"><button class="nb" id="nb">دفترچه‌ی خلاصه</button><button class="theme" id="theme" aria-label="روشن یا تیره">◐</button></div>
     <div class="hello"><h1>ریاضی هوش مصنوعی</h1><p>هر روز یک درس کوتاه. از پایه شروع می‌کنیم.</p></div>
-    ${COURSE.map(chapterHTML).join('')}`;
+    <div class="grid">${COURSE.map(chapterHTML).join('')}</div>`;
   app.querySelectorAll('[data-id]').forEach(b => b.onclick = () => start(b.dataset.id, +b.dataset.p));
   $('#theme').onclick = toggleTheme;
   $('#nb').onclick = notebook;
@@ -97,6 +98,7 @@ function show(L, p, seq, ci) {
   stop();
   if (ci >= seq.length) return finish(L, p);
   const c = seq[ci];
+  app.className = 'wrap';
   app.innerHTML = `<div class="top"><button class="close" id="x" aria-label="بستن">✕</button>
     <div class="prog"><i style="width:${(100 * ci) / seq.length}%"></i></div></div>${goalBar(L)}<div class="card" id="card"></div>`;
   $('#x').onclick = home;
@@ -126,8 +128,9 @@ function notebook() {
   stop(); foot.hidden = true;
   const ls = COURSE.flatMap(c => c.lessons).map(id => LESSONS[id]).filter(L => L.sheet);
   const have = ls.filter(L => started(L.id));
+  app.className = 'wrap wide';
   app.innerHTML = `<div class="top"><button class="close" id="x" aria-label="بستن">✕</button><h2 style="font-size:20px">دفترچه‌ی خلاصه <span class="en">(Cheat Sheet)</span></h2></div>
-    <div class="card">${have.length ? have.map(sheetHTML).join('') : '<p class="box">هنوز کارتی نیست. هر درسی را که شروع کنید، خلاصه‌اش اینجا می‌آید.</p>'}
+    <div class="card">${have.length ? `<div class="sheets">${have.map(sheetHTML).join('')}</div>` : '<p class="box">هنوز کارتی نیست. هر درسی را که شروع کنید، خلاصه‌اش اینجا می‌آید.</p>'}
     ${ls.length > have.length ? `<p style="color:var(--muted)">${fa(ls.length - have.length)} کارت دیگر بعد از درس‌های بعدی باز می‌شود.</p>` : ''}</div>`;
   $('#x').onclick = home;
   scrollTo(0, 0);
@@ -146,5 +149,7 @@ function toggleTheme() {
   const r = document.documentElement;
   const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
   r.dataset.theme = dark ? 'light' : 'dark';
-  dispatchEvent(new Event('themechange'));
+  try { localStorage.setItem('theme', r.dataset.theme); } catch (e) {} // same key as the personal site
 }
+// redraw pictures whenever the theme changes, from our button or the site's toggle
+new MutationObserver(() => dispatchEvent(new Event('themechange'))).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });

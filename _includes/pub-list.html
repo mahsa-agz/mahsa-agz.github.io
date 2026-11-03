@@ -7,6 +7,7 @@
     {%- case pub.kind -%}
       {%- when "journal" -%}{%- assign tag = "Journal" -%}{%- assign tag_class = "pub-tag" -%}
       {%- when "poster" -%}{%- assign tag = "Poster" -%}{%- assign tag_class = "pub-tag pub-tag--poster" -%}
+      {%- when "submitted" -%}{%- assign tag = "Under review" -%}{%- assign tag_class = "pub-tag pub-tag--muted" -%}
       {%- else -%}{%- assign tag = "In preparation" -%}{%- assign tag_class = "pub-tag pub-tag--muted" -%}
     {%- endcase -%}
     <li class="pub">

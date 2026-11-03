@@ -89,7 +89,7 @@ const CARDS = {
     const parents = [...new Set(G_LINKS.filter(([a, b]) => b === node && G_NODES[a] && G_NODES[a][2] !== 'q').map(([a]) => a))];
     const qs = ancestors(node).filter(a => G_NODES[a] && G_NODES[a][2] === 'q');
     el.innerHTML = `${tag('نقشه')}<h2>این را کجا لازم داریم؟</h2>
-      <p>«${nodeName(node)}» پله‌ای است برای:</p><div class="chips">${parents.map(a => `<span class="chip">${nodeName(a)} <span class="en">(${G_NODES[a][1]})</span></span>`).join('')}</div>
+      <p>«${nodeName(node)}» پله‌ای است برای:</p><div class="aichips">${parents.map(a => `<span class="aichip">${nodeName(a)} <span class="en">(${G_NODES[a][1]})</span></span>`).join('')}</div>
       ${qs.length ? `<p>و برای جواب دادن به این سؤال‌های مصاحبه لازم است:</p><div class="list">${qs.map(a => `<div class="box qbox">${nodeName(a)} <span class="en">(${G_NODES[a][1]})</span></div>`).join('')}</div>` : ''}`;
   },
 

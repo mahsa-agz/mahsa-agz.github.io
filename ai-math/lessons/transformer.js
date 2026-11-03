@@ -111,7 +111,7 @@ const TRF_W_MAP = h => {
     }));
     const B = TRF_BOXES[sel];
     read.innerHTML = `<b>${B.h}</b><div style="font-size:15px;text-align:right;margin:6px 0">${B.d}</div>` +
-      `<div class="chips" style="justify-content:center">${B.ls.map(t => `<span class="chip">${t}</span>`).join('')}</div>` +
+      `<div class="aichips" style="justify-content:center">${B.ls.map(t => `<span class="aichip">${t}</span>`).join('')}</div>` +
       `<div class="muted" style="font-size:14px;margin-top:6px">کلِ این نقشه از <b>${fa(TRF_ALL.length)}</b> درسی ساخته شده که خودتان رفته‌اید.</div>`;
   };
   h.append(wrap, read);

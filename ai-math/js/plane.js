@@ -6,7 +6,7 @@
 // }) -> cleanup
 // g: grid() line() fn() arrow() rect() dot() knob() text(), plus X/Y/ctx/css for custom drawing
 function plane(host, o) {
-  const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+  const css = n => getComputedStyle(cv).getPropertyValue('--' + n).trim(); // tokens live on the .aimath wrapper
   const s = o.state || {};
   const cv = document.createElement('canvas');
   host.appendChild(cv);
