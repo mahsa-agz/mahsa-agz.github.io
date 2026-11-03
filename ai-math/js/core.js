@@ -63,13 +63,14 @@ function home() {
 }
 function chapterHTML(ch, k) {
   const r = rows(ch), n = r.filter(x => done.has(pk(x.id, x.p))).length, total = r.length + ch.soon.length;
+  // nothing is locked: the order is a suggestion, and the first unfinished lesson is highlighted as "next"
+  const next = r.findIndex(x => !done.has(pk(x.id, x.p)));
   const items = r.map((x, i) => {
     const L = LESSONS[x.id], isDone = done.has(pk(x.id, x.p));
-    const open = i === 0 || done.has(pk(r[i - 1].id, r[i - 1].p));
     const name = L.parts.length > 1 ? `${L.title}: ${L.parts[x.p].name}` : L.title;
-    return `<button class="lesson ${isDone ? 'done' : open ? 'open' : 'locked'}" ${open || isDone ? `data-id="${x.id}" data-p="${x.p}"` : 'disabled'}>
+    return `<button class="lesson ${isDone ? 'done' : i === next ? 'open' : ''}" data-id="${x.id}" data-p="${x.p}">
       <span class="num">${isDone ? '✓' : fa(i + 1)}</span><span class="txt"><b>${name}</b><span class="en">${L.en}</span></span>
-      <span class="state">${isDone ? 'دوباره' : open ? 'شروع' : 'قفل'}</span></button>`;
+      <span class="state">${isDone ? 'دوباره' : i === next ? 'بعدی' : 'شروع'}</span></button>`;
   }).join('') + ch.soon.map(([f, e], j) => `<div class="lesson locked"><span class="num">${fa(r.length + j + 1)}</span>
       <span class="txt"><b>${f}</b><span class="en">${e}</span></span><span class="state">به‌زودی</span></div>`).join('');
   return `<section class="chapter"><div class="unit"><small>فصل ${fa(k + 1)}</small><h2>${ch.title} <span class="en">(${ch.en})</span></h2>
