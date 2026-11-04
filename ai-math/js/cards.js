@@ -1,5 +1,11 @@
 // ---------- Card types ----------
 // Each renderer: (card, el, ctx{L, lock, unlock}) -> optional cleanup function
+// shrink a wide formula until it fits its box (phones)
+const fitWidth = t => {
+  if (!t || !t.clientWidth) return;
+  let fs = parseFloat(getComputedStyle(t).fontSize);
+  while (t.scrollWidth > t.clientWidth + 1 && fs > 13) t.style.fontSize = --fs + 'px';
+};
 const tag = t => `<span class="tag">${t}</span>`;
 
 const CARDS = {
@@ -16,18 +22,28 @@ const CARDS = {
     el.innerHTML = `${tag('در زندگی')}<h2>${c.title}</h2><div class="list">${c.items.map(i => `<div class="box"><b>${i.h}</b><div>${i.d}</div></div>`).join('')}</div>`;
   },
 
-  // interactive picture: { title, body, w: host => cleanup }
+  // interactive picture: { title, body, look:[steps: do this -> you will see that], see: what it showed, w: host => cleanup }
   play: (c, el) => {
     // text and picture in their own boxes so wide screens can put them side by side
-    el.innerHTML = `<div class="txt">${tag('امتحان کنید')}<h2>${c.title}</h2><p>${c.body}</p></div><div class="pic"></div>`;
+    el.innerHTML = `<div class="txt">${tag('امتحان کنید')}<h2>${c.title}</h2><p>${c.body}</p>
+      ${c.look ? `<div class="look"><b>قدم به قدم</b><ol>${c.look.map(x => `<li>${x.replace(/ → /g, ' ← ')}</li>`).join('')}</ol></div>` : ''}
+      ${c.see ? `<details class="see"><summary>چه دیدیم؟</summary><div>${c.see}</div></details>` : ''}</div><div class="pic"></div>`;
     return c.w(el.querySelector('.pic'));
   },
 
-  // formula with every symbol named: { title, intro, toks:[{s, c, l}], read, note }
+  // formula: { title, intro, f: whole formula in LaTeX (colour parts with \Cg{} \Co{} \Cb{} \Cr{} \Ca{} \Ci{} \Cm{}),
+  //            toks:[{s, c, l}] = the parts with their meaning (listed under the formula), read, note }
   formula: (c, el) => {
     el.innerHTML = `${tag('فرمول')}<h2>${c.title}</h2>${c.intro || ''}
-      <div class="formula">${c.toks.map(k => `<span class="tok" style="${k.c ? `--c:var(--${k.c})` : ''}"><span>${k.s}</span>${k.l ? `<small>${k.l}</small>` : ''}</span>`).join('')}</div>
+      <div class="formula">${ED(c.f || c.toks.map(k => k.c ? String.raw`\class{c-${k.c}}{${k.s}}` : k.s).join(' '))}</div>
+      <div class="legend">${c.toks.filter(k => k.l).map(k => `<div class="lg" style="--c:var(--${k.c || 'ink'})">${E(String.raw`\displaystyle ` + k.s)}<span>${k.l}</span></div>`).join('')}</div>
       ${c.read ? `<p class="muted">${c.read}</p>` : ''}${c.note || ''}`;
+  },
+
+  // worked example, step by step: { title, intro, steps:[...], result }
+  example: (c, el) => {
+    el.innerHTML = `${tag('مثال حل‌شده')}<h2>${c.title}</h2>${c.intro || ''}
+      <ol class="steps">${c.steps.map(x => `<li>${x}</li>`).join('')}</ol>${c.result ? `<div class="box key">${c.result}</div>` : ''}`;
   },
 
   // rules with their reason: { title, items:[{r, why}] }

@@ -24,6 +24,26 @@
 .aimath button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .aimath .en { font-family: "Segoe UI", system-ui, sans-serif; font-size: .82em; color: var(--muted); font-weight: 500; }
 .aimath .eq { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+.aimath .tex mjx-container { margin: 0 !important; display: inline-block !important; }
+.aimath .tex svg { vertical-align: middle; overflow: visible; }
+.aimath .tex.big { display: block; text-align: center; font-size: 1.3em; margin: 4px 0; overflow-x: auto; overflow-y: hidden; }
+/* formula card: whole formula on one line, then what each colored part means */
+.aimath .formula .tex.big { font-size: 1.9em; margin: 0; }
+.aimath [class^="c-"], .aimath [class*=" c-"] { color: var(--c); }
+.aimath .c-blue { --c: var(--blue); } .aimath .c-orange { --c: var(--orange); } .aimath .c-green { --c: var(--green); } .aimath .c-red { --c: var(--red); } .aimath .c-ink { --c: var(--ink); } .aimath .c-muted { --c: var(--muted); } .aimath .c-accent { --c: var(--accent); }
+.aimath .legend { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.aimath .lg { display: flex; align-items: center; gap: 12px; color: var(--c); }
+.aimath .lg .tex { flex: none; min-width: 64px; text-align: center; direction: ltr; }
+.aimath .lg span:last-child { color: var(--ink); font-size: 16px; line-height: 1.6; }
+@media (max-width: 520px) { .aimath .formula .tex.big { font-size: 1.45em; } }
+.aimath .tex { font-size: 1.12em; }
+.aimath .look { background: var(--soft); border-radius: 14px; padding: 10px 14px; }
+.aimath .look ol, .aimath .steps { margin: 4px 0 0; padding-inline-start: 22px; }
+.aimath .look li, .aimath .steps li { margin: 4px 0; }
+.aimath .see { border: 2px dashed var(--accent); border-radius: 14px; padding: 8px 14px; }
+.aimath .see summary { cursor: pointer; font-weight: 700; color: var(--accent); }
+.aimath .see div { margin-top: 6px; }
+.aimath .steps li::marker { font-weight: 700; color: var(--accent); }
 .aimath .v { direction: ltr; unicode-bidi: isolate; display: inline-block; font-weight: 700; }
 .aimath .hello { display: flex; flex-direction: column; gap: 4px; margin: 8px 0 22px; }
 .aimath .hello h1 { font-size: 28px; font-weight: 800; }
@@ -100,7 +120,7 @@
 .aimath .goal .g { background: var(--soft); color: var(--ink); border-radius: 99px; padding: 0 10px; }
 .aimath .goal .g.now { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
 .aimath .who { font-size: 15px; color: var(--muted); border-inline-start: 3px solid var(--line); padding-inline-start: 12px; }
-.aimath .formula { direction: ltr; display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 8px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 10px; }
+.aimath .formula { direction: ltr; display: block; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 10px; }
 .aimath .tok { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .aimath .tok > span { font: 700 30px/1.2 "Segoe UI", system-ui, sans-serif; color: var(--c, var(--ink)); }
 .aimath .tok small { direction: rtl; font-size: 12px; line-height: 1.4; color: var(--c, var(--muted)); max-width: 104px; text-align: center; }
@@ -156,64 +176,67 @@ body { background: var(--page); margin: 0; }
 <div class="foot" id="foot" dir="rtl" hidden><div class="nav"><button class="back" id="back">قبلی</button><button class="go" id="go">ادامه</button></div></div>
 </div>
 
-<script src="js/graph.js?v=mw1f7a3r"></script>
-<script src="js/core.js?v=mw1f7a3r"></script>
-<script src="js/plane.js?v=mw1f7a3r"></script>
-<script src="js/cards.js?v=mw1f7a3r"></script>
-<script src="js/stats.js?v=mw1f7a3r"></script>
-<script src="lessons/function.js?v=mw1f7a3r"></script>
-<script src="lessons/slope.js?v=mw1f7a3r"></script>
-<script src="lessons/derivative.js?v=mw1f7a3r"></script>
-<script src="lessons/exponent-log.js?v=mw1f7a3r"></script>
-<script src="lessons/chain-rule.js?v=mw1f7a3r"></script>
-<script src="lessons/gradient.js?v=mw1f7a3r"></script>
-<script src="lessons/distribution.js?v=mw1f7a3r"></script>
-<script src="lessons/mean.js?v=mw1f7a3r"></script>
-<script src="lessons/variance.js?v=mw1f7a3r"></script>
-<script src="lessons/normal.js?v=mw1f7a3r"></script>
-<script src="lessons/correlation.js?v=mw1f7a3r"></script>
-<script src="lessons/hypothesis-testing.js?v=mw1f7a3r"></script>
-<script src="lessons/anova.js?v=mw1f7a3r"></script>
-<script src="lessons/probability.js?v=mw1f7a3r"></script>
-<script src="lessons/bayes-rule.js?v=mw1f7a3r"></script>
-<script src="lessons/maximum-likelihood.js?v=mw1f7a3r"></script>
-<script src="lessons/vectors.js?v=mw1f7a3r"></script>
-<script src="lessons/vector-length.js?v=mw1f7a3r"></script>
-<script src="lessons/dot-product.js?v=mw1f7a3r"></script>
-<script src="lessons/matrix.js?v=mw1f7a3r"></script>
-<script src="lessons/matrix-multiplication.js?v=mw1f7a3r"></script>
-<script src="lessons/eigenvalues.js?v=mw1f7a3r"></script>
-<script src="lessons/loss-function.js?v=mw1f7a3r"></script>
-<script src="lessons/gradient-descent.js?v=mw1f7a3r"></script>
-<script src="lessons/overfitting.js?v=mw1f7a3r"></script>
-<script src="lessons/regularization.js?v=mw1f7a3r"></script>
-<script src="lessons/bias-variance.js?v=mw1f7a3r"></script>
-<script src="lessons/cross-validation.js?v=mw1f7a3r"></script>
-<script src="lessons/metrics.js?v=mw1f7a3r"></script>
-<script src="lessons/feature-engineering.js?v=mw1f7a3r"></script>
-<script src="lessons/linear-regression.js?v=mw1f7a3r"></script>
-<script src="lessons/logistic-regression.js?v=mw1f7a3r"></script>
-<script src="lessons/k-nn.js?v=mw1f7a3r"></script>
-<script src="lessons/naive-bayes.js?v=mw1f7a3r"></script>
-<script src="lessons/decision-tree.js?v=mw1f7a3r"></script>
-<script src="lessons/random-forest-boosting.js?v=mw1f7a3r"></script>
-<script src="lessons/k-means.js?v=mw1f7a3r"></script>
-<script src="lessons/pca.js?v=mw1f7a3r"></script>
-<script src="lessons/neural-network.js?v=mw1f7a3r"></script>
-<script src="lessons/backpropagation.js?v=mw1f7a3r"></script>
-<script src="lessons/embedding.js?v=mw1f7a3r"></script>
-<script src="lessons/cnn.js?v=mw1f7a3r"></script>
-<script src="lessons/rnn.js?v=mw1f7a3r"></script>
-<script src="lessons/attention.js?v=mw1f7a3r"></script>
-<script src="lessons/transformer.js?v=mw1f7a3r"></script>
-<script src="lessons/m-precision-recall.js?v=mw1f7a3r"></script>
-<script src="lessons/m-overfitting.js?v=mw1f7a3r"></script>
-<script src="lessons/m-imbalanced.js?v=mw1f7a3r"></script>
-<script src="lessons/m-p-value.js?v=mw1f7a3r"></script>
-<script src="lessons/m-mse-classification.js?v=mw1f7a3r"></script>
-<script src="lessons/m-l1-sparse.js?v=mw1f7a3r"></script>
-<script src="lessons/m-bagging-boosting.js?v=mw1f7a3r"></script>
-<script src="lessons/m-pca.js?v=mw1f7a3r"></script>
-<script src="lessons/m-vanishing-gradient.js?v=mw1f7a3r"></script>
-<script src="lessons/m-attention-sqrt-d.js?v=mw1f7a3r"></script>
-<script src="lessons/course.js?v=mw1f7a3r"></script>
+<script>window.MathJax = { startup: { typeset: false }, svg: { fontCache: 'none' }, loader: { load: ['[tex]/html'] },
+  tex: { packages: { '[+]': ['html'] }, macros: { Cg: [String.raw`\class{c-green}{#1}`, 1], Co: [String.raw`\class{c-orange}{#1}`, 1], Cb: [String.raw`\class{c-blue}{#1}`, 1], Cr: [String.raw`\class{c-red}{#1}`, 1], Ca: [String.raw`\class{c-accent}{#1}`, 1], Ci: [String.raw`\class{c-ink}{#1}`, 1], Cm: [String.raw`\class{c-muted}{#1}`, 1] } } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<script src="js/graph.js?v=mw1tkni2"></script>
+<script src="js/core.js?v=mw1tkni2"></script>
+<script src="js/plane.js?v=mw1tkni2"></script>
+<script src="js/cards.js?v=mw1tkni2"></script>
+<script src="js/stats.js?v=mw1tkni2"></script>
+<script src="lessons/function.js?v=mw1tkni2"></script>
+<script src="lessons/slope.js?v=mw1tkni2"></script>
+<script src="lessons/derivative.js?v=mw1tkni2"></script>
+<script src="lessons/exponent-log.js?v=mw1tkni2"></script>
+<script src="lessons/chain-rule.js?v=mw1tkni2"></script>
+<script src="lessons/gradient.js?v=mw1tkni2"></script>
+<script src="lessons/distribution.js?v=mw1tkni2"></script>
+<script src="lessons/mean.js?v=mw1tkni2"></script>
+<script src="lessons/variance.js?v=mw1tkni2"></script>
+<script src="lessons/normal.js?v=mw1tkni2"></script>
+<script src="lessons/correlation.js?v=mw1tkni2"></script>
+<script src="lessons/hypothesis-testing.js?v=mw1tkni2"></script>
+<script src="lessons/anova.js?v=mw1tkni2"></script>
+<script src="lessons/probability.js?v=mw1tkni2"></script>
+<script src="lessons/bayes-rule.js?v=mw1tkni2"></script>
+<script src="lessons/maximum-likelihood.js?v=mw1tkni2"></script>
+<script src="lessons/vectors.js?v=mw1tkni2"></script>
+<script src="lessons/vector-length.js?v=mw1tkni2"></script>
+<script src="lessons/dot-product.js?v=mw1tkni2"></script>
+<script src="lessons/matrix.js?v=mw1tkni2"></script>
+<script src="lessons/matrix-multiplication.js?v=mw1tkni2"></script>
+<script src="lessons/eigenvalues.js?v=mw1tkni2"></script>
+<script src="lessons/loss-function.js?v=mw1tkni2"></script>
+<script src="lessons/gradient-descent.js?v=mw1tkni2"></script>
+<script src="lessons/overfitting.js?v=mw1tkni2"></script>
+<script src="lessons/regularization.js?v=mw1tkni2"></script>
+<script src="lessons/bias-variance.js?v=mw1tkni2"></script>
+<script src="lessons/cross-validation.js?v=mw1tkni2"></script>
+<script src="lessons/metrics.js?v=mw1tkni2"></script>
+<script src="lessons/feature-engineering.js?v=mw1tkni2"></script>
+<script src="lessons/linear-regression.js?v=mw1tkni2"></script>
+<script src="lessons/logistic-regression.js?v=mw1tkni2"></script>
+<script src="lessons/k-nn.js?v=mw1tkni2"></script>
+<script src="lessons/naive-bayes.js?v=mw1tkni2"></script>
+<script src="lessons/decision-tree.js?v=mw1tkni2"></script>
+<script src="lessons/random-forest-boosting.js?v=mw1tkni2"></script>
+<script src="lessons/k-means.js?v=mw1tkni2"></script>
+<script src="lessons/pca.js?v=mw1tkni2"></script>
+<script src="lessons/neural-network.js?v=mw1tkni2"></script>
+<script src="lessons/backpropagation.js?v=mw1tkni2"></script>
+<script src="lessons/embedding.js?v=mw1tkni2"></script>
+<script src="lessons/cnn.js?v=mw1tkni2"></script>
+<script src="lessons/rnn.js?v=mw1tkni2"></script>
+<script src="lessons/attention.js?v=mw1tkni2"></script>
+<script src="lessons/transformer.js?v=mw1tkni2"></script>
+<script src="lessons/m-precision-recall.js?v=mw1tkni2"></script>
+<script src="lessons/m-overfitting.js?v=mw1tkni2"></script>
+<script src="lessons/m-imbalanced.js?v=mw1tkni2"></script>
+<script src="lessons/m-p-value.js?v=mw1tkni2"></script>
+<script src="lessons/m-mse-classification.js?v=mw1tkni2"></script>
+<script src="lessons/m-l1-sparse.js?v=mw1tkni2"></script>
+<script src="lessons/m-bagging-boosting.js?v=mw1tkni2"></script>
+<script src="lessons/m-pca.js?v=mw1tkni2"></script>
+<script src="lessons/m-vanishing-gradient.js?v=mw1tkni2"></script>
+<script src="lessons/m-attention-sqrt-d.js?v=mw1tkni2"></script>
+<script src="lessons/course.js?v=mw1tkni2"></script>

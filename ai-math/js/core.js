@@ -1,6 +1,35 @@
 // ---------- Helpers ----------
 const fa = n => String(Math.round(n * 100) / 100).replace('-', '−').replace('.', '٫').replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
-const E = s => `<span class="eq">${s}</span>`;
+// E('LaTeX') draws a formula with MathJax (SVG, cached). N('text') keeps plain text in left-to-right order.
+const N = s => `<span class="eq">${s}</span>`;
+const TEX = new Map();
+window.__texErrs = [];
+const E = (s, display) => {
+  const M = window.MathJax;
+  if (!M || !M.tex2svg) return N(s);
+  const k = (display ? 'D' : 'I') + s;
+  if (!TEX.has(k)) {
+    let html;
+    try {
+      const n = M.tex2svg(String(s), { display: !!display });
+      const bad = n.querySelector('[data-mjx-error]');
+      if (bad) { __texErrs.push(s + ' -> ' + bad.getAttribute('data-mjx-error')); console.warn('TeX', s); }
+      html = n.outerHTML;
+    } catch (e) { __texErrs.push(s + ' -> ' + e.message); html = N(s); }
+    if (TEX.size > 3000) TEX.clear();
+    TEX.set(k, `<span class="eq tex${display ? ' big' : ''}">${html}</span>`);
+  }
+  return TEX.get(k);
+};
+const ED = s => E(s, true); // a formula on its own line
+// start the app once MathJax is ready (or without it, after 6 s or if it failed to load)
+function whenTex(f) {
+  let ran = false; const once = () => { if (!ran) { ran = true; f(); } };
+  const P = window.MathJax && window.MathJax.startup && window.MathJax.startup.promise;
+  if (!P) return once();
+  P.then(() => { try { document.head.appendChild(MathJax.svgStylesheet()); } catch (e) {} once(); }, once);
+  setTimeout(once, 6000);
+}
 const V = (x, y) => `<span class="v">[${fa(x)}, ${fa(y)}]</span>`;
 const EN = s => `<span class="en">(${s})</span>`;
 const $ = s => document.querySelector(s);
@@ -81,7 +110,7 @@ function chapterHTML(ch, k) {
 // ---------- Lesson player ----------
 function reviewCards(id) {
   const pool = Object.values(LESSONS).filter(L => L.id !== id && started(L.id))
-    .flatMap(L => L.parts.flatMap(p => p.cards.filter(c => c.t === 'quiz')));
+    .flatMap(L => L.parts.flatMap(p => p.cards.filter(c => c.t === 'quiz' && !/تصویر|شکل/.test(c.q)))); // skip questions about another lesson's picture
   return pool.sort(() => Math.random() - 0.5).slice(0, 2).map(c => ({ ...c, review: true }));
 }
 function start(id, p) {
@@ -116,6 +145,7 @@ function show(L, p, seq, ci) {
   $('#card').classList.add('t-' + c.t);
   const r = CARDS[c.t](c, $('#card'), { L, lock: () => { go.disabled = !revisit; }, unlock: () => { go.disabled = false; } });
   if (typeof r === 'function') stopW = r;
+  app.querySelectorAll('.tex.big').forEach(fitWidth); // wide formulas shrink to fit on phones
   scrollTo(0, 0);
 }
 function finish(L, p, seq) {
@@ -143,13 +173,14 @@ function notebook() {
     <div class="card">${have.length ? `<div class="sheets">${have.map(sheetHTML).join('')}</div>` : '<p class="box">هنوز کارتی نیست. هر درسی را که شروع کنید، خلاصه‌اش اینجا می‌آید.</p>'}
     ${ls.length > have.length ? `<p style="color:var(--muted)">${fa(ls.length - have.length)} کارت دیگر بعد از درس‌های بعدی باز می‌شود.</p>` : ''}</div>`;
   $('#x').onclick = home;
+  app.querySelectorAll('.tex.big').forEach(fitWidth);
   scrollTo(0, 0);
 }
 function sheetHTML(L) {
   const s = L.sheet;
   return `<div class="sheet"><div><b>${L.title}</b> <span class="en">(${L.en})</span></div>
     <div class="key">${s.one}</div>
-    ${s.f ? `<div class="read">${E(s.f)}</div>` : ''}
+    ${s.f ? `<div class="read">${ED(s.f)}</div>` : ''}
     ${s.rules ? `<ul>${s.rules.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
     ${s.use ? `<p><b>کجا به کار می‌آید:</b> ${s.use}</p>` : ''}
     ${s.mistake ? `<p><b class="bad">اشتباه رایج:</b> ${s.mistake}</p>` : ''}</div>`;

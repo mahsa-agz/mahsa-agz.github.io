@@ -37,4 +37,4 @@ const COURSE = COURSE_PLAN.map(c => ({
   lessons: c.items.filter(([id]) => LESSONS[id]).map(([id]) => id),
   soon: c.items.filter(([id]) => !LESSONS[id]).map(([, f, e]) => [f, e]),
 }));
-home();
+whenTex(home);
