@@ -44,7 +44,7 @@ const nodeName = id => (G_NODES[id] || [id])[0];
 const isMission = L => (G_NODES[L.node] || [])[2] === 'q';
 
 // ---------- Shell ----------
-const app = $('#app'), foot = $('#foot'), go = $('#go');
+const app = $('#app'), foot = $('#foot'), go = $('#go'), back = $('#back');
 let stopW = null;
 const stop = () => { if (stopW) { stopW(); stopW = null; } };
 
@@ -98,7 +98,8 @@ function goalBar(L) {
 }
 function show(L, p, seq, ci) {
   stop();
-  if (ci >= seq.length) return finish(L, p);
+  if (ci < 0) return;
+  if (ci >= seq.length) return finish(L, p, seq);
   const c = seq[ci];
   app.className = 'wrap player'; // picture cards spread out; reading cards stay narrow (see CSS)
   app.innerHTML = `<div class="top"><button class="close" id="x" aria-label="بستن">✕</button>
@@ -108,13 +109,19 @@ function show(L, p, seq, ci) {
   go.textContent = ci === seq.length - 1 ? 'تمام' : 'ادامه';
   go.disabled = false;
   go.onclick = () => show(L, p, seq, ci + 1);
+  back.hidden = ci === 0;
+  back.onclick = () => show(L, p, seq, ci - 1);
+  seq.reached = Math.max(seq.reached || 0, ci); // cards already passed don't lock "continue" again when revisited
+  const revisit = ci < seq.reached;
   $('#card').classList.add('t-' + c.t);
-  const r = CARDS[c.t](c, $('#card'), { L, lock: () => { go.disabled = true; }, unlock: () => { go.disabled = false; } });
+  const r = CARDS[c.t](c, $('#card'), { L, lock: () => { go.disabled = !revisit; }, unlock: () => { go.disabled = false; } });
   if (typeof r === 'function') stopW = r;
   scrollTo(0, 0);
 }
-function finish(L, p) {
+function finish(L, p, seq) {
   done.add(pk(L.id, p)); saveDone();
+  back.hidden = false;
+  back.onclick = () => show(L, p, seq, seq.length - 1);
   const ch = COURSE.find(c => c.lessons.includes(L.id)), r = rows(ch);
   const next = r[r.findIndex(x => x.id === L.id && x.p === p) + 1];
   const NL = next && LESSONS[next.id];
