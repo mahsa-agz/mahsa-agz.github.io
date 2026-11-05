@@ -1,11 +1,36 @@
 pattern({
-  id: 'window', n: 3, name: 'Sliding window', sub: 'Grow the right side, shrink the left, never go back',
-  why: `<p>A substring or subarray is a <b>window</b> <code>[l, r]</code>. Checking every window is <b>n²</b> (or worse).</p>
-<p>The key fact: for these problems, <b>if a window is bad, any bigger window that contains it is also bad</b> (too many repeats, too many distinct values, …). So when the window goes bad, you only need to move <code>l</code> forward; it never has to come back.</p>
-<p>Each index enters once (when <code>r</code> reaches it) and leaves once (when <code>l</code> passes it): <b>O(n)</b>. Keep a small <b>state</b> (a sum or a <code>Counter</code>) and update it as items enter and leave, instead of recomputing.</p>
-<p class="note">Needs that “bad stays bad” rule. Sums with <b>negative</b> numbers break it, so those go to <i>Prefix sums</i> (pattern 4).</p>`,
-  viz: `<div class="viz"><div class="vrow">${A(['a', 'b', 'c', 'a', 'b', 'b'], { 1: 'l', 3: 'r' }, [1, 3])}</div><div class="vnote">window “bca” has no repeats → length 3 · next char “b” is a repeat → move <b>l</b> past the old “b”</div></div>`,
-  spot: ['“<b>longest / shortest</b> substring / subarray such that …”', '“at most k …”, “contains all of …”', '<b>contiguous</b> (must be next to each other)', '“every window of size k”'],
+  id: 'window', n: 3, name: 'پنجره‌ی لغزان (Sliding window)', sub: 'سمت راست را بزرگ کن، از چپ کوچک کن، هیچ‌وقت عقب نرو',
+  story: `<p>اسمش از <b>شبکه</b> آمده. در دهه‌ی ۱۹۷۰، وقتی <b>وینت سرف و باب کان (Vint Cerf و Bob Kahn)</b> پروتکل TCP را طراحی می‌کردند، مشکل این بود: فرستنده نباید منتظرِ تأییدِ هر بسته بماند (خیلی کند)، ولی نباید هم بی‌حساب بفرستد (گیرنده غرق می‌شود). راه‌حل: یک <b>پنجره</b>. فرستنده می‌تواند حداکثر چند بسته‌ی تأییدنشده داشته باشد؛ با هر تأیید، لبه‌ی چپ جلو می‌رود و جا برای بسته‌ی بعدی در راست باز می‌شود. پنجره <b>می‌لغزد</b> و هیچ‌وقت عقب نمی‌رود.</p>
+<p>در آمار هم ایده‌اش قدیمی‌تر است: <b>میانگین متحرک</b> (moving average). برای میانگینِ ۷ روزِ آخر، هر روز از اول جمع نمی‌زنی؛ روزِ جدید را اضافه و روزِ قدیمی را کم می‌کنی. <b>شهود اصلی:</b> دو پنجره‌ی پشت‌سرهم تقریباً یکی‌اند، پس فقط تفاوتشان را حساب کن.</p>`,
+  uses: `<ul>
+<li><b>شاخص‌های غلتان (rolling)</b>: کاربران فعالِ ۷ روز اخیر، میانگین متحرک. پانداس <code>rolling(7)</code> و SQL <code>ROWS BETWEEN 6 PRECEDING AND CURRENT ROW</code>.</li>
+<li><b>محدودیت نرخ (rate limiting)</b>: «حداکثر ۱۰۰ درخواست در هر دقیقه».</li>
+<li><b>طولانی‌ترین رکورد</b>: بلندترین دوره‌ی پشت‌سرهم با یک شرط (بدون تکرار، حداکثر k مورد بد).</li>
+<li><b>جست‌وجو در متن با شرط</b>: کوتاه‌ترین بخشی که همه‌ی کلمه‌ها را دارد.</li>
+<li><b>جاهایی که خوب نیست:</b> عضوهای <b>غیرپیوسته</b> (زیرمجموعه، نه زیرآرایه) یا جمع با <b>عدد منفی</b> ← جمع پیشوندی یا برنامه‌ریزی پویا.</li></ul>`,
+  demo: {
+    title: 'بلندترین زیررشته بدون حرف تکراری',
+    fields: [['s', 'abcabcbb']],
+    run(f) {
+      const s = [...(f.s || '').slice(0, 16)], last = new Map(), out = [];
+      let l = 0, best = 0;
+      out.push({ cells: A(s), note: 'پنجره خالی است. r حرف‌ها را یکی‌یکی وارد می‌کند.' });
+      s.forEach((c, r) => {
+        let msg = '';
+        if (last.has(c) && last.get(c) >= l) { msg = `«${c}» داخل پنجره تکراری است (اندیس ${last.get(c)}) ← <b>l</b> می‌پرد به ${last.get(c) + 1}. `; l = last.get(c) + 1; }
+        last.set(c, r);
+        const len = r - l + 1, nb = len > best; best = Math.max(best, len);
+        out.push({ cells: A(s, { [l]: 'l', [r]: 'r' }, [l, r]), note: `${msg}«${c}» وارد شد. پنجره «${s.slice(l, r + 1).join('')}»، طول ${len}${nb ? ' ← بهترین تا الان' : ''}. بهترین: <b>${best}</b>` });
+      });
+      return out;
+    }
+  },
+  why: `<p>یک زیررشته یا زیرآرایه (substring / subarray) یک <b>پنجره</b> است: <code>[l, r]</code>. بررسیِ همه‌ی پنجره‌ها <b>n²</b> (یا بدتر) است.</p>
+<p>نکته‌ی کلیدی: در این سؤال‌ها <b>اگر پنجره‌ای خراب باشد، هر پنجره‌ی بزرگ‌تری که آن را در بر بگیرد هم خراب است</b> (تکرارِ زیاد، تعدادِ مقدارهای متفاوتِ زیاد، …). پس وقتی پنجره خراب شد، فقط <code>l</code> را جلو می‌بری و هیچ‌وقت لازم نیست برگردد.</p>
+<p>هر اندیس یک بار وارد می‌شود (وقتی <code>r</code> به آن می‌رسد) و یک بار خارج (وقتی <code>l</code> از آن رد می‌شود): <b>O(n)</b>. یک <b>وضعیت</b> کوچک (یک جمع یا یک <code>Counter</code>) نگه دار و با ورود و خروج هر عضو به‌روزش کن، به‌جای این‌که از اول حساب کنی.</p>
+<p class="note">این قانونِ «خراب خراب می‌ماند» لازم است. جمع با عددهای <b>منفی</b> آن را می‌شکند؛ آن سؤال‌ها مال <i>جمع پیشوندی</i> (الگوی ۴) هستند.</p>`,
+  viz: `<div class="viz"><div class="vrow">${A(['a', 'b', 'c', 'a', 'b', 'b'], { 1: 'l', 3: 'r' }, [1, 3])}</div><div class="vnote">پنجره‌ی «bca» تکرار ندارد ← طول 3 · حرف بعدی «b» تکراری است ← <b>l</b> را از «b»ِ قبلی رد کن</div></div>`,
+  spot: ['«<b>طولانی‌ترین / کوتاه‌ترین</b> زیررشته / زیرآرایه‌ای که …»', '«حداکثر k تا …»، «همه‌ی … را داشته باشد»', '<b>پیوسته</b> (contiguous؛ عضوها باید کنار هم باشند)', '«هر پنجره به اندازه‌ی k»'],
   template: String.raw`# longest window that stays valid
 l = 0; best = 0
 for r, x in enumerate(a):
@@ -25,14 +50,14 @@ for r, x in enumerate(a):
 for r, x in enumerate(a):
     add(x)
     if r >= k: remove(a[r - k])`,
-  tiktok: `<b>Longest Substring Without Repeating Characters</b> is one of TikTok's 6 most asked. Its premium cousin <b>“at most K distinct characters”</b> was asked in the last 3 months. <b>Fruit Into Baskets</b> below is the free version of the same idea.`,
+  tiktok: `<b>Longest Substring Without Repeating Characters</b> جزو ۶ سؤالِ پرتکرارِ تیک‌تاک است. نسخه‌ی پولی‌اش، <b>«حداکثر K حرفِ متفاوت»</b>، در ۳ ماه اخیر پرسیده شده. <b>Fruit Into Baskets</b> در پایین نسخه‌ی رایگانِ همان ایده است.`,
   problems: [
     {
       id: 'best-time-to-buy-and-sell-stock', t: 'Best Time to Buy and Sell Stock', d: 'E', f: 62.8, fn: 'maxProfit',
-      plain: 'Buy one day, sell on a <b>later</b> day. Biggest profit, or 0.',
-      hint: 'If you sell today, which buy day is best? Can you know it without looking back?',
-      idea: 'Keep the cheapest price so far (the left edge). Selling today earns <code>price − cheapest</code>. Track the max.',
-      traps: ['Selling before buying is not allowed, which is why you update the minimum as you go, not upfront.'],
+      plain: 'یک روز بخر و یک روزِ <b>بعدتر</b> بفروش. بیشترین سود، یا 0.',
+      hint: 'اگر امروز بفروشی، بهترین روزِ خرید کدام است؟ می‌شود بدون نگاه به عقب آن را دانست؟',
+      idea: 'ارزان‌ترین قیمتِ تا الان را نگه دار (لبه‌ی چپ). فروش امروز سودِ <code>قیمت − ارزان‌ترین</code> دارد. بیشینه را نگه دار.',
+      traps: ['فروش قبل از خرید مجاز نیست؛ برای همین کمینه را در طول راه به‌روز می‌کنی، نه از اول.'],
       code: String.raw`class Solution:
     def maxProfit(self, prices):
         low, best = float('inf'), 0
@@ -45,10 +70,10 @@ for r, x in enumerate(a):
     },
     {
       id: 'longest-substring-without-repeating-characters', t: 'Longest Substring Without Repeating Characters', d: 'M', f: 84.3, fn: 'lengthOfLongestSubstring',
-      plain: 'Length of the longest piece of the string with <b>no repeated character</b>.',
-      hint: 'When <code>s[r]</code> repeats, where must the new left edge be?',
-      idea: 'Remember the last index of each char. If <code>s[r]</code> was seen inside the window, jump <code>l</code> to one past it.',
-      traps: ['Use <code>l = max(l, last[c] + 1)</code>; an old index left of the window must not pull <code>l</code> back (“abba”).'],
+      plain: 'طولِ بلندترین تکه از رشته که <b>هیچ حرفِ تکراری</b> ندارد.',
+      hint: 'وقتی <code>s[r]</code> تکراری است، لبه‌ی چپِ جدید باید کجا باشد؟',
+      idea: 'آخرین اندیسِ هر حرف را نگه دار. اگر <code>s[r]</code> داخل پنجره دیده شده، <code>l</code> را به یکی بعد از آن بپران.',
+      traps: ['از <code>l = max(l, last[c] + 1)</code> استفاده کن؛ اندیسِ قدیمیِ سمت چپِ پنجره نباید <code>l</code> را عقب بکشد («abba»).'],
       code: String.raw`class Solution:
     def lengthOfLongestSubstring(self, s):
         last = {}
@@ -64,10 +89,10 @@ for r, x in enumerate(a):
     },
     {
       id: 'minimum-size-subarray-sum', t: 'Minimum Size Subarray Sum', d: 'M', f: 52.9, fn: 'minSubArrayLen',
-      plain: 'All numbers are positive. Shortest piece with sum <b>≥ target</b>. Return 0 if none.',
-      hint: 'This is the “shortest valid” shape: while it is valid, try to shrink.',
-      idea: 'Add <code>a[r]</code>. While <code>total ≥ target</code>: record the length, then remove <code>a[l]</code> and move <code>l</code>.',
-      traps: ['Return 0 when nothing works (best is still ∞).', 'Works only because all numbers are positive.'],
+      plain: 'همه‌ی عددها مثبت‌اند. کوتاه‌ترین تکه با جمعِ <b>≥ target</b>. اگر نبود 0.',
+      hint: 'این شکلِ «کوتاه‌ترینِ معتبر» است: تا وقتی معتبر است، سعی کن کوچکش کنی.',
+      idea: '<code>a[r]</code> را اضافه کن. تا وقتی <code>total ≥ target</code>: طول را ثبت کن، بعد <code>a[l]</code> را کم کن و <code>l</code> را جلو ببر.',
+      traps: ['وقتی هیچ تکه‌ای جواب نمی‌دهد 0 برگردان (best هنوز ∞ است).', 'فقط چون همه‌ی عددها مثبت‌اند کار می‌کند.'],
       code: String.raw`class Solution:
     def minSubArrayLen(self, target, nums):
         l = total = 0
@@ -83,10 +108,10 @@ for r, x in enumerate(a):
     },
     {
       id: 'fruit-into-baskets', t: 'Fruit Into Baskets', d: 'M', f: 34.5, fn: 'totalFruit',
-      plain: 'Longest piece of the list that has <b>at most 2 different values</b>.',
-      hint: 'State = a <code>Counter</code> of the window. When is it invalid?',
-      idea: 'Add <code>fruits[r]</code> to the counter. While it has more than 2 keys, drop <code>fruits[l]</code> (delete the key when its count hits 0).',
-      traps: ['Delete keys at 0, otherwise <code>len(cnt)</code> stays too big.', 'Change 2 to k and you have the TikTok premium problem “at most K distinct”.'],
+      plain: 'بلندترین تکه از لیست که <b>حداکثر 2 مقدارِ متفاوت</b> دارد.',
+      hint: 'وضعیت = یک <code>Counter</code> از پنجره. کِی نامعتبر است؟',
+      idea: '<code>fruits[r]</code> را به شمارنده اضافه کن. تا وقتی بیش از 2 کلید دارد، <code>fruits[l]</code> را کم کن (وقتی شمارش به 0 رسید کلید را حذف کن).',
+      traps: ['کلیدهایی را که به 0 رسیدند حذف کن، وگرنه <code>len(cnt)</code> بزرگ می‌ماند.', '2 را به k تغییر بده و سؤالِ پولیِ تیک‌تاک «حداکثر K متفاوت» را داری.'],
       code: String.raw`from collections import Counter
 
 class Solution:
@@ -107,10 +132,10 @@ class Solution:
     },
     {
       id: 'max-consecutive-ones-iii', t: 'Max Consecutive Ones III', d: 'M', f: 26.1, fn: 'longestOnes',
-      plain: 'You may flip at most <code>k</code> zeros to ones. Longest run of ones?',
-      hint: 'Rephrase: longest window with <b>at most k zeros</b>.',
-      idea: 'Count zeros in the window. While zeros &gt; k, move <code>l</code> (subtract if <code>a[l]</code> was 0).',
-      traps: ['You don\'t actually flip anything; you just count zeros.'],
+      plain: 'می‌توانی حداکثر <code>k</code> صفر را به یک تبدیل کنی. بلندترین رشته‌ی یک‌ها؟',
+      hint: 'سؤال را این‌طور بگو: بلندترین پنجره با <b>حداکثر k صفر</b>.',
+      idea: 'صفرهای پنجره را بشمار. تا وقتی <code>zeros &gt; k</code> است، <code>l</code> را جلو ببر (اگر <code>a[l]</code> صفر بود از شمارش کم کن).',
+      traps: ['واقعاً چیزی را تبدیل نمی‌کنی؛ فقط صفرها را می‌شماری.'],
       code: String.raw`class Solution:
     def longestOnes(self, nums, k):
         l = zeros = best = 0
@@ -126,10 +151,10 @@ class Solution:
     },
     {
       id: 'find-all-anagrams-in-a-string', t: 'Find All Anagrams in a String', d: 'M', f: 26.1, fn: 'findAnagrams',
-      plain: 'Start positions in <code>s</code> where a rearrangement of <code>p</code> appears.',
-      hint: 'Window size is fixed: <code>len(p)</code>. What do you compare?',
-      idea: 'Fixed window. Keep letter counts of the window; add <code>s[r]</code>, remove <code>s[r − m]</code>; when counts equal <code>p</code>\'s, record <code>r − m + 1</code>.',
-      traps: ['Comparing two 26-length lists is O(26) = constant, fine.', 'Guard <code>len(p) &gt; len(s)</code> (just returns []).'],
+      plain: 'جایگاه‌هایی در <code>s</code> که یک جابه‌جاشده از <code>p</code> از آن‌جا شروع می‌شود.',
+      hint: 'اندازه‌ی پنجره ثابت است: <code>len(p)</code>. چه چیزی را مقایسه می‌کنی؟',
+      idea: 'پنجره‌ی ثابت. تعداد حروفِ پنجره را نگه دار؛ <code>s[r]</code> را اضافه و <code>s[r − m]</code> را کم کن؛ وقتی با تعدادهای <code>p</code> برابر شد، <code>r − m + 1</code> را ثبت کن.',
+      traps: ['مقایسه‌ی دو لیست ۲۶تایی O(26) یعنی ثابت است؛ مشکلی ندارد.', 'حالت <code>len(p) &gt; len(s)</code> خودش [] برمی‌گرداند.'],
       code: String.raw`class Solution:
     def findAnagrams(self, s, p):
         m, out = len(p), []
@@ -145,10 +170,10 @@ class Solution:
     },
     {
       id: 'minimum-window-substring', t: 'Minimum Window Substring', d: 'H', f: 72.5, fn: 'minWindow',
-      plain: 'Shortest piece of <code>s</code> that contains <b>every letter of <code>t</code></b> (with repeats). Return it, or "".',
-      hint: 'Shortest-valid shape. Instead of comparing counters each step, keep one number: how many letters are still <i>missing</i>.',
-      idea: '<code>need</code> = counts of t, <code>missing = len(t)</code>. Add <code>s[r]</code>: if it was still needed, <code>missing −= 1</code>. While <code>missing == 0</code>: record, then give back <code>s[l]</code> (if that makes it needed again, <code>missing += 1</code>).',
-      traps: ['<code>need</code> may go negative for extra letters; that is fine and correct.', 'Return the string, not the length.'],
+      plain: 'کوتاه‌ترین تکه از <code>s</code> که <b>همه‌ی حروفِ <code>t</code></b> را (با تکرارها) داشته باشد. خودش را برگردان، یا "".',
+      hint: 'شکلِ «کوتاه‌ترینِ معتبر». به‌جای مقایسه‌ی شمارنده‌ها در هر قدم، فقط یک عدد نگه دار: چند حرف هنوز <i>کم</i> است.',
+      idea: '<code>need</code> = تعداد حروفِ t، <code>missing = len(t)</code>. <code>s[r]</code> را اضافه کن: اگر هنوز لازم بود، <code>missing −= 1</code>. تا وقتی <code>missing == 0</code>: ثبت کن، بعد <code>s[l]</code> را پس بده (اگر دوباره لازم شد، <code>missing += 1</code>).',
+      traps: ['<code>need</code> برای حروفِ اضافه ممکن است منفی شود؛ اشکالی ندارد و درست است.', 'خودِ رشته را برگردان، نه طولش را.'],
       code: String.raw`from collections import Counter
 
 class Solution:

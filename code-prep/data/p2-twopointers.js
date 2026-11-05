@@ -1,12 +1,37 @@
 pattern({
-  id: 'twopointers', n: 2, name: 'Two pointers', sub: 'Each step throws away a whole row of options',
-  why: `<p>Brute force on pairs checks every <code>(i, j)</code>: <b>n²</b>. Two pointers win because, when the data is <b>sorted</b> (or has two ends), one comparison rules out many pairs at once.</p>
-<p>Example: sorted array, want sum = target. If <code>a[l] + a[r]</code> is <b>too small</b>, then <code>a[l]</code> with <i>any</i> element left of <code>r</code> is also too small, so <code>l</code> is useless and you move it. One step removes a whole row. That is why it is <b>O(n)</b>.</p>
-<p>Two shapes:</p>
-<ul><li><b>Opposite ends</b> (<code>l</code> → ← <code>r</code>): pairs in sorted data, palindromes, “container” problems.</li>
-<li><b>Same direction</b> (writer <code>w</code> + reader): rewrite an array <b>in place</b>, keep only what you want.</li></ul>`,
-  viz: `<div class="viz"><div class="vrow">${A([1, 3, 4, 6, 9], { 0: 'l', 4: 'r' })}</div><div class="vnote">target 10: 1 + 9 = 10 ✓ · if it were 12: 10 &lt; 12 → too small → <b>l</b> moves right</div></div>`,
-  spot: ['array is <b>sorted</b> (or you may sort it)', '“pair / triplet with sum …”', '“palindrome”', '“in place”, “O(1) extra space”, “remove / move elements”', 'merge two sorted lists'],
+  id: 'twopointers', n: 2, name: 'دو اشاره‌گر (Two pointers)', sub: 'هر قدم یک ردیف کامل از حالت‌ها را حذف می‌کند',
+  story: `<p>این الگو یک مخترعِ مشخص ندارد؛ از <b>ادغام</b> آمده. <b>سال ۱۹۴۵، جان فون نویمان (John von Neumann)</b> مرتب‌سازیِ ادغامی (merge sort) را نوشت. قلبش این است: دو دسته کارتِ مرتب داری، یک انگشت روی بالای هر دسته؛ کوچک‌تر را بردار و فقط همان انگشت را جلو ببر. دو انگشت = دو اشاره‌گر. هیچ‌وقت لازم نیست به عقب نگاه کنی، چون مرتب بودن تضمین می‌کند چیزی جا نمانده.</p>
+<p>بعدها <b>ادسخر دایکسترا (Edsger Dijkstra)</b> مسئله‌ی <b>«پرچم هلند»</b> را مطرح کرد: توپ‌های قرمز، سفید و آبی را در یک دور و در جا مرتب کن. جوابش سه اشاره‌گر است که مرز ناحیه‌ها را نگه می‌دارند (همان سؤال Sort Colors در ترکیبی ۱). <b>شهود اصلی:</b> وقتی داده نظم دارد، هر مقایسه به تو می‌گوید کدام طرف دیگر به درد نمی‌خورد.</p>`,
+  uses: `<ul>
+<li><b>ادغام دو داده‌ی مرتب</b>: دو لاگِ مرتب‌شده بر اساس زمان را یکی کن. پانداس <code>merge_asof</code> همین کار را می‌کند.</li>
+<li><b>جفت با جمعِ مشخص در داده‌ی مرتب</b> (و سه‌تایی با یک حلقه‌ی اضافه).</li>
+<li><b>مقایسه‌ی دو سر</b>: پالیندروم، برعکس کردن در جا.</li>
+<li><b>فیلتر یا جداسازی در جا</b> بدون حافظه‌ی اضافه: حذف تکراری‌ها، صفرها به آخر، جدا کردنِ کوچک/بزرگ (قلبِ quicksort).</li>
+<li><b>جاهایی که خوب نیست:</b> داده‌ی <b>نامرتب</b> که نباید مرتبش کنی (چون اندیس‌ها مهم‌اند) ← هش‌مپ.</li></ul>`,
+  demo: {
+    title: 'جفت با جمع target در آرایه‌ی مرتب',
+    fields: [['nums (sorted)', '1, 3, 4, 6, 8, 11'], ['target', '10']],
+    run(f) {
+      const a = nums(f['nums (sorted)']).sort((x, y) => x - y), t = +f.target, out = [], gone = new Set();
+      let l = 0, r = a.length - 1;
+      out.push({ cells: A(a, { [l]: 'l', [r]: 'r' }), note: `از دو سر شروع کن. هدف ${t}.` });
+      while (l < r) {
+        const s = a[l] + a[r];
+        if (s === t) { out.push({ cells: A(a, { [l]: 'l ✓', [r]: 'r ✓' }, null, gone), note: `${L(`${a[l]} + ${a[r]} = ${s}`)} ✓ پیدا شد.` }); return out; }
+        if (s < t) { gone.add(l); out.push({ cells: A(a, { [l + 1]: 'l', [r]: 'r' }, null, gone), note: `${L(`${a[l]} + ${a[r]} = ${s} &lt; ${t}`)} ← کوچک است. ${a[l]} حتی با بزرگ‌ترین عددِ باقی‌مانده هم کم می‌آورد، پس با <b>هیچ</b> عددی جواب نمی‌دهد ← حذفش کن، <b>l</b> جلو.` }); l++; }
+        else { gone.add(r); out.push({ cells: A(a, { [l]: 'l', [r - 1]: 'r' }, null, gone), note: `${L(`${a[l]} + ${a[r]} = ${s} &gt; ${t}`)} ← بزرگ است. ${a[r]} حتی با کوچک‌ترین عددِ باقی‌مانده هم زیاد است ← حذفش کن، <b>r</b> عقب.` }); r--; }
+      }
+      out.push({ cells: A(a, {}, null, gone), note: 'اشاره‌گرها به هم رسیدند: جفتی وجود ندارد.' });
+      return out;
+    }
+  },
+  why: `<p>راه‌حل ساده برای جفت‌ها همه‌ی <code>(i, j)</code>ها را امتحان می‌کند: <b>n²</b>. دو اشاره‌گر برنده است چون وقتی داده <b>مرتب</b> است (یا دو سر دارد)، یک مقایسه هم‌زمان کلی جفت را کنار می‌گذارد.</p>
+<p>مثال: آرایه‌ی مرتب، دنبال جمعِ برابر با target. اگر <code>a[l] + a[r]</code> <b>کوچک‌تر</b> باشد، <code>a[l]</code> با <i>هر</i> عضوِ سمت چپِ <code>r</code> هم کوچک‌تر است؛ پس <code>l</code> به درد نمی‌خورد و جلو می‌رود. یک قدم، یک ردیف کامل حذف. برای همین <b>O(n)</b> است.</p>
+<p>دو شکل دارد:</p>
+<ul><li><b>از دو سر</b> (<code>l</code> → ← <code>r</code>): جفت در داده‌ی مرتب، پالیندروم، سؤال‌های «ظرف آب».</li>
+<li><b>هم‌جهت</b> (نویسنده <code>w</code> + خواننده): بازنویسی آرایه <b>در جا (in place)</b> و نگه داشتن فقط چیزهایی که می‌خواهی.</li></ul>`,
+  viz: `<div class="viz"><div class="vrow">${A([1, 3, 4, 6, 9], { 0: 'l', 4: 'r' })}</div><div class="vnote"><span dir="ltr">target = 10: 1 + 9 = 10</span> ✓ · اگر <span dir="ltr">target = 12</span> بود: <span dir="ltr">10 &lt; 12</span> ← کوچک است ← <b>l</b> یک خانه جلو می‌رود</div></div>`,
+  spot: ['آرایه <b>مرتب</b> است (یا اجازه داری مرتبش کنی)', '«جفت / سه‌تایی با جمعِ …»', '«پالیندروم» (palindrome)', '«در جا»، «حافظه‌ی اضافه‌ی O(1)»، «حذف / جابه‌جا کردن عضوها»', 'ادغام دو لیست مرتب'],
   template: String.raw`# opposite ends
 l, r = 0, len(a) - 1
 while l < r:
@@ -21,14 +46,14 @@ for x in a:                        # reader
     if keep(x):
         a[w] = x                   # writer
         w += 1`,
-  tiktok: `<b>3Sum</b>, <b>Trapping Rain Water</b> and <b>Container With Most Water</b> are all on TikTok's frequently asked list. CodeSignal Q1–Q2 often need the writer/reader shape on strings.`,
+  tiktok: `<b>3Sum</b>، <b>Trapping Rain Water</b> و <b>Container With Most Water</b> همه در فهرست سؤال‌های پرتکرار تیک‌تاک هستند. سؤال ۱ و ۲ کدسیگنال روی رشته‌ها اغلب شکلِ نویسنده/خواننده را لازم دارند.`,
   problems: [
     {
       id: 'valid-palindrome', t: 'Valid Palindrome', d: 'E', f: 34.5, fn: 'isPalindrome',
-      plain: 'After dropping everything except letters and digits, and ignoring case, does the text read the same both ways?',
-      hint: 'Two pointers from both ends. What do you do when a pointer sits on a comma?',
-      idea: 'Move <code>l</code> right past non-alphanumerics, <code>r</code> left the same way, then compare lowercase characters.',
-      traps: ['<code>str.isalnum()</code> keeps digits too; the problem wants that.', 'Empty or all-symbol strings are palindromes (return True).'],
+      plain: 'اگر همه‌چیز جز حروف و رقم‌ها را دور بریزی و بزرگی و کوچکیِ حروف را نادیده بگیری، متن از دو طرف یکی خوانده می‌شود؟',
+      hint: 'دو اشاره‌گر از دو سر. وقتی اشاره‌گر روی ویرگول است چه می‌کنی؟',
+      idea: '<code>l</code> را از روی کاراکترهای غیرحرف‌ورقم به راست رد کن، <code>r</code> را به چپ، بعد حروف کوچک‌شده را مقایسه کن.',
+      traps: ['<code>str.isalnum()</code> رقم‌ها را هم نگه می‌دارد؛ سؤال همین را می‌خواهد.', 'رشته‌ی خالی یا فقط‌علامت پالیندروم است (True).'],
       code: String.raw`class Solution:
     def isPalindrome(self, s):
         l, r = 0, len(s) - 1
@@ -44,10 +69,10 @@ for x in a:                        # reader
     },
     {
       id: 'move-zeroes', t: 'Move Zeroes', d: 'E', f: 26.1, fn: 'moveZeroes', inplace: 0,
-      plain: 'Move all 0s to the end, keep the order of the other numbers, change the list <b>in place</b>.',
-      hint: 'A reader walks every item; a writer only moves when it gets a non-zero.',
-      idea: 'Writer <code>w</code> marks where the next non-zero goes. Swap <code>a[w], a[i]</code> on every non-zero. Zeros drift to the end by themselves.',
-      traps: ['Don\'t build a new list: the test checks the <b>same</b> list object.', 'Swapping (not copying) means no second loop to fill zeros.'],
+      plain: 'همه‌ی صفرها را به آخر ببر، ترتیب بقیه‌ی عددها را حفظ کن، و همان لیست را <b>در جا</b> تغییر بده.',
+      hint: 'خواننده از روی همه رد می‌شود؛ نویسنده فقط وقتی عدد غیرصفر می‌بیند حرکت می‌کند.',
+      idea: 'نویسنده‌ی <code>w</code> جای عدد غیرصفرِ بعدی را نشان می‌دهد. روی هر غیرصفر، <code>a[w], a[i]</code> را جابه‌جا کن. صفرها خودبه‌خود به آخر می‌روند.',
+      traps: ['لیست جدید نساز: تست <b>همان</b> لیست را بررسی می‌کند.', 'با جابه‌جا کردن (نه کپی) دیگر حلقه‌ی دوم برای پر کردن صفرها لازم نیست.'],
       code: String.raw`class Solution:
     def moveZeroes(self, nums):
         w = 0
@@ -60,10 +85,10 @@ for x in a:                        # reader
     },
     {
       id: 'valid-palindrome-ii', t: 'Valid Palindrome II', d: 'E', f: 34.5, fn: 'validPalindrome',
-      plain: 'Can the string become a palindrome if you delete <b>at most one</b> character?',
-      hint: 'Walk inward until the first mismatch. You have one deletion: which two choices are there?',
-      idea: 'At the first mismatch, try skipping the left char <b>or</b> the right char, and check if the rest is a plain palindrome.',
-      traps: ['Only one deletion: after the mismatch use a simple check, not the same function again.', '<code>t == t[::-1]</code> is a fine way to check the rest.'],
+      plain: 'اگر <b>حداکثر یک</b> حرف را پاک کنی، رشته می‌تواند پالیندروم شود؟',
+      hint: 'تا اولین ناجوری جلو برو. یک بار حق حذف داری: دو انتخاب چیست؟',
+      idea: 'در اولین ناجوری، یا حرف چپ را کنار بگذار <b>یا</b> حرف راست را، و ببین بقیه یک پالیندروم ساده است یا نه.',
+      traps: ['فقط یک حذف: بعد از ناجوری یک بررسیِ ساده بکن، نه صدا زدن دوباره‌ی همین تابع.', '<code>t == t[::-1]</code> راه خوبی برای بررسی بقیه است.'],
       code: String.raw`class Solution:
     def validPalindrome(self, s):
         l, r = 0, len(s) - 1
@@ -78,10 +103,10 @@ for x in a:                        # reader
     },
     {
       id: 'two-sum-ii-input-array-is-sorted', t: 'Two Sum II – Input Array Is Sorted', d: 'M', f: 26.1, fn: 'twoSum',
-      plain: 'Sorted array; find two numbers that add to <code>target</code>. Return positions <b>starting from 1</b>, using O(1) extra space.',
-      hint: 'Sorted + pair sum: start at both ends. Which end moves when the sum is too big?',
-      idea: 'Too small → <code>l += 1</code> (need bigger). Too big → <code>r -= 1</code>. Equal → done.',
-      traps: ['Answer is 1-indexed: return <code>[l + 1, r + 1]</code>.', 'A hash map works too, but breaks the O(1) space rule.'],
+      plain: 'آرایه مرتب است؛ دو عدد پیدا کن که جمعشان <code>target</code> شود. جایگاه‌ها را <b>از 1</b> برگردان، با حافظه‌ی اضافه‌ی O(1).',
+      hint: 'مرتب + جمع جفت: از دو سر شروع کن. وقتی جمع بزرگ است کدام سر حرکت می‌کند؟',
+      idea: 'کوچک ← <code>l += 1</code> (عدد بزرگ‌تر لازم است). بزرگ ← <code>r -= 1</code>. برابر ← تمام.',
+      traps: ['جواب از 1 شروع می‌شود: <code>[l + 1, r + 1]</code> را برگردان.', 'هش‌مپ هم کار می‌کند، ولی قانونِ حافظه‌ی O(1) را می‌شکند.'],
       code: String.raw`class Solution:
     def twoSum(self, numbers, target):
         l, r = 0, len(numbers) - 1
@@ -95,10 +120,10 @@ for x in a:                        # reader
     },
     {
       id: '3sum', t: '3Sum', d: 'M', f: 68.2, fn: 'threeSum', cmp: 'groups',
-      plain: 'Find all <b>different</b> triplets that sum to 0.',
-      hint: 'Sort. Fix the first number; now the rest is Two Sum II. How do you avoid the same triplet twice?',
-      idea: 'Sort. For each <code>i</code>, run opposite-end pointers on the part to its right looking for <code>-nums[i]</code>. Skip equal neighbours for <code>i</code>, and after a hit skip equal neighbours for <code>l</code>.',
-      traps: ['Duplicates are the whole difficulty: skip <code>nums[i] == nums[i-1]</code>.', 'Small speed-up: if <code>nums[i] &gt; 0</code>, stop, since everything after is positive.'],
+      plain: 'همه‌ی سه‌تایی‌های <b>متفاوت</b> را پیدا کن که جمعشان 0 شود.',
+      hint: 'مرتب کن. عدد اول را ثابت بگیر؛ حالا بقیه همان Two Sum II است. چطور از سه‌تاییِ تکراری جلوگیری می‌کنی؟',
+      idea: 'مرتب کن. برای هر <code>i</code>، روی بخشِ سمت راستش با دو اشاره‌گر دنبال <code>-nums[i]</code> بگرد. همسایه‌های برابرِ <code>i</code> را رد کن، و بعد از هر پیدا کردن، همسایه‌های برابرِ <code>l</code> را هم.',
+      traps: ['کل سختیِ سؤال تکراری‌هاست: <code>nums[i] == nums[i-1]</code> را رد کن.', 'سرعت بیشتر: اگر <code>nums[i] &gt; 0</code> شد، متوقف شو؛ بعدی‌ها همه مثبت‌اند.'],
       code: String.raw`class Solution:
     def threeSum(self, nums):
         nums.sort()
@@ -121,10 +146,10 @@ for x in a:                        # reader
     },
     {
       id: 'container-with-most-water', t: 'Container With Most Water', d: 'M', f: 55.8, fn: 'maxArea',
-      plain: 'Lines of heights <code>h</code>. Pick two; water = <b>shorter height × distance</b>. Find the most water.',
-      hint: 'Start with the widest pair. Moving the <i>taller</i> line inward: can that ever help?',
-      idea: 'Width only shrinks as you move in, and the water is capped by the shorter line. So keeping the shorter line can never beat now → <b>move the shorter one</b>.',
-      traps: ['The “why” is what interviewers ask: moving the taller side cannot raise the cap.', 'Area uses <code>r − l</code>, not <code>r − l + 1</code>.'],
+      plain: 'خط‌هایی با ارتفاع <code>h</code>. دو تا را انتخاب کن؛ آب = <b>ارتفاعِ کوتاه‌تر × فاصله</b>. بیشترین آب را پیدا کن.',
+      hint: 'از پهن‌ترین جفت شروع کن. حرکت دادنِ خطِ <i>بلندتر</i> به داخل هیچ‌وقت کمک می‌کند؟',
+      idea: 'با رفتن به داخل، پهنا فقط کم می‌شود و آب را خطِ کوتاه‌تر محدود می‌کند. پس نگه داشتنِ خط کوتاه‌تر هیچ‌وقت از الان بهتر نمی‌شود ← <b>خطِ کوتاه‌تر را حرکت بده</b>.',
+      traps: ['مصاحبه‌گر همین «چرا» را می‌پرسد: حرکتِ سمتِ بلندتر سقف را بالا نمی‌برد.', 'مساحت با <code>r − l</code> حساب می‌شود، نه <code>r − l + 1</code>.'],
       code: String.raw`class Solution:
     def maxArea(self, height):
         l, r, best = 0, len(height) - 1, 0

@@ -1,13 +1,13 @@
 mix({
-  id: 'mix1', after: 3, name: 'Mixed 1', sub: 'Patterns 1–3, shuffled. First guess the pattern, then solve.',
+  id: 'mix1', after: 3, name: 'ترکیبی ۱', sub: 'الگوهای ۱ تا ۳ قاطی. اول الگو را حدس بزن، بعد حل کن.',
   problems: [
     {
       id: 'roman-to-integer', t: 'Roman to Integer', d: 'E', f: 34.5, fn: 'romanToInt', p: 'hashmap',
-      tell: 'A fixed <b>lookup table</b> (symbol → value) is the core. Recognize: “map each thing to a value”.',
-      plain: 'Turn a Roman numeral like <code>"MCMXCIV"</code> into a number.',
-      hint: 'Store each symbol\'s value in a dict. When does a symbol <i>subtract</i>?',
-      idea: 'Read left to right. If a symbol is smaller than the one after it (I before V), subtract it; otherwise add it.',
-      traps: ['Compare with the <b>next</b> symbol; guard the last index.'],
+      tell: 'هسته‌اش یک <b>جدولِ جست‌وجو</b> (نماد ← مقدار) است. نشانه: «هر چیز را به یک مقدار نگاشت کن».',
+      plain: 'عدد رومی مثل <code>"MCMXCIV"</code> را به عدد معمولی تبدیل کن.',
+      hint: 'مقدارِ هر نماد را در دیکشنری بگذار. یک نماد کِی <i>کم</i> می‌شود؟',
+      idea: 'از چپ به راست بخوان. اگر نمادی از نمادِ بعدی‌اش کوچک‌تر است (I قبل از V)، کمش کن؛ وگرنه اضافه‌اش کن.',
+      traps: ['با نمادِ <b>بعدی</b> مقایسه کن و مراقب اندیسِ آخر باش.'],
       code: String.raw`class Solution:
     def romanToInt(self, s):
         v = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
@@ -23,11 +23,11 @@ mix({
     },
     {
       id: 'merge-sorted-array', t: 'Merge Sorted Array', d: 'E', f: 26.1, fn: 'merge', inplace: 0, p: 'twopointers',
-      tell: '<b>Two sorted lists</b> + <b>in place</b> → two pointers. The twist: fill from the <b>back</b>.',
-      plain: '<code>nums1</code> has <code>m</code> numbers plus <code>n</code> empty slots at the end. Merge sorted <code>nums2</code> into it, in place.',
-      hint: 'Filling from the front overwrites numbers you still need. Where is free space?',
-      idea: 'Pointers at the last real numbers of both lists, writer at the very end. Put the bigger one at the writer, move left.',
-      traps: ['When <code>nums1</code> runs out first, the rest of <code>nums2</code> must still be copied (the loop runs while <code>j ≥ 0</code>).'],
+      tell: '<b>دو لیستِ مرتب</b> + <b>در جا</b> ← دو اشاره‌گر. نکته‌ی خاص: از <b>آخر</b> پر کن.',
+      plain: '<code>nums1</code>، <code>m</code> عدد و <code>n</code> جای خالی در انتها دارد. <code>nums2</code>ِ مرتب را در جا در آن ادغام کن.',
+      hint: 'پر کردن از جلو عددهایی را که هنوز لازم داری پاک می‌کند. جای خالی کجاست؟',
+      idea: 'اشاره‌گرها روی آخرین عددِ واقعیِ هر دو لیست، نویسنده روی آخرین خانه. بزرگ‌تر را در جای نویسنده بگذار و به چپ برو.',
+      traps: ['اگر <code>nums1</code> زودتر تمام شود، بقیه‌ی <code>nums2</code> هنوز باید کپی شود (حلقه تا وقتی <code>j ≥ 0</code> ادامه دارد).'],
       code: String.raw`class Solution:
     def merge(self, nums1, m, nums2, n):
         i, j, w = m - 1, n - 1, m + n - 1
@@ -42,11 +42,11 @@ mix({
     },
     {
       id: 'sort-colors', t: 'Sort Colors', d: 'M', f: 45.5, fn: 'sortColors', inplace: 0, p: 'twopointers',
-      tell: '<b>In place</b>, one pass, only 3 kinds of value → pointers that mark zones.',
-      plain: 'A list of 0s, 1s and 2s. Sort it <b>in place, in one pass</b>, without <code>sort()</code>.',
-      hint: 'Keep three zones: 0s on the left, 2s on the right, unknown in the middle.',
-      idea: '<code>lo</code> = next spot for 0, <code>hi</code> = next spot for 2, <code>i</code> reads. 0 → swap to <code>lo</code>, move both. 2 → swap to <code>hi</code>, move <code>hi</code> only (the swapped-in value is not checked yet). 1 → just move <code>i</code>.',
-      traps: ['After swapping with <code>hi</code>, do <b>not</b> move <code>i</code>.', 'Loop while <code>i &lt;= hi</code>.'],
+      tell: '<b>در جا</b>، یک دور، فقط ۳ نوع مقدار ← اشاره‌گرهایی که مرز ناحیه‌ها را نشان می‌دهند.',
+      plain: 'لیستی از 0، 1 و 2. آن را <b>در جا و در یک دور</b> مرتب کن، بدون <code>sort()</code>.',
+      hint: 'سه ناحیه نگه دار: 0ها در چپ، 2ها در راست، ناشناخته‌ها در وسط.',
+      idea: '<code>lo</code> = جای 0ِ بعدی، <code>hi</code> = جای 2ِ بعدی، <code>i</code> می‌خواند. 0 ← با <code>lo</code> جابه‌جا کن و هر دو را جلو ببر. 2 ← با <code>hi</code> جابه‌جا کن و فقط <code>hi</code> را حرکت بده (عددی که آمده هنوز بررسی نشده). 1 ← فقط <code>i</code> جلو برود.',
+      traps: ['بعد از جابه‌جایی با <code>hi</code>، <code>i</code> را جلو <b>نبر</b>.', 'حلقه تا وقتی <code>i &lt;= hi</code> است.'],
       code: String.raw`class Solution:
     def sortColors(self, nums):
         lo, i, hi = 0, 0, len(nums) - 1
@@ -64,11 +64,11 @@ mix({
     },
     {
       id: 'most-popular-video-creator', t: 'Most Popular Video Creator', d: 'M', f: 55.8, fn: 'mostPopularCreator', cmp: 'groups', p: 'hashmap',
-      tell: '“Total per creator”, “best per creator” → <b>group-by with a dict</b>. (A very TikTok-style question.)',
-      plain: 'Each video has a creator, an id and views. Find the creators with the <b>most total views</b>; for each, give their most-viewed video id (tie → smallest id alphabetically).',
-      hint: 'Two dicts: total views per creator, and best (views, id) per creator.',
-      idea: 'One pass: add views to <code>total[c]</code>; keep the best video per creator by comparing <code>(−views, id)</code>, so smaller means better. Then pick creators with the max total.',
-      traps: ['Tie on views → the lexicographically <b>smaller</b> id wins.', 'Several creators can tie for the top; return all.'],
+      tell: '«مجموع برای هر سازنده»، «بهترین برای هر سازنده» ← <b>گروه‌بندی با دیکشنری</b>. (یک سؤالِ کاملاً تیک‌تاکی.)',
+      plain: 'هر ویدیو یک سازنده، یک شناسه (id) و تعداد بازدید دارد. سازنده‌هایی را پیدا کن که <b>بیشترین مجموع بازدید</b> را دارند؛ برای هر کدام، شناسه‌ی پربازدیدترین ویدیواش را بده (در تساوی ← شناسه‌ای که از نظر الفبایی کوچک‌تر است).',
+      hint: 'دو دیکشنری: مجموع بازدیدِ هر سازنده، و بهترین (بازدید، شناسه) برای هر سازنده.',
+      idea: 'یک دور: بازدید را به <code>total[c]</code> اضافه کن؛ بهترین ویدیوی هر سازنده را با مقایسه‌ی <code>(−views, id)</code> نگه دار، پس کوچک‌تر یعنی بهتر. بعد سازنده‌هایی را که مجموعشان بیشینه است انتخاب کن.',
+      traps: ['در تساویِ بازدید، شناسه‌ی <b>کوچک‌تر</b> (الفبایی) برنده است.', 'چند سازنده می‌توانند با هم اول باشند؛ همه را برگردان.'],
       code: String.raw`class Solution:
     def mostPopularCreator(self, creators, ids, views):
         total, best = {}, {}
@@ -83,11 +83,11 @@ mix({
     },
     {
       id: 'maximum-points-you-can-obtain-from-cards', t: 'Maximum Points You Can Obtain from Cards', d: 'M', f: 34.5, fn: 'maxScore', p: 'window',
-      tell: 'Taking from both <b>ends</b> leaves a <b>contiguous middle</b> of fixed size → flip it into a fixed sliding window.',
-      plain: 'Take exactly <code>k</code> cards, each from the left or right end. Max total points?',
-      hint: 'What is left on the table after you take <code>k</code> cards from the ends?',
-      idea: 'The cards you leave are one contiguous block of size <code>n − k</code>. Max taken = total − <b>min</b> sum of a window of size <code>n − k</code>.',
-      traps: ['When <code>k == n</code> the window size is 0: answer is the total.'],
+      tell: 'برداشتن از <b>دو سر</b> یک <b>وسطِ پیوسته</b> با اندازه‌ی ثابت باقی می‌گذارد ← برعکسش کن و پنجره‌ی لغزانِ ثابت بگیر.',
+      plain: 'دقیقاً <code>k</code> کارت بردار، هر بار از سرِ چپ یا راست. بیشترین امتیاز؟',
+      hint: 'بعد از برداشتنِ <code>k</code> کارت از دو سر، چه چیزی روی میز می‌ماند؟',
+      idea: 'کارت‌هایی که می‌مانند یک تکه‌ی پیوسته به اندازه‌ی <code>n − k</code> هستند. بیشترین برداشت = مجموع کل − <b>کمترین</b> جمعِ یک پنجره به اندازه‌ی <code>n − k</code>.',
+      traps: ['وقتی <code>k == n</code> اندازه‌ی پنجره 0 است: جواب مجموع کل است.'],
       code: String.raw`class Solution:
     def maxScore(self, cardPoints, k):
         n, w = len(cardPoints), len(cardPoints) - k
@@ -102,11 +102,11 @@ mix({
     },
     {
       id: 'count-complete-subarrays-in-an-array', t: 'Count Complete Subarrays in an Array', d: 'M', f: 55.8, fn: 'countCompleteSubarrays', p: 'window',
-      tell: '“Count <b>subarrays</b> that contain all …” → window with a <code>Counter</code>; once valid, every longer one is valid too.',
-      plain: 'A subarray is “complete” if it has as many different values as the whole array. Count them.',
-      hint: 'If <code>[l, r]</code> is complete, then <code>[l, r+1]</code>, <code>[l, r+2]</code>, … are too. How many is that?',
-      idea: 'Let <code>D</code> = number of distinct values. Grow <code>r</code>. While the window has <code>D</code> distinct values, all <code>n − r</code> extensions are complete: add them, then shrink from <code>l</code>.',
-      traps: ['Counting trick: add <code>n − r</code>, not 1.', 'Delete keys at 0 so <code>len(cnt)</code> is correct.'],
+      tell: '«<b>زیرآرایه‌هایی</b> را بشمار که همه‌ی … را دارند» ← پنجره با <code>Counter</code>؛ وقتی یکی معتبر شد، همه‌ی بلندترهایش هم معتبرند.',
+      plain: 'زیرآرایه‌ای «کامل» است که به اندازه‌ی کل آرایه مقدارِ متفاوت داشته باشد. آن‌ها را بشمار.',
+      hint: 'اگر <code>[l, r]</code> کامل است، <code>[l, r+1]</code>، <code>[l, r+2]</code>، … هم کامل‌اند. چند تا می‌شوند؟',
+      idea: '<code>D</code> = تعداد مقدارهای متفاوت. <code>r</code> را بزرگ کن. تا وقتی پنجره <code>D</code> مقدارِ متفاوت دارد، هر <code>n − r</code> ادامه‌اش کامل است: اضافه‌شان کن، بعد از <code>l</code> کوچک کن.',
+      traps: ['ترفند شمارش: <code>n − r</code> اضافه کن، نه 1.', 'کلیدهای 0 را حذف کن تا <code>len(cnt)</code> درست بماند.'],
       code: String.raw`from collections import Counter
 
 class Solution:
@@ -126,11 +126,11 @@ class Solution:
     },
     {
       id: 'trapping-rain-water', t: 'Trapping Rain Water', d: 'H', f: 79.1, fn: 'trap', p: 'twopointers',
-      tell: 'Each spot depends on the tallest bar to its left <b>and</b> right → walk in from <b>both ends</b>.',
-      plain: 'Bars of heights <code>h</code>. How much rain stays trapped between them?',
-      hint: 'Water above spot i = min(tallest on left, tallest on right) − h[i]. Which side do you already know enough about?',
-      idea: 'Pointers at both ends with <code>lmax</code>, <code>rmax</code>. If <code>lmax &lt; rmax</code>, the left spot is limited by <code>lmax</code> for sure (the right side is at least that tall): add <code>lmax − h[l]</code>, move <code>l</code>. Else do the same on the right.',
-      traps: ['Update the max <b>before</b> adding water, so it is never negative.', 'A prefix-max/suffix-max array version is O(n) space and also accepted; good first step.'],
+      tell: 'هر خانه به بلندترین ستونِ چپش <b>و</b> راستش بستگی دارد ← از <b>دو سر</b> به داخل بیا.',
+      plain: 'ستون‌هایی با ارتفاع <code>h</code>. چقدر آب باران بینشان می‌ماند؟',
+      hint: 'آبِ بالای خانه‌ی i = کمینه‌ی (بلندترینِ چپ، بلندترینِ راست) − h[i]. درباره‌ی کدام سمت به‌اندازه‌ی کافی می‌دانی؟',
+      idea: 'اشاره‌گر در دو سر، با <code>lmax</code> و <code>rmax</code>. اگر <code>lmax &lt; rmax</code>، خانه‌ی چپ قطعاً با <code>lmax</code> محدود می‌شود (سمت راست حداقل همین‌قدر بلند است): <code>lmax − h[l]</code> را اضافه کن و <code>l</code> را جلو ببر. وگرنه همین کار را از راست بکن.',
+      traps: ['بیشینه را <b>قبل</b> از اضافه کردنِ آب به‌روز کن تا آب منفی نشود.', 'نسخه‌ای با آرایه‌های بیشینه‌ی پیشوندی/پسوندی O(n) حافظه می‌گیرد و قبول است؛ قدم اولِ خوبی است.'],
       code: String.raw`class Solution:
     def trap(self, height):
         l, r = 0, len(height) - 1
