@@ -151,5 +151,7 @@ function plane(host, o) {
   const mq = matchMedia('(prefers-color-scheme: dark)');
   mq.addEventListener('change', draw);
   addEventListener('themechange', draw);
-  return () => { cancelAnimationFrame(raf); ro.disconnect(); mq.removeEventListener('change', draw); removeEventListener('themechange', draw); };
+  const stop = () => { cancelAnimationFrame(raf); ro.disconnect(); mq.removeEventListener('change', draw); removeEventListener('themechange', draw); };
+  stop.draw = draw; // lets linked pictures that share one state redraw each other
+  return stop;
 }

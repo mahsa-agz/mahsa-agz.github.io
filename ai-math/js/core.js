@@ -6,7 +6,8 @@ const TEX = new Map();
 window.__texErrs = [];
 const E = (s, display) => {
   const M = window.MathJax;
-  if (!M || !M.tex2svg) return N(s);
+  // lesson files are read before MathJax is ready: leave a marker, texUp() draws it once MathJax is there
+  if (!M || !M.tex2svg) return `<span class="eq" data-tex="${encodeURIComponent(s)}"${display ? ' data-d' : ''}>${s}</span>`;
   const k = (display ? 'D' : 'I') + s;
   if (!TEX.has(k)) {
     let html;
@@ -22,6 +23,12 @@ const E = (s, display) => {
   return TEX.get(k);
 };
 const ED = s => E(s, true); // a formula on its own line
+// turn every waiting marker on the page into a real formula (runs on every page change)
+window.texUp = () => {
+  if (!window.MathJax || !MathJax.tex2svg) return;
+  document.querySelectorAll('[data-tex]').forEach(el => { el.outerHTML = E(decodeURIComponent(el.dataset.tex), el.hasAttribute('data-d')); });
+};
+new MutationObserver(texUp).observe(document.documentElement, { childList: true, subtree: true });
 // start the app once MathJax is ready (or without it, after 6 s or if it failed to load)
 function whenTex(f) {
   let ran = false; const once = () => { if (!ran) { ran = true; f(); } };
@@ -145,7 +152,7 @@ function show(L, p, seq, ci) {
   $('#card').classList.add('t-' + c.t);
   const r = CARDS[c.t](c, $('#card'), { L, lock: () => { go.disabled = !revisit; }, unlock: () => { go.disabled = false; } });
   if (typeof r === 'function') stopW = r;
-  app.querySelectorAll('.tex.big').forEach(fitWidth); // wide formulas shrink to fit on phones
+  texUp(); app.querySelectorAll('.tex.big').forEach(fitWidth); // wide formulas shrink to fit on phones
   scrollTo(0, 0);
 }
 function finish(L, p, seq) {
@@ -173,7 +180,7 @@ function notebook() {
     <div class="card">${have.length ? `<div class="sheets">${have.map(sheetHTML).join('')}</div>` : '<p class="box">هنوز کارتی نیست. هر درسی را که شروع کنید، خلاصه‌اش اینجا می‌آید.</p>'}
     ${ls.length > have.length ? `<p style="color:var(--muted)">${fa(ls.length - have.length)} کارت دیگر بعد از درس‌های بعدی باز می‌شود.</p>` : ''}</div>`;
   $('#x').onclick = home;
-  app.querySelectorAll('.tex.big').forEach(fitWidth);
+  texUp(); app.querySelectorAll('.tex.big').forEach(fitWidth);
   scrollTo(0, 0);
 }
 function sheetHTML(L) {

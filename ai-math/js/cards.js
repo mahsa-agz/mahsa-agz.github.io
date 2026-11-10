@@ -40,10 +40,14 @@ const CARDS = {
       ${c.read ? `<p class="muted">${c.read}</p>` : ''}${c.note || ''}`;
   },
 
-  // worked example, step by step: { title, intro, steps:[...], result }
+  // worked example, step by step: { title, intro, steps:[...], result, w: optional picture host => cleanup }
   example: (c, el) => {
-    el.innerHTML = `${tag('مثال حل‌شده')}<h2>${c.title}</h2>${c.intro || ''}
+    const txt = `${tag('مثال حل‌شده')}<h2>${c.title}</h2>${c.intro || ''}
       <ol class="steps">${c.steps.map(x => `<li>${x}</li>`).join('')}</ol>${c.result ? `<div class="box key">${c.result}</div>` : ''}`;
+    if (!c.w) { el.innerHTML = txt; return; }
+    el.classList.add('t-play'); // same side-by-side layout as the interactive pictures
+    el.innerHTML = `<div class="txt">${txt}</div><div class="pic"></div>`;
+    return c.w(el.querySelector('.pic'));
   },
 
   // rules with their reason: { title, items:[{r, why}] }
