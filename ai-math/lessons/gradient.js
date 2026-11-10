@@ -69,37 +69,49 @@ const GRAD_W_HILL = host => {
 
 // (3) house price = 80 × area − 20 × age + 500 (million toman): two straight slices with slope triangles
 const GRAD_price = (m, a) => 80 * m - 20 * a + 500;
-const GRAD_W_HOUSE = host => {
-  const s = { m: 100, a: 10 };
-  const one = document.createElement('div'), two = document.createElement('div');
-  two.className = 'slice';
-  host.append(one, two);
-  const sAge = plane(two, {
-    x: [0, 46], y: [5800, 10400], ratio: 0.5, step: [10, 1000], labels: true, state: s, names: ['سن', ''],
-    draw: (g, s) => {
-      g.grid();
-      g.fn(a => GRAD_price(s.m, a), 'orange', 3, 0, 40);
-      const a = Math.min(s.a, 20), p = GRAD_price(s.m, a);
-      g.line(a, p, a + 20, p, 'muted', 2, [5, 5]); g.line(a + 20, p, a + 20, p - 400, 'orange', 4);
-      g.text(a + 20, p - 200, '۴۰۰ کمتر', 'orange', 'left', 0); g.dot(s.a, GRAD_price(s.m, s.a), 'red', 6);
-    },
-    read: s => `متراژ ثابت روی ${fa(s.m)}: هر <b>۲۰ سال</b> پیرتر ← <b style="color:var(--orange)">۴۰۰ میلیون</b> ارزان‌تر، یعنی سالی <b>−۲۰</b>`,
-  });
-  const sArea = plane(one, {
-    x: [78, 126], y: [5800, 10400], ratio: 0.5, step: [10, 1000], labels: true, state: s, names: ['متراژ', ''],
-    sliders: [{ key: 'm', label: 'متراژ', min: 80, max: 120, step: 5 }, { key: 'a', label: 'سن', min: 0, max: 40, step: 5 }],
-    onSlide: () => sAge.draw(),
-    draw: (g, s) => {
-      g.grid();
-      g.fn(m => GRAD_price(m, s.a), 'blue', 3, 80, 120);
-      const m = Math.min(s.m, 110), p = GRAD_price(m, s.a);
-      g.line(m, p, m + 10, p, 'muted', 2, [5, 5]); g.line(m + 10, p, m + 10, p + 800, 'blue', 4);
-      g.text(m + 10, p + 400, '۸۰۰ بیشتر', 'blue', 'left', 0); g.dot(s.m, GRAD_price(s.m, s.a), 'red', 6);
-    },
-    read: s => `قیمت این خانه: ${E(String.raw`80 \times ${s.m} - 20 \times ${s.a} + 500 = ${GRAD_price(s.m, s.a)}`)}<br>سن ثابت روی ${fa(s.a)}: هر <b>۱۰ متر</b> بیشتر ← <b style="color:var(--blue)">۸۰۰ میلیون</b> گران‌تر، یعنی متری <b>+۸۰</b>`,
-  });
-  return () => { sArea(); sAge(); };
-};
+const GRAD_W_HOUSE = h => plane(h, {
+  x: [0, 1], y: [0, 1], ratio: 0.8, state: { m: 100, a: 10, turn: 35 },
+  sliders: [{ key: 'm', label: 'متراژ', min: 80, max: 120, step: 5 }, { key: 'a', label: 'سن', min: 0, max: 40, step: 5 },
+            { key: 'turn', label: 'چرخش', min: 0, max: 80, step: 5 }],
+  draw: (g, s) => {
+    // 3D: floor = (area, age), height = price. u, v, w are 0..1
+    const W = g.X(1), H = g.Y(0), S = Math.min(W * 0.62, H * 0.95), th = s.turn * Math.PI / 180;
+    const P = (m, a, p) => {
+      const X = (m - 80) / 40 - 0.5, Y = a / 40 - 0.5, Z = (p - 6100) / 4000;
+      const x1 = X * Math.cos(th) - Y * Math.sin(th), y1 = X * Math.sin(th) + Y * Math.cos(th);
+      return [W / 2 + S * x1, H * 0.8 - S * 0.75 * Z + S * 0.3 * y1];
+    };
+    const c = g.ctx, pen = (col, w, dash) => { c.strokeStyle = g.css(col); c.lineWidth = w; c.setLineDash(dash || []); };
+    const seg = (a, b) => { c.beginPath(); c.moveTo(...a); c.lineTo(...b); c.stroke(); };
+    // floor grid
+    pen('line', 1);
+    for (let i = 0; i <= 4; i++) { seg(P(80 + 10 * i, 0, 6100), P(80 + 10 * i, 40, 6100)); seg(P(80, 10 * i, 6100), P(120, 10 * i, 6100)); }
+    // price surface (a tilted flat sheet, because the formula is linear)
+    c.beginPath(); [[80, 0], [120, 0], [120, 40], [80, 40]].forEach(([m, a], i) => { const q = P(m, a, GRAD_price(m, a)); i ? c.lineTo(...q) : c.moveTo(...q); });
+    c.closePath(); c.globalAlpha = 0.18; c.fillStyle = g.css('accent'); c.fill(); c.globalAlpha = 1; pen('accent', 1.5); c.stroke();
+    pen('muted', 1);
+    for (let i = 1; i < 4; i++) { seg(P(80 + 10 * i, 0, GRAD_price(80 + 10 * i, 0)), P(80 + 10 * i, 40, GRAD_price(80 + 10 * i, 40))); seg(P(80, 10 * i, GRAD_price(80, 10 * i)), P(120, 10 * i, GRAD_price(120, 10 * i))); }
+    // this house: a pole from the floor up to its price
+    const here = P(s.m, s.a, GRAD_price(s.m, s.a));
+    pen('muted', 2, [4, 4]); seg(P(s.m, s.a, 6100), here); c.setLineDash([]);
+    // the two partial slopes as arrows on the sheet
+    const arrow = (to, col) => { const [x0, y0] = here, [x1, y1] = to, an = Math.atan2(y1 - y0, x1 - x0);
+      pen(col, 4); seg(here, to); c.fillStyle = g.css(col); c.beginPath(); c.moveTo(x1, y1);
+      c.lineTo(x1 - 12 * Math.cos(an - 0.45), y1 - 12 * Math.sin(an - 0.45)); c.lineTo(x1 - 12 * Math.cos(an + 0.45), y1 - 12 * Math.sin(an + 0.45)); c.fill(); };
+    const m2 = s.m <= 100 ? s.m + 20 : s.m - 20, a2 = s.a <= 20 ? s.a + 20 : s.a - 20;
+    arrow(P(m2, s.a, GRAD_price(m2, s.a)), 'blue');
+    arrow(P(s.m, a2, GRAD_price(s.m, a2)), 'orange');
+    c.fillStyle = g.css('red'); c.beginPath(); c.arc(...here, 6, 0, 7); c.fill();
+    // axis names
+    c.font = '700 12px Vazirmatn, Tahoma, sans-serif'; c.fillStyle = g.css('muted'); c.textAlign = 'center';
+    c.fillText('متراژ', ...P(124, -4, 6100)); c.fillText('سن', ...P(76, 44, 6100)); c.fillText('قیمت', ...P(80, 0, 10400));
+    pen('muted', 1); seg(P(80, 0, 6100), P(80, 0, 10200));
+  },
+  read: s => `قیمت این خانه: ${E(String.raw`80 \times ${s.m} - 20 \times ${s.a} + 500 = ${GRAD_price(s.m, s.a)}`)}<br>` +
+    `<b style="color:var(--blue)">پیکان آبی</b>: فقط متراژ عوض شود (۲۰ متر) ← قیمت <b>۱۶۰۰ بالا</b>، یعنی متری <b>+۸۰</b><br>` +
+    `<b style="color:var(--orange)">پیکان نارنجی</b>: فقط سن عوض شود (۲۰ سال) ← قیمت <b>۴۰۰ پایین</b>، یعنی سالی <b>−۲۰</b><br>` +
+    `گرادیان = ${V(80, -20)}. صفحه‌ی قیمت صاف است، پس این دو شیب همه‌جا یکی‌اند.`,
+});
 
 // (4) the same valley: each press moves the point by −0.1 × gradient and draws the path
 const GRAD_W_DOWN = h => plane(h, {
@@ -173,14 +185,14 @@ lesson({
                { s: String.raw`\frac{\partial f}{\partial x}`, c: 'blue', l: 'شیب وقتی فقط x عوض شود (y قفل)' }, { s: ',' },
                { s: String.raw`\frac{\partial f}{\partial y}`, c: 'orange', l: 'شیب وقتی فقط y عوض شود (x قفل)' }, { s: ']' }],
         read: 'خوانده می‌شود: «نابلا اف برابر است با پارشال اف بر پارشال ایکس، و پارشال اف بر پارشال وای». کروشه [ ] یعنی یک فهرست (بردار).',
-        note: '<p><b>روش حساب:</b> برای ${E(String.raw`\partial f / \partial x`)}، y را مثل یک عدد معمولی (مثلاً ۵) ببین و مشتق بگیر. برای ${E(String.raw`\partial f / \partial y`)}، برعکس. با ۱۰ ورودی، فهرست ۱۰ خانه دارد.</p>' },
+        note: `<p><b>روش حساب:</b> برای ${E(String.raw`\partial f / \partial x`)}، y را مثل یک عدد معمولی (مثلاً ۵) ببین و مشتق بگیر. برای ${E(String.raw`\partial f / \partial y`)}، برعکس. با ۱۰ ورودی، فهرست ۱۰ خانه دارد.</p>` },
       { t: 'example', w: GRAD_W_HOUSE, title: 'قیمت خانه با دو ورودی',
-        intro: `<p>مدل ساده‌ی قیمت (میلیون تومان): ${E('f(x, y) = 80x - 20y + 500')}؛ ${E('x')} = متراژ، ${E('y')} = سن خانه. در تصویر، با دو لغزنده خانه را عوض کنید.</p>`,
-        steps: [`<b style="color:var(--blue)">شیب رو به متراژ</b>: سن را قفل کن. ${E('-20y + 500')} حالا فقط یک عدد ثابت است و مشتقش ۰. پس ${E(String.raw`\frac{\partial f}{\partial x} = 80`)}. در نمودار اول: هر ۱۰ متر، ۸۰۰ بالا.`,
-                `<b style="color:var(--orange)">شیب رو به سن</b>: متراژ را قفل کن. ${E(String.raw`\frac{\partial f}{\partial y} = -20`)}. در نمودار دوم: هر ۲۰ سال، ۴۰۰ پایین.`,
+        intro: `<p>مدل ساده‌ی قیمت (میلیون تومان): ${E('f(x, y) = 80x - 20y + 500')}؛ ${E('x')} = متراژ، ${E('y')} = سن خانه. تصویر سه‌بعدی است: کف = متراژ و سن، ارتفاع = قیمت. با لغزنده‌ها خانه را عوض کنید و با «چرخش» از زاویه‌ی دیگر ببینید.</p>`,
+        steps: [`<b style="color:var(--blue)">شیب رو به متراژ</b>: سن را قفل کن. ${E('-20y + 500')} حالا فقط یک عدد ثابت است و مشتقش ۰. پس ${E(String.raw`\frac{\partial f}{\partial x} = 80`)}. پیکان آبی: هر ۲۰ متر، ۱۶۰۰ بالا.`,
+                `<b style="color:var(--orange)">شیب رو به سن</b>: متراژ را قفل کن. ${E(String.raw`\frac{\partial f}{\partial y} = -20`)}. پیکان نارنجی: هر ۲۰ سال، ۴۰۰ پایین.`,
                 `گرادیان: ${E(String.raw`\nabla f = [80,\ -20]`)}`,
                 `بررسی: خانه‌ی ۱۰۰ متریِ ۱۰ ساله: ${E(String.raw`80 \times 100 - 20 \times 10 + 500 = 8300`)}. یک متر بزرگ‌تر: ۸۳۸۰ (۸۰ بیشتر). یک سال پیرتر: ۸۲۸۰ (۲۰ کمتر).`,
-                'لغزنده‌ها را جابه‌جا کنید: خط‌ها بالا و پایین می‌روند ولی <b>شیبشان عوض نمی‌شود</b>. در یک تابعِ خطی، گرادیان همه‌جا یکی است.'],
+                'لغزنده‌ها را جابه‌جا کنید: نقطه روی صفحه جابه‌جا می‌شود ولی پیکان‌ها همان شیب را دارند. صفحه‌ی قیمت صاف است، پس گرادیان همه‌جا یکی است.'],
         result: 'هر خانه‌ی گرادیان یک جمله است: «هر متر بیشتر، ۸۰ میلیون گران‌تر» و «هر سال پیرتر، ۲۰ میلیون ارزان‌تر». علامت منفی یعنی «این دکمه را بالا ببری، نتیجه پایین می‌آید».' },
       { t: 'example', title: `مثالِ دره: ${E('f(x, y) = x^2 + 2y^2')}`,
         steps: [`شیب رو به شرق: y را قفل کن؛ ${E('2y^2')} عدد ثابت است، مشتقش ۰. ${E(String.raw`x^2 \to 2x`)}. پس ${E(String.raw`\frac{\partial f}{\partial x} = 2x`)}`,
