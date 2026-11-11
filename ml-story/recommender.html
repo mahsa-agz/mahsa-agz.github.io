@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>سیستم‌های پیشنهاد</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.um td, .um th { text-align: center; padding: 4px 6px; }
+.um td.k { font-weight: 700; background: var(--soft); }
+.um td.q { color: var(--muted); }
+#mft td { text-align: center; padding: 3px 4px; font-size: 14px; line-height: 1.3; }
+#mft td.k { font-weight: 700; background: var(--soft); }
+#mft td.k small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; }
+#mft td.p { color: var(--accent); font-weight: 700; border: 1px dashed var(--accent); }
+#mft th { text-align: center; font-size: 13px; padding: 3px 4px; }
+.hb { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 3px 0; }
+.hb span { width: 64px; flex: none; }
+.hb .t { flex: 1; background: var(--soft); border-radius: 4px; height: 12px; position: relative; }
+.hb .t i { position: absolute; inset-inline-start: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 4px; }
+.hb b { width: 120px; flex: none; font-weight: 400; color: var(--muted); }
+.btns button { margin-inline-end: 6px; }
+.btns button.on { background: var(--accent); color: var(--card); }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="llm.html">مدل‌های زبانی بزرگ (LLM)</a> · <a href="model.html">بازگشت به جزوه‌ی اصلی ←</a></p>
+<h1>سیستم‌های پیشنهاد <span class="en">(Recommender Systems)</span></h1>
+<p class="sub">از میان میلیون‌ها ویدیو، چند ویدیویی که هر کاربر دوست دارد. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>مثالِ این صفحه: صفحه‌ی <b>For You</b> در تیک‌تاک. کاربر اپ را باز می‌کند و ویدیوها یکی‌یکی می‌آیند. هیچ جست‌وجویی در کار نیست. سیستم باید خودش حدس بزند هر کاربر چه می‌خواهد.</p>
+<p>مسئله سه ویژگی دارد:</p>
+<ul>
+<li><b>تعدادِ ویدیوها خیلی زیاد است:</b> صدها میلیون ویدیو.</li>
+<li><b>جا خیلی کم است:</b> کاربر در هر لحظه فقط یک ویدیو می‌بیند؛ در هر درخواست حدود ۱۰ ویدیو برایش می‌فرستیم.</li>
+<li><b>وقت خیلی کم است:</b> کلِ انتخاب باید در حدود ۱۰۰ تا ۲۰۰ میلی‌ثانیه تمام شود.</li>
+</ul>
+<div class="key">سیستم پیشنهاد برای هر کاربر، از میانِ همه‌ی ویدیوها، چند ویدیو را پیدا می‌کند که احتمالِ دیدن و لذت بردنش از آن‌ها از همه بیشتر است.</div>
+<p>چرا مهم است: در تیک‌تاک، یوتیوب، اینستاگرام، نتفلیکس و آمازون، بیشترِ چیزی که کاربر می‌بیند از سیستم پیشنهاد می‌آید. در مصاحبه‌ی ML تیک‌تاک، سؤالِ «صفحه‌ی For You را طراحی کن» یکی از رایج‌ترین سؤال‌های طراحی سیستم است.</p>
+</section>
+
+<section>
+<h2>سیگنال‌ها: کاربر از کجا نشان می‌دهد چه دوست دارد؟</h2>
+<p>سیستم از رفتارِ کاربر یاد می‌گیرد. این رفتارها دو نوع‌اند:</p>
+<div class="kinds">
+<div><p><b>صریح <span class="en">(Explicit)</span></b></p><p class="ex">کاربر خودش نظرش را می‌گوید.</p><ul class="ex">
+<li>لایک</li>
+<li>امتیاز ۱ تا ۵ ستاره (مثل نتفلیکسِ قدیم)</li>
+<li>دکمه‌ی «علاقه ندارم»</li></ul>
+<p class="ex"><b>خوبی:</b> معنایش روشن است.<br><b>بدی:</b> کم است. بیشترِ کاربرها برای بیشترِ ویدیوها هیچ لایکی نمی‌زنند.</p></div>
+<div><p><b>ضمنی <span class="en">(Implicit)</span></b></p><p class="ex">از رفتارِ کاربر حدس می‌زنیم.</p><ul class="ex">
+<li>زمانِ تماشا</li>
+<li>رد کردن (Skip) در ثانیه‌ی اول</li>
+<li>دوباره دیدن</li>
+<li>اشتراک‌گذاری، کامنت، فالو کردنِ سازنده</li></ul>
+<p class="ex"><b>خوبی:</b> برای <b>هر</b> ویدیوی دیده‌شده داریم.<br><b>بدی:</b> پرنویز است. شاید کاربر گوشی را زمین گذاشته و ویدیو تا آخر پخش شده.</p></div>
+</div>
+<p style="margin-top:12px">مثال با عدد: یک ویدیوی ۲۰ ثانیه‌ای.</p>
+<div class="kinds">
+<div><p><b>کاربرِ الف</b></p><p class="ex">۱۸ ثانیه دید. یعنی ۹۰٪. سیگنالِ مثبت.</p></div>
+<div><p><b>کاربرِ ب</b></p><p class="ex">بعد از ۱ ثانیه رد کرد. یعنی ۵٪. سیگنالِ منفی.</p></div>
+<div><p><b>کاربرِ ج</b></p><p class="ex">دو بار کامل دید و برای دوستش فرستاد. سیگنالِ خیلی قوی.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">در ویدیوی کوتاه، سیگنالِ ضمنی (به‌خصوص زمانِ تماشا) مهم‌ترین سیگنال است. یک مشکل: ویدیوهای کوتاه‌تر راحت‌تر «تا آخر» دیده می‌شوند. برای همین معمولاً زمانِ تماشا را نسبت به طولِ ویدیو می‌سنجند.</p>
+</section>
+
+<section>
+<h2>دو ایده‌ی اصلی: محتوامحور و پالایش گروهی</h2>
+<p>شش کاربر و شش ویدیو در تمامِ این صفحه:</p>
+<ul class="ex">
+<li>کاربرها: سارا، علی، مریم، رضا، نیما، لیلا</li>
+<li>ویدیوهای آشپزی: پاستا، کیک، سالاد</li>
+<li>ویدیوهای ورزشی: فوتبال، بسکتبال، تنیس</li>
+</ul>
+<div class="kinds">
+<div><p><b>محتوامحور <span class="en">(Content-based)</span></b></p>
+<p class="ex">ویدیوهایی شبیهِ ویدیوهایی که کاربر <b>قبلاً</b> دوست داشته پیشنهاد بده. شباهت از روی <b>ویژگی‌های خودِ ویدیو</b> (برچسب، متن، صدا، تصویر).</p>
+<p class="ex">هر ویدیو یک بردار از برچسب‌ها: (آشپزی، ورزش، طنز)</p>
+<ul class="ex">
+<li>پاستا = (۱، ۰، ۱)</li>
+<li>کیک = (۱، ۰، ۰)</li>
+<li>فوتبال = (۰، ۱، ۰)</li></ul>
+<p class="ex">سارا پاستا را دوست داشت. شباهتِ کسینوسی: پاستا و کیک = <b>۰٫۷۱</b>؛ پاستا و فوتبال = <b>۰</b>. پس کیک پیشنهاد می‌شود.</p></div>
+<div><p><b>پالایش گروهی <span class="en">(Collaborative Filtering)</span></b></p>
+<p class="ex">به محتوای ویدیو نگاه نکن. به <b>رفتارِ کاربرهای دیگر</b> نگاه کن: «کسانی که مثلِ تو بودند، این را هم دوست داشتند».</p>
+<p class="ex">امتیازهای سارا و مریم روی ویدیوهایی که هر دو دیده‌اند:</p>
+<ul class="ex">
+<li>کیک: ۴ و ۵</li>
+<li>فوتبال: ۱ و ۲</li>
+<li>تنیس: ۲ و ۱</li></ul>
+<p class="ex">شباهتِ کسینوسی = <b>۰٫۹۶</b> (سارا و رضا فقط <b>۰٫۳۸</b>). مریم به سالاد ۴ داده و سارا سالاد را ندیده. پس سالاد را به سارا پیشنهاد بده.</p></div>
+</div>
+<div class="kinds" style="margin-top:12px">
+<div><p><b>محتوامحور: خوبی و بدی</b></p><ul class="ex">
+<li>ویدیوی <b>تازه</b> را هم می‌شود پیشنهاد داد (فقط برچسب لازم است).</li>
+<li>کاربر را در «حباب» نگه می‌دارد: کسی که آشپزی دیده، فقط آشپزی می‌بیند.</li>
+<li>سلیقه‌ی ظریف را نمی‌فهمد (دو ویدیوی آشپزی، یکی خوب، یکی بد).</li></ul></div>
+<div><p><b>پالایش گروهی: خوبی و بدی</b></p><ul class="ex">
+<li>چیزهای غیرمنتظره ولی درست پیدا می‌کند (کسانی که آشپزی دوست دارند، این ویدیوی سفر را هم دوست داشتند).</li>
+<li>کیفیت را می‌فهمد، نه فقط موضوع را.</li>
+<li>ویدیوی تازه که هنوز کسی ندیده، هیچ سیگنالی ندارد (<b>شروعِ سرد</b>).</li></ul></div>
+</div>
+<p class="ex" style="margin-top:8px">در صنعت هر دو را با هم استفاده می‌کنند (روشِ <b>ترکیبی</b> <span class="en">(Hybrid)</span>): مدل هم شناسه‌ی ویدیو و رفتارِ کاربرها را می‌بیند، هم ویژگی‌های محتوا را.</p>
+</section>
+
+<section>
+<h2>ماتریسِ کاربر–ویدیو</h2>
+<p>همه‌ی رفتارها را در یک جدول می‌گذاریم: هر سطر یک کاربر، هر ستون یک ویدیو، هر خانه امتیازِ کاربر به ویدیو (۱ تا ۵). «؟» یعنی کاربر آن ویدیو را ندیده.</p>
+<div dir="ltr"><table class="um">
+<tr><th></th><th>پاستا</th><th>کیک</th><th>سالاد</th><th>فوتبال</th><th>بسکتبال</th><th>تنیس</th></tr>
+<tr><th>سارا</th><td class="k">5</td><td class="k">4</td><td class="q">?</td><td class="k">1</td><td class="q">?</td><td class="k">2</td></tr>
+<tr><th>علی</th><td class="k">4</td><td class="q">?</td><td class="k">5</td><td class="q">?</td><td class="k">1</td><td class="q">?</td></tr>
+<tr><th>مریم</th><td class="q">?</td><td class="k">5</td><td class="k">4</td><td class="k">2</td><td class="q">?</td><td class="k">1</td></tr>
+<tr><th>رضا</th><td class="k">1</td><td class="q">?</td><td class="k">2</td><td class="k">5</td><td class="k">4</td><td class="q">?</td></tr>
+<tr><th>نیما</th><td class="q">?</td><td class="k">1</td><td class="q">?</td><td class="k">4</td><td class="k">5</td><td class="k">4</td></tr>
+<tr><th>لیلا</th><td class="k">2</td><td class="q">?</td><td class="k">1</td><td class="q">?</td><td class="k">4</td><td class="k">5</td></tr>
+</table></div>
+<ul class="ex" style="margin-top:8px">
+<li>این‌جا ۲۳ خانه از ۳۶ خانه پر است (۶۴٪).</li>
+<li>در دنیای واقعی، یک کاربر شاید چند هزار ویدیو از صدها میلیون ویدیو دیده باشد. مثلاً ۵٬۰۰۰ از ۱۰۰ میلیون یعنی <b>۰٫۰۰۵٪</b>. تقریباً همه‌ی ماتریس خالی است.</li>
+</ul>
+<div class="key">کارِ سیستم پیشنهاد = پر کردنِ خانه‌های «؟». بعد برای هر کاربر، ویدیوهایی با بیشترین عددِ حدس‌زده را نشان بده.</div>
+<p>به چنین ماتریسی <b>تُنُک</b> <span class="en">(Sparse)</span> می‌گویند. آن را به شکلِ جدولِ کامل ذخیره نمی‌کنند؛ فقط فهرستِ خانه‌های پر را نگه می‌دارند: (کاربر، ویدیو، امتیاز).</p>
+</section>
+
+<section>
+<h2>تجزیه‌ی ماتریس: هر کاربر و هر ویدیو یک بردار</h2>
+<p>ایده: هر کاربر را با یک بردارِ کوتاه نشان بده (مثلاً ۲ عدد)، و هر ویدیو را هم. امتیاز = <b>ضربِ داخلیِ</b> این دو بردار.</p>
+<p>مثال: فرض کنید دو عددِ بردار یعنی (آشپزی، ورزش).</p>
+<ul class="ex">
+<li>سارا = (۰٫۹، ۰٫۱): خیلی آشپزی، کمی ورزش.</li>
+<li>سالاد = (۴٫۵، ۰٫۵)</li>
+<li>فوتبال = (۰٫۵، ۴٫۵)</li>
+</ul>
+<div class="kinds">
+<div><p><b>سارا و سالاد</b></p><p class="ex">۰٫۹×۴٫۵ + ۰٫۱×۰٫۵ = <b>۴٫۱</b> → پیشنهاد بده</p></div>
+<div><p><b>سارا و فوتبال</b></p><p class="ex">۰٫۹×۰٫۵ + ۰٫۱×۴٫۵ = <b>۰٫۹</b> → پیشنهاد نده</p></div>
+</div>
+<p style="margin-top:12px">در عمل ما معنای این عددها را به مدل نمی‌گوییم. مدل خودش بردارها را طوری یاد می‌گیرد که ضربِ داخلی، خانه‌های پرِ ماتریس را درست بسازد. به این عددها <b>عاملِ پنهان</b> <span class="en">(Latent Factor)</span> یا <b>Embedding</b> می‌گویند.</p>
+<div class="f">\[ \hat{r}_{ui} = \mu + \mathbf{p}_u^\top \mathbf{q}_i \]</div>
+<div class="f">\[ \min_{P,Q} \sum_{(u,i)\,\in\,\text{known}} \big(r_{ui} - \hat{r}_{ui}\big)^2 \;+\; \lambda\big(\|\mathbf{p}_u\|^2 + \|\mathbf{q}_i\|^2\big) \]</div>
+<ul class="sym">
+<li>\(r_{ui}\): امتیازِ واقعیِ کاربر \(u\) به ویدیوی \(i\)</li>
+<li>\(\hat{r}_{ui}\): امتیازِ حدس‌زده</li>
+<li>\(\mu\): میانگینِ همه‌ی امتیازهای پر</li>
+<li>\(\mathbf{p}_u\): بردارِ کاربر (طول \(k\))</li>
+<li>\(\mathbf{q}_i\): بردارِ ویدیو (طول \(k\))</li>
+<li>\(k\): رتبه، تعدادِ عامل‌ها</li>
+<li>known: فقط خانه‌های پر</li>
+<li>\(\lambda\): جریمه‌ی بزرگیِ بردارها (منظم‌سازی)</li>
+</ul>
+<p>چرا «تجزیه»؟ ماتریسِ ۶×۶ را به ضربِ دو ماتریسِ باریک تبدیل می‌کنیم: \(P\) با اندازه‌ی ۶×۲ و \(Q\) با اندازه‌ی ۶×۲، و \(R \approx \mu + PQ^\top\). با ۱۰۰ میلیون ویدیو و \(k = 64\)، به‌جای یک جدولِ غول‌آسا فقط ۶۴ عدد برای هر کاربر و هر ویدیو نگه می‌داریم.</p>
+<p><b>آموزش با SGD</b> <span class="en">(Stochastic Gradient Descent)</span>: روی خانه‌های پر یکی‌یکی می‌گردیم:</p>
+<div class="f">\[ e = r_{ui} - \hat{r}_{ui}, \qquad \mathbf{p}_u \leftarrow \mathbf{p}_u + \eta\,(e\,\mathbf{q}_i - \lambda\,\mathbf{p}_u), \qquad \mathbf{q}_i \leftarrow \mathbf{q}_i + \eta\,(e\,\mathbf{p}_u - \lambda\,\mathbf{q}_i) \]</div>
+<ul class="sym">
+<li>\(e\): خطای این خانه</li>
+<li>\(\eta\): نرخ یادگیری</li>
+<li>اگر حدس کم بود (\(e > 0\))، بردارها به هم نزدیک‌تر می‌شوند</li>
+</ul>
+<details class="drop"><summary><b>روشِ دیگر: ALS</b></summary>
+<p>در <b>ALS</b> <span class="en">(Alternating Least Squares)</span> یک بار \(Q\) را ثابت نگه می‌داریم و همه‌ی \(P\) را با یک فرمولِ بسته (مثلِ رگرسیون خطی) حساب می‌کنیم، بعد برعکس. هر کاربر مستقل از بقیه حل می‌شود، پس روی چند ماشین خوب موازی می‌شود. برای داده‌ی ضمنی (که همه‌ی خانه‌ها یک وزن دارند و خانه‌ی خالی یعنی «احتمالاً منفی») ALS رایج است.</p>
+</details>
+</section>
+
+<section>
+<h2>خودتان ببینید: آموزشِ تجزیه‌ی ماتریس</h2>
+<p>همان جدولِ ۶×۶. مدل از بردارهای تصادفیِ کوچک شروع می‌کند (\(\eta = 0.05\)، \(\lambda = 0.1\)). دورهای آموزش را زیاد کنید:</p>
+<div class="box">
+<table id="mft" dir="ltr"></table>
+<div class="legend"><span><i style="background:var(--soft);border:1px solid var(--line)"></i>خانه‌ی پر: عددِ واقعی، زیرش حدسِ مدل</span><span><i style="background:var(--accent)"></i>خانه‌ی خالی: حدسِ مدل (بین ۱ تا ۵)</span></div>
+<label>دورهای آموزش <input id="ep" type="range" min="0" max="200" step="1" value="0"><b id="epv"></b></label>
+<div class="ctl">تعدادِ عامل‌ها \(k\):
+<select id="rk"><option value="1">۱</option><option value="2" selected>۲</option><option value="3">۳</option></select></div>
+<canvas id="mfcurve"></canvas>
+<div class="legend"><span><i style="background:var(--accent)"></i>خطای خانه‌های پر (RMSE)</span></div>
+<canvas id="mfvec"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>کاربرها</span><span><i style="background:var(--orange)"></i>ویدیوها</span><span>دو عددِ اولِ هر بردار</span></div>
+<div class="err" id="mfinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>دورِ ۰</b></p><p class="ex">همه‌ی حدس‌ها نزدیکِ میانگین (۳٫۱) است. خطا حدود <b>۱٫۶</b>.</p></div>
+<div><p><b>دورِ ۲۰۰ با \(k = 2\)</b></p><p class="ex">خطا حدود <b>۰٫۳۱</b>. برای سارا: سالاد ۴٫۳ و بسکتبال ۲٫۷. مدل بدونِ دانستنِ موضوعِ ویدیوها، دو گروه را خودش پیدا کرد: در شکلِ پایین، آشپزی‌ها یک طرف و ورزشی‌ها طرفِ دیگرند.</p></div>
+<div><p><b>عوض کردنِ \(k\)</b></p><p class="ex">با \(k = 1\) خطا روی <b>۰٫۵۴</b> می‌ماند؛ با \(k = 3\) به <b>۰٫۱۸</b> می‌رسد. \(k\) بزرگ‌تر خانه‌های پر را بهتر حفظ می‌کند، ولی با این‌همه کم داده، ممکن است نویز را هم حفظ کند. \(k\) را با داده‌ی سنجش انتخاب کنید.</p></div>
+</div>
+</section>
+
+<section>
+<h2>خط لوله‌ی صنعتی: بازیابی، رتبه‌بندی، بازرتبه‌بندی</h2>
+<p>یک مدلِ دقیق نمی‌تواند در ۱۰۰ میلی‌ثانیه، ۱۰۰ میلیون ویدیو را امتیاز بدهد. پس کار را در چند مرحله انجام می‌دهند. هر مرحله تعدادِ کمتری را با مدلِ دقیق‌تری بررسی می‌کند (عددها حدودی‌اند):</p>
+<svg viewBox="0 0 600 270" style="width:100%;max-width:600px;display:block;margin:8px auto" role="img" aria-label="قیف چهارمرحله‌ای">
+<polygon points="20,10 580,10 520,70 80,70" fill="var(--l1)" stroke="var(--line)"/>
+<text x="300" y="36" text-anchor="middle" font-size="15" font-weight="700">همه‌ی ویدیوها: حدود ۱۰۰ میلیون</text>
+<text x="300" y="58" text-anchor="middle" font-size="12" fill="var(--muted)">بردارِ ویدیوها از قبل حساب شده</text>
+<polygon points="80,75 520,75 460,135 140,135" fill="var(--l2)" stroke="var(--line)"/>
+<text x="300" y="101" text-anchor="middle" font-size="15" font-weight="700">۱. بازیابی ← حدود ۲٬۰۰۰</text>
+<text x="300" y="123" text-anchor="middle" font-size="12" fill="var(--muted)">دوبرجی + نزدیک‌ترین همسایه‌ی تقریبی · چند میلی‌ثانیه</text>
+<polygon points="140,140 460,140 400,200 200,200" fill="var(--l3)" stroke="var(--line)"/>
+<text x="300" y="166" text-anchor="middle" font-size="15" font-weight="700">۲. رتبه‌بندی ← حدود ۲۰۰</text>
+<text x="300" y="188" text-anchor="middle" font-size="12" fill="var(--muted)">مدلِ سنگین، صدها ویژگی</text>
+<polygon points="200,205 400,205 360,262 240,262" fill="var(--l4)" stroke="var(--line)"/>
+<text x="300" y="230" text-anchor="middle" font-size="14" font-weight="700">۳. بازرتبه‌بندی ← ۱۰</text>
+<text x="300" y="250" text-anchor="middle" font-size="11" fill="var(--muted)">تنوع، تازگی، قانون‌ها</text>
+</svg>
+<ol class="flow">
+<li><span class="n">۱</span><div><p><b>بازیابی <span class="en">(Candidate Generation / Retrieval)</span></b></p><p class="ex">هدف: از میان همه، چند هزار ویدیوی <b>احتمالاً</b> مرتبط را سریع پیدا کن. اینجا مهم این است که ویدیوهای خوب جا نیفتند (<b>recall</b>)، نه این‌که ترتیب دقیق باشد. معمولاً چند منبع با هم کار می‌کنند و نتیجه‌شان ادغام می‌شود:</p><ul class="ex">
+<li>مدلِ دوبرجی (پایین‌تر)</li>
+<li>ویدیوهای سازندگانی که کاربر فالو کرده</li>
+<li>ویدیوهای پرطرفدارِ امروز در کشورِ کاربر</li>
+<li>ویدیوهای شبیهِ آخرین ویدیوی لایک‌شده</li></ul></div></li>
+<li><span class="n">۲</span><div><p><b>رتبه‌بندی <span class="en">(Ranking)</span></b></p><p class="ex">برای هر کاندید، یک مدلِ دقیق‌تر احتمال‌ها را پیش‌بینی می‌کند: احتمالِ تا آخر دیدن، لایک، اشتراک، زمانِ تماشا. ویژگی‌ها: سابقه‌ی کاربر، آمارِ ویدیو، ویژگی‌های ترکیبی (مثلاً «این کاربر چند بار از این سازنده ویدیو دیده؟»)، ساعت، دستگاه. مدل معمولاً یک شبکه‌ی عصبیِ چندوظیفه‌ای یا <a href="gradient-boosting.html">گرادیان بوستینگ</a> است.</p></div></li>
+<li><span class="n">۳</span><div><p><b>بازرتبه‌بندی <span class="en">(Re-ranking)</span></b></p><p class="ex">لیستِ نهایی را با قانون‌ها مرتب کن:</p><ul class="ex">
+<li>تنوع: پشتِ سرِ هم بیش از دو ویدیو از یک سازنده یا یک موضوع نه.</li>
+<li>تازگی: کمی امتیازِ بیشتر برای ویدیوهای تازه.</li>
+<li>حذفِ ویدیوهای قبلاً دیده‌شده و محتوای ناامن.</li>
+<li>قانون‌های کسب‌وکار (مثلاً جای تبلیغ).</li></ul></div></li>
+</ol>
+
+<p style="margin-top:16px"><b>مدلِ دوبرجی <span class="en">(Two-Tower)</span> برای بازیابی:</b></p>
+<svg viewBox="0 0 560 230" style="width:100%;max-width:560px;display:block;margin:8px auto" role="img" aria-label="مدل دوبرجی">
+<rect x="20" y="10" width="220" height="44" rx="8" fill="var(--l1)" stroke="var(--line)"/>
+<text x="130" y="30" text-anchor="middle" font-size="13" font-weight="700">ورودیِ کاربر</text>
+<text x="130" y="47" text-anchor="middle" font-size="11" fill="var(--muted)">شناسه، ویدیوهای اخیر، کشور، دستگاه</text>
+<rect x="320" y="10" width="220" height="44" rx="8" fill="var(--l3)" stroke="var(--line)"/>
+<text x="430" y="30" text-anchor="middle" font-size="13" font-weight="700">ورودیِ ویدیو</text>
+<text x="430" y="47" text-anchor="middle" font-size="11" fill="var(--muted)">شناسه، سازنده، صدا، برچسب، تصویر</text>
+<rect x="50" y="78" width="160" height="40" rx="8" fill="var(--card)" stroke="var(--accent)"/>
+<text x="130" y="103" text-anchor="middle" font-size="13">برجِ کاربر (شبکه)</text>
+<rect x="350" y="78" width="160" height="40" rx="8" fill="var(--card)" stroke="var(--accent)"/>
+<text x="430" y="103" text-anchor="middle" font-size="13">برجِ ویدیو (شبکه)</text>
+<rect x="70" y="142" width="120" height="30" rx="8" fill="var(--l2)" stroke="var(--line)"/>
+<text x="130" y="162" text-anchor="middle" font-size="13" direction="ltr">u (64 numbers)</text>
+<rect x="370" y="142" width="120" height="30" rx="8" fill="var(--l2)" stroke="var(--line)"/>
+<text x="430" y="162" text-anchor="middle" font-size="13" direction="ltr">v (64 numbers)</text>
+<circle cx="280" cy="200" r="22" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/>
+<text x="280" y="205" text-anchor="middle" font-size="13" direction="ltr">u·v</text>
+<g stroke="var(--muted)" stroke-width="1.5" fill="none">
+<line x1="130" y1="54" x2="130" y2="78"/><line x1="430" y1="54" x2="430" y2="78"/>
+<line x1="130" y1="118" x2="130" y2="142"/><line x1="430" y1="118" x2="430" y2="142"/>
+<line x1="130" y1="172" x2="260" y2="196"/><line x1="430" y1="172" x2="300" y2="196"/>
+</g>
+</svg>
+<div class="kinds">
+<div><p><b>آموزش</b></p><p class="ex">جفت‌های (کاربر، ویدیویی که تا آخر دید) مثبت‌اند. ویدیوهای دیگرِ همان دسته (batch) منفی‌اند. مدل یاد می‌گیرد ضربِ داخلیِ جفت‌های مثبت بزرگ و منفی‌ها کوچک باشد. همان ایده‌ی تجزیه‌ی ماتریس است، فقط بردارها از شبکه‌ی عصبی و ویژگی‌ها ساخته می‌شوند.</p></div>
+<div><p><b>سرویس‌دهی</b></p><p class="ex">بردارِ همه‌ی ویدیوها را از قبل حساب و در یک شاخص (FAISS یا ScaNN) ذخیره کن. هنگامِ درخواست فقط برجِ کاربر اجرا می‌شود، بعد نزدیک‌ترین ویدیوها با <b>جست‌وجوی تقریبیِ نزدیک‌ترین همسایه</b> <span class="en">(ANN)</span> پیدا می‌شوند.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">چرا تقریبی؟ جست‌وجوی کامل یعنی ۱۰۰ میلیون × ۶۴ = <b>۶٫۴ میلیارد</b> ضرب برای هر درخواست. روش‌هایی مثلِ HNSW (گرافِ همسایه‌ها) یا IVF (دسته‌بندیِ بردارها و گشتن فقط در چند دسته‌ی نزدیک) فقط بخشِ کوچکی را می‌گردند. چند درصد از بهترین‌ها را از دست می‌دهند، ولی صدها برابر سریع‌ترند.</p>
+
+<p style="margin-top:16px"><b>چرا مدلِ رتبه‌بندی چند چیز را پیش‌بینی می‌کند؟</b> یک امتیازِ نهایی از ترکیبِ وزن‌دارِ احتمال‌ها ساخته می‌شود. مثال با وزن‌های ۱، ۲ و ۱۰:</p>
+<div class="f">\[ \text{score} = 1\cdot P(\text{finish}) + 2\cdot P(\text{like}) + 10\cdot P(\text{share}) \]</div>
+<div class="kinds">
+<div><p><b>ویدیوی الف</b></p><p class="ex">تا آخر ۰٫۶، لایک ۰٫۱۰، اشتراک ۰٫۰۱<br>امتیاز = ۰٫۶ + ۰٫۲ + ۰٫۱ = <b>۰٫۹</b></p></div>
+<div><p><b>ویدیوی ب</b></p><p class="ex">تا آخر ۰٫۴، لایک ۰٫۲۰، اشتراک ۰٫۰۳<br>امتیاز = ۰٫۴ + ۰٫۴ + ۰٫۳ = <b>۱٫۱</b> ← بالاتر</p></div>
+</div>
+<p class="ex" style="margin-top:8px">وزن‌ها با آزمایشِ A/B تنظیم می‌شوند، چون هدفِ واقعی (برگشتنِ کاربر در روزهای بعد) را مستقیم نمی‌شود آموزش داد.</p>
+</section>
+
+<section>
+<h2>شروعِ سرد</h2>
+<p>پالایش گروهی به سابقه نیاز دارد. ولی هر روز کاربرها و ویدیوهای تازه می‌آیند که هیچ سابقه‌ای ندارند. به این مشکل <b>شروعِ سرد</b> <span class="en">(Cold Start)</span> می‌گویند.</p>
+<div class="kinds">
+<div><p><b>کاربرِ تازه</b></p><p class="ex">مثال: نصبِ اپ، اولین بار. هیچ بردارِ یادگرفته‌ای نیست.</p><ul class="ex">
+<li>ویدیوهای پرطرفدار در کشور و زبانِ کاربر</li>
+<li>پرسیدنِ علاقه‌ها در شروع (چند موضوع را انتخاب کن)</li>
+<li>ویژگی‌های بدونِ سابقه: دستگاه، زبان، ساعت</li>
+<li>یادگیریِ سریع از همان چند ویدیوی اول: هر رد کردن یا تا آخر دیدن، بردارِ کاربر را در همان جلسه به‌روز می‌کند</li>
+<li>کمی کاوشِ بیشتر: موضوع‌های متنوع نشان بده تا سلیقه زودتر معلوم شود</li></ul></div>
+<div><p><b>ویدیوی تازه</b></p><p class="ex">مثال: همین الان آپلود شده؛ کسی آن را ندیده.</p><ul class="ex">
+<li>ویژگی‌های محتوا: متن، برچسب، صدا، تصویر (embedding از مدل‌های بینایی و صدا). برجِ ویدیو با این‌ها برای ویدیوی تازه هم بردار می‌سازد</li>
+<li>ویژگی‌های سازنده: ویدیوهای قبلیِ او چطور بودند</li>
+<li>بودجه‌ی کاوش: ویدیو را به یک گروهِ کوچک نشان بده؛ اگر واکنش خوب بود، به گروهِ بزرگ‌تر</li></ul></div>
+</div>
+</section>
+
+<section>
+<h2>حلقه‌ی بازخورد، سوگیریِ محبوبیت، کاوش و بهره‌برداری</h2>
+<p>مدل فقط از ویدیوهایی یاد می‌گیرد که <b>خودش</b> نشان داده. اگر ویدیویی هرگز نشان داده نشود، هرگز لایک نمی‌گیرد، و مدل هرگز نمی‌فهمد که خوب بوده. به این <b>حلقه‌ی بازخورد</b> <span class="en">(Feedback Loop)</span> می‌گویند.</p>
+<div class="kinds">
+<div><p><b>سوگیریِ محبوبیت <span class="en">(Popularity Bias)</span></b></p><p class="ex">ویدیوهای پرطرفدار بیشتر نشان داده می‌شوند ← داده‌ی بیشتری دارند ← مدل بیشتر پیشنهادشان می‌دهد. ویدیوهای کم‌طرفدارِ خوب دیده نمی‌شوند.</p></div>
+<div><p><b>سوگیریِ جایگاه <span class="en">(Position Bias)</span></b></p><p class="ex">ویدیوی اولِ لیست بیشتر دیده می‌شود، فقط چون اول بوده. مدل نباید این را به حسابِ کیفیتِ ویدیو بگذارد.</p></div>
+</div>
+<p style="margin-top:12px">راه‌حل: <b>کاوش</b> <span class="en">(Exploration)</span>. گاهی چیزی نشان بده که مطمئن نیستی، تا یاد بگیری.</p>
+<div class="kinds">
+<div><p><b>بهره‌برداری <span class="en">(Exploit)</span></b></p><p class="ex">بهترین گزینه‌ای که تا حالا می‌شناسی را نشان بده. امروز لایکِ بیشتر.</p></div>
+<div><p><b>کاوش <span class="en">(Explore)</span></b></p><p class="ex">یک گزینه‌ی کم‌امتحان‌شده را نشان بده. امروز شاید لایکِ کمتر، ولی شاید چیزِ بهتری پیدا کنی.</p></div>
+</div>
+<p style="margin-top:12px"><b>ε-حریصانه</b> <span class="en">(epsilon-greedy)</span>: با احتمالِ \(\varepsilon\) یک دسته‌ی تصادفی، وگرنه دسته‌ای با بیشترین نرخِ لایکِ دیده‌شده تا الان.</p>
+<div class="box">
+<p class="ex" style="margin:0">۴ دسته ویدیو، ۱٬۰۰۰ بار نمایش به یک کاربر. نرخِ واقعیِ لایک را مدل نمی‌داند: آشپزی ۳۰٪، طنز ۴۵٪، حیوانات ۶۰٪، ورزش ۲۰٪. همه‌ی تخمین‌ها از صفر شروع می‌شوند.</p>
+<label>\(\varepsilon\) <input id="eps" type="range" min="0" max="1" step="0.05" value="0"><b id="epsv"></b></label>
+<div id="bandit" style="margin-top:8px"></div>
+<div class="err" id="binfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>\(\varepsilon = 0\)</b></p><p class="ex">مدل اولین دسته (آشپزی) را نشان می‌دهد، چند لایک می‌گیرد، و چون بقیه هنوز صفرند، دیگر هرگز چیزِ دیگری نشان نمی‌دهد. میانگین: <b>۳۰۰</b> لایک. این همان حلقه‌ی بازخورد است.</p></div>
+<div><p><b>\(\varepsilon = 0.1\)</b></p><p class="ex">کمی کاوش کافی است تا «حیوانات» پیدا شود. میانگین: <b>۵۵۰</b> لایک، بهترین مقدار در این آزمایش. (سقف: ۶۰۰، اگر از اول بدانی.)</p></div>
+<div><p><b>\(\varepsilon = 0.5\) و بیشتر</b></p><p class="ex">کاوشِ زیادی: خیلی از نمایش‌ها هدر می‌رود. \(\varepsilon = 0.5\): <b>۴۸۷</b>؛ \(\varepsilon = 1\) (کاملاً تصادفی): <b>۳۸۶</b>.</p></div>
+</div>
+<details class="drop"><summary><b>روش‌های هوشمندتر: UCB و نمونه‌گیریِ تامپسون</b></summary>
+<ul class="ex">
+<li><b>UCB</b>: به گزینه‌هایی که کم امتحان شده‌اند یک امتیازِ اضافه بده: \(\hat{p}_a + c\sqrt{\ln t / n_a}\). هر چه \(n_a\) (تعدادِ نمایش) کمتر، امتیازِ اضافه بیشتر.</li>
+<li><b>نمونه‌گیریِ تامپسون</b>: برای هر گزینه یک توزیعِ احتمال (مثلاً Beta) از نرخِ لایک نگه دار. هر بار از هر توزیع یک عدد بکش و بزرگ‌ترین را نشان بده. گزینه‌های نامطمئن گاهی عددِ بزرگ می‌کشند و کاوش می‌شوند.</li>
+<li>این‌ها کاوش را <b>هدفمند</b> می‌کنند: بیشتر روی گزینه‌های نامطمئن، نه کاملاً تصادفی.</li>
+</ul>
+</details>
+</section>
+
+<section>
+<h2>ارزیابی: آفلاین و آنلاین</h2>
+<div class="kinds">
+<div><p><b>آفلاین <span class="en">(Offline)</span></b></p><p class="ex">روی داده‌ی گذشته. مدل را تا روزِ ۲۰ آموزش بده، روی روزهای ۲۱ تا ۲۷ بسنج (همیشه بر اساسِ زمان جدا کن، نه تصادفی).</p><ul class="ex">
+<li>Recall@k: برای مرحله‌ی بازیابی</li>
+<li>Precision@k، NDCG@k، AUC: برای رتبه‌بندی</li>
+<li>سریع و ارزان؛ هزاران مدل را می‌شود امتحان کرد</li>
+<li>فقط درباره‌ی ویدیوهایی که <b>قبلاً نشان داده شده‌اند</b> چیزی می‌گوید</li></ul></div>
+<div><p><b>آنلاین <span class="en">(Online, A/B Test)</span></b></p><p class="ex">کاربرها را تصادفی دو گروه کن: گروهِ A مدلِ قدیم، گروهِ B مدلِ جدید. چند هفته صبر کن.</p><ul class="ex">
+<li>زمانِ تماشا در روز</li>
+<li>بازگشتِ کاربر <span class="en">(Retention)</span>: چند درصد فردا یا هفته‌ی بعد برمی‌گردند</li>
+<li>معیارهای محافظ: گزارشِ محتوا، تنوع، شکایتِ سازندگان</li>
+<li>کند و پرهزینه، ولی همان چیزی است که واقعاً مهم است</li></ul></div>
+</div>
+<p style="margin-top:12px"><b>مثال با عدد.</b> مدل ۵ ویدیو به یک کاربر پیشنهاد داد. در داده‌ی آزمون، کاربر ۴ ویدیو را دوست داشت. از ۵ پیشنهاد، ۳ تا جزوِ آن ۴ ویدیو بودند، در جایگاه‌های ۱، ۳ و ۴:</p>
+<div dir="ltr"><table class="um">
+<tr><th>position</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+<tr><th>relevant?</th><td class="k">1</td><td>0</td><td class="k">1</td><td class="k">1</td><td>0</td></tr>
+<tr><th>1 / log2(pos+1)</th><td>1.000</td><td>0.631</td><td>0.500</td><td>0.431</td><td>0.387</td></tr>
+</table></div>
+<div class="f">\[ \text{P@}k = \frac{\text{hits in top }k}{k}, \qquad \text{R@}k = \frac{\text{hits in top }k}{\text{all relevant}}, \qquad \text{DCG@}k = \sum_{j=1}^{k} \frac{rel_j}{\log_2(j+1)}, \qquad \text{NDCG@}k = \frac{\text{DCG@}k}{\text{IDCG@}k} \]</div>
+<ul class="sym">
+<li>\(rel_j\): مرتبط بودنِ جایگاهِ \(j\) (۰ یا ۱)</li>
+<li>\(\log_2(j+1)\): جایگاه‌های پایین‌تر کم‌ارزش‌ترند</li>
+<li>IDCG: بهترین DCGِ ممکن (همه‌ی مرتبط‌ها در بالا)</li>
+</ul>
+<ul class="ex">
+<li>Precision@5 = ۳ ÷ ۵ = <b>۰٫۶</b></li>
+<li>Recall@5 = ۳ ÷ ۴ = <b>۰٫۷۵</b></li>
+<li>DCG = ۱ + ۰٫۵ + ۰٫۴۳۱ = <b>۱٫۹۳۱</b></li>
+<li>IDCG (۴ مرتبط در جایگاه‌های ۱ تا ۴) = ۱ + ۰٫۶۳۱ + ۰٫۵ + ۰٫۴۳۱ = <b>۲٫۵۶۲</b></li>
+<li>NDCG@5 = ۱٫۹۳۱ ÷ ۲٫۵۶۲ = <b>۰٫۷۵۴</b></li>
+</ul>
+<p>Precision و Recall به ترتیب اهمیت نمی‌دهند؛ NDCG می‌دهد. همان ۳ ویدیو را در ترتیب‌های مختلف امتحان کنید:</p>
+<div class="box">
+<div class="btns"><button data-o="0,1,1,0,1">ترتیبِ بدتر</button><button data-o="1,0,1,1,0" class="on">ترتیبِ بالا</button><button data-o="1,1,1,0,0">بهترین ترتیب</button></div>
+<div id="ndcg" style="margin-top:8px"></div>
+</div>
+<p class="ex" style="margin-top:8px">حتی با بهترین ترتیب، NDCG به ۱ نمی‌رسد، چون ویدیوی مرتبطِ چهارم اصلاً در ۵ پیشنهاد نیست. برای امتیازِ درجه‌دار (مثلاً ۰ تا ۳) صورتِ کسر را \(2^{rel_j} - 1\) می‌گذارند.</p>
+<div class="key">بهتر شدنِ معیارِ آفلاین تضمین نمی‌کند که A/B تست هم بهتر شود. داده‌ی گذشته را مدلِ قبلی ساخته (حلقه‌ی بازخورد)، و معیارِ آفلاین با هدفِ واقعی (برگشتنِ کاربر) یکی نیست. تصمیمِ نهایی همیشه با A/B تست است.</div>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>تجزیه‌ی ماتریس با SGD از صفر</b> (همان جدولِ ۶×۶؛ خطای آموزش حدود ۰٫۳ می‌شود):</p>
+<pre>import numpy as np
+
+def train_mf(R, k=2, lr=0.05, lam=0.1, epochs=200, seed=0):
+    rng = np.random.default_rng(seed)
+    known = np.argwhere(R > 0)               # list of (user, item) with a rating
+    mu = R[R > 0].mean()                     # global mean
+    P = rng.uniform(-0.1, 0.1, (R.shape[0], k))   # user vectors
+    Q = rng.uniform(-0.1, 0.1, (R.shape[1], k))   # item vectors
+    for ep in range(epochs):
+        rng.shuffle(known)
+        for u, i in known:
+            err = R[u, i] - (mu + P[u] @ Q[i])
+            pu = P[u].copy()
+            P[u] += lr * (err * Q[i] - lam * P[u])
+            Q[i] += lr * (err * pu - lam * Q[i])
+    return mu, P, Q
+
+R = np.array([[5,4,0,1,0,2],[4,0,5,0,1,0],[0,5,4,2,0,1],
+              [1,0,2,5,4,0],[0,1,0,4,5,4],[2,0,1,0,4,5]], float)   # 0 = missing
+mu, P, Q = train_mf(R)
+pred = np.clip(mu + P @ Q.T, 1, 5)          # fills every cell, including missing ones
+top = np.argsort(-np.where(R > 0, -np.inf, pred), axis=1)[:, :2]   # best unseen items</pre>
+<p><b>مدلِ دوبرجی در PyTorch</b> (طرحِ کوتاه، با منفی‌های داخلِ batch):</p>
+<pre>import torch, torch.nn as nn, torch.nn.functional as F
+
+class Tower(nn.Module):
+    def __init__(self, n_ids, n_feats, d=64):
+        super().__init__()
+        self.emb = nn.Embedding(n_ids, d)
+        self.mlp = nn.Sequential(nn.Linear(d + n_feats, 128), nn.ReLU(), nn.Linear(128, d))
+    def forward(self, ids, feats):
+        x = torch.cat([self.emb(ids), feats], dim=1)
+        return F.normalize(self.mlp(x), dim=1)        # unit vectors: dot = cosine
+
+user_tower  = Tower(n_users, n_user_feats)
+video_tower = Tower(n_videos, n_video_feats)
+opt = torch.optim.Adam(list(user_tower.parameters()) + list(video_tower.parameters()), lr=1e-3)
+
+for uid, ufeat, vid, vfeat in loader:                 # each row: a (user, watched video) pair
+    u = user_tower(uid, ufeat)                        # (B, d)
+    v = video_tower(vid, vfeat)                       # (B, d)
+    logits = u @ v.T / 0.05                           # (B, B); the true video is on the diagonal
+    loss = F.cross_entropy(logits, torch.arange(len(u)))   # other videos in the batch = negatives
+    opt.zero_grad(); loss.backward(); opt.step()
+
+# serving: precompute all video vectors once, index them, query with the user vector
+import faiss
+index = faiss.IndexHNSWFlat(64, 32, faiss.METRIC_INNER_PRODUCT)
+index.add(all_video_vectors)                          # float32 array, shape (n_videos, 64)
+scores, ids = index.search(user_vector, 2000)         # ~2,000 candidates for ranking</pre>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites, interview reports and system-design guides. Click a question to see the answer.</p>
+
+<details><summary>Design TikTok's For You feed.</summary>
+<p><b>1. Clarify.</b> Goal: long-term engagement (daily watch time and retention), not just clicks. Scale: hundreds of millions of videos, a latency budget of roughly 100–200 ms per request, about 10 videos returned per request.</p>
+<p><b>2. Data and labels.</b> Implicit signals per impression: watch time and completion (normalised by video length), skip within 1–2 s, like, share, comment, follow, "not interested". Log what was shown and at which position.</p>
+<p><b>3. Funnel.</b> <b>Retrieval</b> (~100M → ~2,000): several sources merged and de-duplicated: a two-tower model with an ANN index (HNSW/ScaNN), followed creators, trending in region, item-to-item similarity to recent likes. Optimise recall@k. <b>Ranking</b> (~2,000 → ~200): a multi-task deep model (or GBDT baseline) with user, video, cross and context features predicting P(finish), E[watch time], P(like), P(share); combine with tuned weights, e.g. score = 1·P(finish) + 2·P(like) + 10·P(share). <b>Re-ranking</b> (~200 → 10): diversity (no more than two in a row from the same creator/topic), freshness, dedupe of seen videos, safety filters, business rules.</p>
+<p><b>4. Cold start and exploration.</b> Content embeddings (vision, audio, text) for new videos; a small exploration traffic budget that expands if early engagement is good. Popular/regional content plus fast in-session updates for new users.</p>
+<p><b>5. Freshness.</b> Interests change within a session, so use real-time features (last N watched videos) and frequent or online model updates.</p>
+<p><b>6. Evaluation.</b> Offline: recall@k for retrieval, AUC/NDCG for ranking, on a time-based split. Online: A/B test on watch time and retention with guardrails (report rate, diversity, creator-side metrics).</p>
+<p class="src">Structure follows techinterview.org "How to design a recommendation system in an ML interview" and Google's Recommendation Systems course.</p></details>
+
+<details><summary>What is the difference between content-based filtering and collaborative filtering?</summary>
+<p><b>Content-based</b> recommends items similar to what the user liked, using item features (tags, text, audio, image). Example: tag vectors (cooking, sport, funny): pasta = (1,0,1), cake = (1,0,0), football = (0,1,0); cosine(pasta, cake) = 0.71, cosine(pasta, football) = 0, so a pasta fan gets cake. It handles new items but tends to keep users in a bubble. <b>Collaborative filtering</b> uses only the interaction matrix: users who rated similarly in the past will agree in the future. Example: Sara and Maryam rated their shared videos (4,1,2) and (5,2,1), cosine 0.96; Maryam liked salad, so recommend salad to Sara. It finds non-obvious items and captures quality, but cannot handle items with no interactions (cold start). Production systems are hybrid.</p></details>
+
+<details><summary>Explain matrix factorization. How do you train it?</summary>
+<p>Represent each user \(u\) and item \(i\) by \(k\)-dimensional vectors and predict \(\hat r_{ui} = \mu + p_u^\top q_i\) (often with user and item biases \(b_u + b_i\) as well). Minimise squared error over the <i>observed</i> entries plus L2 regularisation \(\lambda(\|p_u\|^2 + \|q_i\|^2)\). <b>SGD:</b> for each observed rating, \(e = r_{ui} - \hat r_{ui}\), \(p_u \mathrel{+}= \eta(e q_i - \lambda p_u)\), \(q_i \mathrel{+}= \eta(e p_u - \lambda q_i)\). <b>ALS:</b> fix \(Q\) and solve each \(p_u\) in closed form (a ridge regression), then swap; easy to parallelise and standard for implicit feedback. On the 6×6 example on this page (23 known ratings, \(k=2\), \(\eta=0.05\), \(\lambda=0.1\)), training RMSE goes from 1.6 to about 0.31 in 200 epochs, and the learned vectors separate cooking from sport videos without being told the topics.</p></details>
+
+<details><summary>Explicit vs implicit feedback: how do you train on implicit data?</summary>
+<p>Explicit feedback (ratings, likes) is clear but rare. Implicit feedback (watch time, skips, shares) exists for every impression but is noisy and has no true negatives: an unwatched video may be unknown, not disliked. Approaches: (1) define labels from behaviour, e.g. positive = watched ≥ 90% or shared, negative = skipped within 1 s; normalise watch time by video length because short videos are finished more easily; (2) negative sampling: random or in-batch items as negatives, with a correction for popularity because popular items appear as negatives more often; (3) weighted matrix factorization (implicit ALS) where all cells are used but observed ones get confidence \(1 + \alpha \cdot \text{count}\).</p></details>
+
+<details><summary>What is a two-tower model and why is it used for retrieval?</summary>
+<p>Two separate networks map user features and item features to vectors \(u\) and \(v\) of the same size; the score is \(u \cdot v\). Because the item tower does not depend on the user, all item vectors can be precomputed and stored in an approximate nearest neighbour index. At request time only the user tower runs, then the ANN search returns the top few thousand items in milliseconds. Brute force would cost 100M × 64 = 6.4 billion multiply-adds per request. It is trained with sampled or in-batch softmax (other items in the batch act as negatives), with a temperature and often a log-popularity correction. The limitation: user and item features interact only through one dot product, so fine-grained cross features belong in the ranking model.</p></details>
+
+<details><summary>Why use multiple stages, and what metric fits each stage?</summary>
+<p>A heavy ranking model cannot score 100M items within ~100 ms. So: retrieval (cheap, ~100M → ~2,000), ranking (expensive, ~2,000 → ~200), re-ranking (rules, → ~10). Retrieval must not miss good items, so measure <b>recall@k</b> (e.g. of the videos the user later finished, how many were among the 2,000 candidates). Ranking must order well, so use <b>AUC / log loss</b> per task and <b>NDCG@k</b>. Re-ranking is judged online (diversity, guardrails). Reported TikTok interviews ask exactly this: which metric fits candidate generation; the answer is recall.</p>
+<p class="src">Google Developers, Recommendation Systems: overview of candidate generation, scoring and re-ranking.</p></details>
+
+<details><summary>How do you handle the cold-start problem?</summary>
+<p><b>New user:</b> popular and trending content for their region and language; an onboarding interest picker; context features (device, language, time); fast session-level updates so that the first few skips and completions already change the user vector; extra exploration with diverse topics. <b>New item:</b> content embeddings from vision, audio and text models so the item tower can produce a vector with zero interactions; creator features; an exploration budget: show the video to a small audience and expand if early engagement is good. Collaborative signals take over once interactions accumulate.</p></details>
+
+<details><summary>Compute precision@5, recall@5 and NDCG@5 for an example.</summary>
+<p>Top-5 relevance = [1, 0, 1, 1, 0]; the user has 4 relevant items in total. Precision@5 = 3/5 = 0.6. Recall@5 = 3/4 = 0.75. \(\text{DCG} = \sum rel_j / \log_2(j+1) = 1 + 0.5 + 0.431 = 1.931\). Ideal list puts 4 relevant items first: IDCG = 1 + 0.631 + 0.5 + 0.431 = 2.562. NDCG@5 = 1.931 / 2.562 = 0.754. A worse order [0, 1, 1, 0, 1] has the same precision and recall but NDCG 0.593; the best possible order [1, 1, 1, 0, 0] gives 0.832 (not 1, because the fourth relevant item was not retrieved). With graded relevance, use \(2^{rel}-1\) in the numerator.</p></details>
+
+<details><summary>Offline NDCG improved, but the A/B test shows no gain. Why?</summary>
+<p>(1) The offline data was produced by the old model, so it only contains feedback on items the old model chose (selection bias / feedback loop); a new model that would show different items cannot be judged fairly. (2) The offline label (e.g. click) is not the online goal (watch time, retention). (3) Position bias in the logs. (4) Train/serve skew: features computed differently offline and online, or stale features. (5) Leakage from a random instead of time-based split. (6) The A/B test is underpowered or too short, or novelty effects hide the change. Fixes: time-based splits, propensity-weighted (counterfactual) evaluation, logging features at serving time, and choosing offline metrics that correlated with past A/B results.</p></details>
+
+<details><summary>What are feedback loops and popularity bias? How does exploration help?</summary>
+<p>The model learns only from what it showed, so items it never shows never get positive feedback, and popular items get ever more exposure. Exploration deliberately spends some traffic on uncertain items. <b>Epsilon-greedy:</b> with probability \(\varepsilon\) show a random choice. In the simulation on this page (4 categories with true like rates 30/45/60/20%, 1,000 impressions, averaged over 200 runs): \(\varepsilon = 0\) gets stuck on the first category with 300 likes; \(\varepsilon = 0.1\) finds the best category and gets about 550 (ceiling 600); \(\varepsilon = 1\) gets 386. <b>UCB</b> and <b>Thompson sampling</b> explore in a targeted way, favouring items with few impressions or uncertain estimates. Also: log propensities to de-bias training, add position as a feature during training (set to a fixed value at serving), and reserve exposure for new items.</p></details>
+
+<details><summary>What should the ranking model predict for short videos?</summary>
+<p>No single label works. Raw watch time favours long videos; completion rate favours very short ones; likes are sparse. Use a <b>multi-task</b> model (shared bottom layers or mixture-of-experts with one head per task) predicting P(finish), expected watch time normalised by length, P(like), P(share), P(follow), P(skip/"not interested"), and combine them: \(\text{score} = \sum_t w_t \cdot \text{pred}_t\). Example with weights 1, 2, 10 for finish, like, share: video A (0.6, 0.10, 0.01) scores 0.9; video B (0.4, 0.20, 0.03) scores 1.1 and ranks higher. The weights are tuned with A/B tests against long-term metrics such as retention.</p></details>
+
+<details><summary>How do you keep the model fresh when interests change quickly?</summary>
+<p>Use real-time features (the last N watched videos, the current session's skips) so even a fixed model reacts within a session. Retrain or fine-tune often, and for the fastest loop train online on the streaming log of impressions and feedback. ByteDance's Monolith paper describes online training that updates parameters from real-time user feedback, with collision-free embedding tables (cuckoo hashing) so that new user and video IDs get their own embeddings, and expiry of stale IDs to bound memory. Watch out for delayed labels (watch time is known only after the view ends) and for keeping training and serving features identical.</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://www.techinterview.org/post/3233476954/how-to-design-a-recommendation-system-ml-interview/">techinterview.org: How to design a recommendation system in an ML interview</a> · <a href="https://developers.google.com/machine-learning/recommendation/overview/types">Google Developers: Recommendation Systems</a> · <a href="https://codemia.io/guides/tiktok-machine-learning-engineer">Codemia: TikTok ML engineer guide</a> · <a href="https://www.glassdoor.fr/Entretien/TikTok-Entretien-E2230881-RVW66495355.htm">Glassdoor: TikTok interview report</a> · <a href="https://arxiv.org/abs/2209.07663">Monolith: Real Time Recommendation System With Collisionless Embedding Table (ByteDance, 2022)</a> · <a href="https://research.google/pubs/deep-neural-networks-for-youtube-recommendations/">Covington et al., Deep Neural Networks for YouTube Recommendations (2016)</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+
+/* ---------- matrix factorization demo ---------- */
+const R = [[5,4,0,1,0,2],[4,0,5,0,1,0],[0,5,4,2,0,1],[1,0,2,5,4,0],[0,1,0,4,5,4],[2,0,1,0,4,5]];
+const USERS = ['سارا','علی','مریم','رضا','نیما','لیلا'], VIDS = ['پاستا','کیک','سالاد','فوتبال','بسکتبال','تنیس'];
+const EPOCHS = 200, mfCache = {};
+const dot = (a, b) => a.reduce((s, x, k) => s + x * b[k], 0);
+const trainMF = K => { if (mfCache[K]) return mfCache[K];
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const cells = []; R.forEach((r, u) => r.forEach((v, i) => v && cells.push([u, i, v])));
+  const mu = cells.reduce((s, c) => s + c[2], 0) / cells.length;
+  const P = R.map(() => Array.from({ length: K }, () => (rnd() - .5) * 0.2)), Q = R[0].map(() => Array.from({ length: K }, () => (rnd() - .5) * 0.2));
+  const rm = () => Math.sqrt(cells.reduce((s, [u, i, v]) => s + (v - mu - dot(P[u], Q[i])) ** 2, 0) / cells.length);
+  const snap = () => ({ P: P.map(r => r.slice()), Q: Q.map(r => r.slice()), e: rm() });
+  const hist = [snap()];
+  for (let e = 0; e < EPOCHS; e++) { for (const [u, i, v] of cells) { const err = v - mu - dot(P[u], Q[i]);
+      for (let k = 0; k < K; k++) { const pu = P[u][k], qi = Q[i][k]; P[u][k] += 0.05 * (err * qi - 0.1 * pu); Q[i][k] += 0.05 * (err * pu - 0.1 * qi); } }
+    hist.push(snap()); }
+  return mfCache[K] = { mu, hist }; };
+const epEl = document.getElementById('ep'), rkEl = document.getElementById('rk');
+const drawMF = () => { const e = +epEl.value, K = +rkEl.value, m = trainMF(K), s = m.hist[e];
+  const pred = (u, i) => m.mu + dot(s.P[u], s.Q[i]), clip = x => Math.min(5, Math.max(1, x));
+  let h = '<tr><th></th>' + VIDS.map(v => '<th>' + v + '</th>').join('') + '</tr>';
+  R.forEach((r, u) => { h += '<tr><th>' + USERS[u] + '</th>' + r.map((v, i) => v ? `<td class="k">${fa(v)}<small>${fa(pred(u, i), 1)}</small></td>` : `<td class="p">${fa(clip(pred(u, i)), 1)}</td>`).join('') + '</tr>'; });
+  document.getElementById('mft').innerHTML = h;
+  const [c, W, Ht] = mk(document.getElementById('mfcurve'), 0.32, 532), X = i => 30 + i / EPOCHS * (W - 40), Y = v => Ht - 18 - v / 1.8 * (Ht - 28);
+  c.strokeStyle = css('line'); c.lineWidth = 1; c.beginPath(); c.moveTo(30, Y(0)); c.lineTo(W - 10, Y(0)); c.stroke();
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'right'; [0, 0.5, 1, 1.5].forEach(v => c.fillText(fa(v, 1), 26, Y(v) + 4));
+  c.textAlign = 'center'; c.fillText('دور آموزش →', W / 2, Ht - 2);
+  c.strokeStyle = css('accent'); c.lineWidth = 2; c.beginPath(); m.hist.forEach((q, i) => i ? c.lineTo(X(i), Y(q.e)) : c.moveTo(X(i), Y(q.e))); c.stroke();
+  c.fillStyle = css('red'); c.beginPath(); c.arc(X(e), Y(s.e), 4, 0, 7); c.fill();
+  const [c2, W2, H2] = mk(document.getElementById('mfvec'), 0.6, 420), all = [...s.P, ...s.Q];
+  const lim = Math.max(0.25, ...all.flatMap(v => [Math.abs(v[0]), Math.abs(v[1] || 0)])) * 1.15;
+  const X2 = x => W2 / 2 + x / lim * (W2 / 2 - 24), Y2 = y => H2 / 2 - y / lim * (H2 / 2 - 16);
+  c2.strokeStyle = css('line'); c2.beginPath(); c2.moveTo(0, H2 / 2); c2.lineTo(W2, H2 / 2); c2.moveTo(W2 / 2, 0); c2.lineTo(W2 / 2, H2); c2.stroke();
+  c2.font = '12px Vazirmatn'; c2.textAlign = 'center';
+  s.P.forEach((v, u) => { const x = X2(v[0]), y = Y2(v[1] || 0); c2.fillStyle = css('blue'); c2.beginPath(); c2.arc(x, y, 5, 0, 7); c2.fill(); c2.fillText(USERS[u], x, y - 8); });
+  s.Q.forEach((v, i) => { const x = X2(v[0]), y = Y2(v[1] || 0); c2.fillStyle = css('orange'); c2.fillRect(x - 5, y - 5, 10, 10); c2.fillText(VIDS[i], x, y + 18); });
+  if (K === 1) { c2.fillStyle = css('muted'); c2.fillText('با k = 1 فقط یک محور داریم (همه روی خط افقی)', W2 / 2, 14); }
+  document.getElementById('epv').textContent = fa(e);
+  document.getElementById('mfinfo').innerHTML = `خطای خانه‌های پر (RMSE): <b>${fa(s.e, 2)}</b> · در شروع: ${fa(m.hist[0].e, 2)}<br>حدسِ مدل برای سارا: سالاد ${fa(clip(pred(0, 2)), 1)} · بسکتبال ${fa(clip(pred(0, 4)), 1)}`; };
+epEl.oninput = rkEl.onchange = drawMF;
+
+/* ---------- epsilon-greedy bandit demo ---------- */
+const ARMS = ['آشپزی','طنز','حیوانات','ورزش'], TRUE = [0.30, 0.45, 0.60, 0.20], T = 1000;
+const runBandit = (eps, sd) => { let seed = sd; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const n = [0, 0, 0, 0], s = [0, 0, 0, 0]; let likes = 0;
+  for (let t = 0; t < T; t++) { let a;
+    if (rnd() < eps) a = Math.floor(rnd() * 4);
+    else { let b = 0, bv = -1; for (let i = 0; i < 4; i++) { const v = n[i] ? s[i] / n[i] : 0; if (v > bv) { bv = v; b = i; } } a = b; }
+    const r = rnd() < TRUE[a] ? 1 : 0; n[a]++; s[a] += r; likes += r; }
+  return { n, likes, est: s.map((x, i) => n[i] ? x / n[i] : 0) }; };
+const epsEl = document.getElementById('eps'), avgCache = {};
+const drawBandit = () => { const eps = +epsEl.value, one = runBandit(eps, 42);
+  if (!(eps in avgCache)) { let tot = 0; for (let k = 0; k < 200; k++) tot += runBandit(eps, 1000 + k * 7919).likes; avgCache[eps] = tot / 200; }
+  document.getElementById('epsv').textContent = fa(eps, 2);
+  document.getElementById('bandit').innerHTML = '<p class="ex" style="margin:0 0 4px">یک اجرا: سهمِ هر دسته از نمایش‌ها، و نرخِ لایکی که مدل تخمین زده (واقعی در پرانتز)</p>' +
+    ARMS.map((a, i) => `<div class="hb"><span>${a}</span><div class="t"><i style="width:${one.n[i] / T * 100}%"></i></div><b>${fa(one.n[i] / T * 100)}٪ · ${fa(one.est[i] * 100)}٪ (${fa(TRUE[i] * 100)}٪)</b></div>`).join('');
+  document.getElementById('binfo').innerHTML = `لایک در این اجرا: <b>${fa(one.likes)}</b> · میانگینِ ۲۰۰ اجرا: <b>${fa(avgCache[eps])}</b> · سقف: ${fa(600)}`; };
+epsEl.oninput = drawBandit;
+
+/* ---------- NDCG buttons ---------- */
+const dcg = r => r.reduce((s, x, i) => s + x / Math.log2(i + 2), 0), IDCG = dcg([1, 1, 1, 1, 0]);
+const drawNDCG = o => { const r = o.split(',').map(Number), hits = r.reduce((a, b) => a + b, 0);
+  document.getElementById('ndcg').innerHTML = '<div dir="ltr"><table class="um"><tr><th>position</th>' + r.map((_, i) => '<th>' + (i + 1) + '</th>').join('') + '</tr><tr><th>relevant?</th>' + r.map(x => `<td class="${x ? 'k' : ''}">${x}</td>`).join('') + '</tr></table></div>' +
+    `<div class="err">Precision@5 = <b>${fa(hits / 5, 2)}</b> · Recall@5 = <b>${fa(hits / 4, 2)}</b> · DCG = ${fa(dcg(r), 3)} · NDCG@5 = <b>${fa(dcg(r) / IDCG, 3)}</b></div>`; };
+document.querySelectorAll('.btns button').forEach(b => b.onclick = () => { document.querySelectorAll('.btns button').forEach(x => x.classList.toggle('on', x === b)); drawNDCG(b.dataset.o); });
+
+const drawAll = () => { drawMF(); drawBandit(); };
+addEventListener('resize', drawMF);
+drawAll(); drawNDCG('1,0,1,1,0');
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

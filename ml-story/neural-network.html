@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>شبکه‌ی عصبی</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; overflow-wrap: anywhere; }
+h3 { font-size: 17px; margin: 0 0 6px; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.ctl button { margin: 0; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.units { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; direction: ltr; margin: 6px 0; }
+.units div { text-align: center; font-size: 11px; color: var(--muted); }
+.units canvas { width: 64px; height: 64px; border: 1px solid var(--line); border-radius: 6px; }
+.diag { width: 100%; max-width: 420px; display: block; margin: 6px auto; }
+.diag line { stroke: var(--muted); stroke-width: 1.2; }
+.diag circle { fill: var(--card); stroke: var(--accent); stroke-width: 2; }
+.diag text { font-size: 11px; text-anchor: middle; }
+.num td, .num th { text-align: center; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="svm.html">ماشین بردار پشتیبان (SVM)</a> · <a href="embeddings.html">بعدی: Embedding: کلمه‌ها به بردار ←</a></p>
+<h1>شبکه‌ی عصبی <span class="en">(Neural Network / MLP)</span></h1>
+<p class="sub">چند رگرسیون لجستیک که لایه‌لایه پشتِ هم چیده شده‌اند. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>رگرسیون لجستیک فقط می‌تواند با یک <b>خطِ صاف</b> دو دسته را جدا کند. خیلی از مسئله‌ها ولی مرزِ <b>خمیده</b> دارند:</p>
+<ul class="ex">
+<li>تشخیصِ عدد در یک عکس</li>
+<li>تشخیصِ گفتار</li>
+<li>پیشنهادِ ویدیو به کاربر</li>
+<li>پیش‌بینیِ کلمه‌ی بعدی در یک جمله</li>
+</ul>
+<p>شبکه‌ی عصبی <b>ویژگی‌ها را خودش می‌سازد</b>. لایه‌ی اول چند ویژگیِ ساده می‌سازد. لایه‌ی بعد آن‌ها را ترکیب می‌کند. در آخر، یک رگرسیون لجستیک روی این ویژگی‌های ساخته‌شده تصمیم می‌گیرد.</p>
+<div class="key">مثالِ این صفحه: <b>نقطه‌هایی روی صفحه، با دو عدد (x₁, x₂). نقطه‌های داخلِ یک دایره «آبی»اند، بیرونِ آن «قرمز».</b> هیچ خطِ صافی نمی‌تواند این دو را جدا کند. یک شبکه‌ی کوچک می‌تواند.</div>
+<p>چرا مهم است: تقریباً همه‌ی مدل‌های امروزی (شبکه‌های تصویر، ترنسفورمرها، مدل‌های پیشنهاد در تیک‌تاک و یوتیوب) از همین قطعه‌ها ساخته شده‌اند. سؤال‌هایی مثلِ «backprop را توضیح بده» یا «چرا وزن‌ها را صفر نمی‌گذاریم» در تقریباً هر مصاحبه‌ی ML می‌آیند.</p>
+</section>
+
+<section>
+<h2>یک نورون = رگرسیون لجستیک</h2>
+<p>یک نورون دو کار می‌کند:</p>
+<ol>
+<li><b>جمعِ وزن‌دار:</b> هر ورودی را در وزنش ضرب کن، جمع بزن، و یک عدد ثابت (بایاس) اضافه کن.</li>
+<li><b>تابع فعال‌سازی:</b> نتیجه را از یک تابعِ غیرخطی رد کن (مثلاً سیگموید).</li>
+</ol>
+<div class="f">\[ z = w_1 x_1 + w_2 x_2 + b \qquad a = \sigma(z) = \frac{1}{1 + e^{-z}} \]</div>
+<ul class="sym">
+<li>\(x_1, x_2\): ورودی‌ها</li>
+<li>\(w_1, w_2\): وزن‌ها</li>
+<li>\(b\): بایاس</li>
+<li>\(z\): جمعِ وزن‌دار</li>
+<li>\(\sigma\): تابع فعال‌سازی</li>
+<li>\(a\): خروجیِ نورون</li>
+</ul>
+<svg class="diag" viewBox="0 0 320 110" dir="ltr">
+<line x1="40" y1="30" x2="160" y2="55"/><line x1="40" y1="80" x2="160" y2="55"/><line x1="185" y1="55" x2="270" y2="55"/>
+<circle cx="30" cy="30" r="14"/><circle cx="30" cy="80" r="14"/><circle cx="170" cy="55" r="20"/><circle cx="285" cy="55" r="14"/>
+<text x="30" y="34">x₁=2</text><text x="30" y="84">x₂=1</text><text x="170" y="52">Σ, σ</text><text x="170" y="65" style="font-size:9px">b=−0.4</text><text x="285" y="59">0.67</text>
+<text x="95" y="33">w₁=0.8</text><text x="95" y="82">w₂=−0.5</text>
+</svg>
+<p><b>با عدد:</b> \(x = (2, 1)\)، \(w = (0.8, -0.5)\)، \(b = -0.4\):</p>
+<div class="f">\[ z = 0.8 \cdot 2 + (-0.5) \cdot 1 - 0.4 = 0.7 \qquad a = \sigma(0.7) = 0.67 \]</div>
+<p>این دقیقاً همان <a href="logistic-regression.html">رگرسیون لجستیک</a> است: یک خط (\(z = 0\)) و یک سیگموید. پس یک نورون تنها، همان محدودیتِ رگرسیون لجستیک را دارد: <b>مرزش یک خطِ صاف است</b>.</p>
+</section>
+
+<section>
+<h2>چرا یک نورون کافی نیست؟</h2>
+<p>دو داده‌ی معروف، کنار هم. هر دو را با یک خط امتحان کنید:</p>
+<div class="kinds">
+<div><p><b>XOR</b></p><canvas id="xorc"></canvas><p class="ex">چهار نقطه. (۰،۰) و (۱،۱) قرمز؛ (۰،۱) و (۱،۰) آبی. هر خطی بکشید، حداقل یک نقطه اشتباه می‌ماند. بهترین خط فقط <b>۳ از ۴</b> را درست می‌گوید.</p></div>
+<div><p><b>دایره</b></p><canvas id="circc"></canvas><p class="ex">۲۰۰ نقطه، ۶۳ تا داخلِ دایره. بهترین رگرسیون لجستیک فقط <b>۶۸٫۵٪</b> درست است؛ یعنی دقیقاً همان‌قدر که اگر برای همه بگوید «بیرون».</p></div>
+</div>
+<p style="margin-top:10px"><b>راه‌حل:</b> چند نورون کنارِ هم بگذار، و یک نورونِ دیگر روی خروجیِ آن‌ها. برای XOR دو نورونِ پنهان کافی است. با تابع ReLU (یعنی \(\max(0, z)\)):</p>
+<div class="f">\[ h_1 = \max(0,\; x_1 + x_2) \qquad h_2 = \max(0,\; x_1 + x_2 - 1) \qquad y = h_1 - 2 h_2 \]</div>
+<div dir="ltr"><table class="num">
+<tr><th>x₁</th><th>x₂</th><th>h₁</th><th>h₂</th><th>y = h₁ − 2h₂</th><th>XOR</th></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td><b>0</b></td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>1</td><td>0</td><td><b>1</b></td><td>1</td></tr>
+<tr><td>1</td><td>0</td><td>1</td><td>0</td><td><b>1</b></td><td>1</td></tr>
+<tr><td>1</td><td>1</td><td>2</td><td>1</td><td><b>0</b></td><td>0</td></tr>
+</table></div>
+<p class="ex" style="margin-top:6px">\(h_1\) می‌شمارد «چند تا یک داریم». \(h_2\) فقط وقتی روشن می‌شود که <b>هر دو</b> یک باشند. خروجی، دومی را از اولی کم می‌کند. هیچ‌کدام به‌تنهایی XOR نیست؛ ترکیبشان هست.</p>
+</section>
+
+<section>
+<h2>لایه‌ها: ساختنِ ویژگی‌ها</h2>
+<p>یک شبکه‌ی عصبیِ ساده <span class="en">(MLP: Multi-Layer Perceptron)</span> سه نوع لایه دارد:</p>
+<svg class="diag" viewBox="0 0 320 150" dir="ltr" id="netsvg"></svg>
+<div class="kinds">
+<div><p><b>لایه‌ی ورودی</b></p><p class="ex">خودِ داده. این‌جا دو عدد: \(x_1, x_2\). محاسبه‌ای ندارد.</p></div>
+<div><p><b>لایه‌ی پنهان</b> <span class="en">(Hidden)</span></p><p class="ex">هر نورون یک خط روی صفحه می‌کشد و می‌گوید نقطه کدام طرفِ آن است. خروجی‌ها، ویژگی‌های <b>جدید</b> هستند.</p></div>
+<div><p><b>لایه‌ی خروجی</b></p><p class="ex">یک رگرسیون لجستیک روی ویژگی‌های جدید. برای دایره: «نقطه داخلِ همه‌ی خط‌ها هست؟»</p></div>
+</div>
+<p style="margin-top:10px">به‌صورتِ ماتریسی، برای یک لایه‌ی پنهان با \(H\) نورون:</p>
+<div class="f">\[ \mathbf{h} = f(W_1 \mathbf{x} + \mathbf{b}_1) \qquad \hat{y} = \sigma(\mathbf{w}_2^\top \mathbf{h} + b_2) \]</div>
+<ul class="sym">
+<li>\(W_1\): ماتریسِ وزن‌ها، \(H \times 2\)</li>
+<li>\(\mathbf{b}_1\): بایاس‌ها، \(H\) تا</li>
+<li>\(f\): فعال‌سازی (tanh، ReLU، …)</li>
+<li>\(\mathbf{h}\): ویژگی‌های ساخته‌شده</li>
+<li>\(\mathbf{w}_2, b_2\): وزن‌های لایه‌ی خروجی</li>
+<li>\(\hat{y}\): احتمالِ «آبی»</li>
+</ul>
+<p><b>تعدادِ پارامترها:</b> با ۲ ورودی و \(H\) نورونِ پنهان: \(2H + H + H + 1 = 4H + 1\). با ۸ نورون: <b>۳۳</b> عدد. یک شبکه‌ی واقعی‌تر برای عکس‌های ۲۸×۲۸ (۷۸۴ ورودی، ۱۲۸ پنهان، ۱۰ خروجی): <b>۱۰۱٬۷۷۰</b> عدد.</p>
+<p class="ex">لایه‌های بیشتر یعنی ترکیبِ ترکیب‌ها: در عکس، لایه‌های اول لبه‌ها را پیدا می‌کنند، بعدی‌ها گوشه و بافت، و لایه‌های آخر چشم و چرخ. به این «یادگیریِ بازنمایی» <span class="en">(Representation Learning)</span> می‌گویند.</p>
+</section>
+
+<section>
+<h2>خودتان آموزش بدهید</h2>
+<p>یک شبکه با یک لایه‌ی پنهان (فعال‌سازیِ tanh) و یک خروجیِ سیگموید. همین‌جا در مرورگر با گرادیان کاهشی آموزش می‌بیند. تعدادِ نورون‌های پنهان را عوض کنید و دکمه‌ی آموزش را بزنید:</p>
+<div class="box">
+<canvas id="live"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>داخلِ دایره</span><span><i style="background:var(--red)"></i>بیرون</span><span>رنگِ زمینه = تصمیمِ شبکه</span><span><i style="background:var(--ink)"></i>خطِ هر نورونِ پنهان</span></div>
+<label>نورون‌های پنهان <input id="hid" type="range" min="1" max="8" step="1" value="2"><b id="hidv"></b></label>
+<div class="ctl">داده: <select id="ds"><option value="circle">دایره</option><option value="xor">XOR (چهار ربع)</option></select>
+<button id="train">آموزش (۲۰۰۰ دور)</button><button id="reinit">شروعِ تازه</button>
+<label style="margin:0;font-size:14px"><input type="checkbox" id="showl" checked style="flex:none"> خط‌ها</label></div>
+<canvas id="lcurve"></canvas>
+<div class="legend"><span><i style="background:var(--accent)"></i>خطای آموزش (Log Loss)</span></div>
+<div class="err" id="linfo"></div>
+<p class="ex" style="margin:8px 0 0">هر نورونِ پنهان چه می‌بیند (روشن = خروجیِ مثبت):</p>
+<div class="units" id="units"></div>
+</div>
+<p class="ex" style="margin-top:8px">۲۰۰ نقطه برای آموزش و ۴۰۰ نقطه‌ی جدا برای سنجش؛ ۵٪ برچسب‌ها عمداً اشتباه‌اند (نویز). عددهایی که با دکمه‌ی آموزش روی دایره می‌بینید (۵ شروعِ مختلف امتحان شده):</p>
+<div class="kinds">
+<div><p><b>۱ نورون</b></p><p class="ex">فقط یک خط. شبکه یاد می‌گیرد همیشه بگوید «بیرون»: <b>۶۸٫۵٪</b> درست، مثلِ رگرسیون لجستیک.</p></div>
+<div><p><b>۲ نورون</b></p><p class="ex">دو خط، یک نوار می‌سازد: حدودِ <b>۷۹٪</b> روی آموزش.</p></div>
+<div><p><b>۳ نورون یا بیشتر</b></p><p class="ex">سه خط یک مثلث دورِ دایره می‌سازند: حدودِ <b>۹۲ تا ۹۵٪</b> روی آموزش و <b>۸۳ تا ۹۱٪</b> روی داده‌ی سنجش. روی آموزش بیشتر از ۹۵٪ معنی ندارد: ۱۰ تا از ۲۰۰ برچسب عمداً اشتباه‌اند.</p></div>
+</div>
+<div class="key">نورون‌های پنهان ویژگی می‌سازند (هر کدام یک خط)، و لایه‌ی خروجی آن‌ها را ترکیب می‌کند. هر چه نورون بیشتر، مرز می‌تواند پیچیده‌تر باشد.</div>
+<p class="ex">«شروعِ تازه» وزن‌های اولیه را عوض می‌کند. روی XOR با ۲ یا ۴ نورون گاهی شبکه در یک جوابِ بد گیر می‌کند (مثلاً ۷۰٪ به‌جای ۸۵٪). تابع خطای شبکه‌ی عصبی <b>محدب نیست</b>؛ نقطه‌ی شروع مهم است.</p>
+</section>
+
+<section>
+<h2>تابع‌های فعال‌سازی</h2>
+<p>سه تابعِ رایج، کنارِ هم. خطِ پررنگ خودِ تابع است، خط‌چین مشتقش (که در backprop ضرب می‌شود):</p>
+<div class="kinds">
+<div><p><b>Sigmoid</b></p><canvas id="a1"></canvas><div class="f">\[ \sigma(z) = \frac{1}{1+e^{-z}} \]</div><p class="ex">خروجی بین ۰ و ۱. بیشترین مشتق فقط <b>۰٫۲۵</b> (در z = 0). در z = 4 مشتق <b>۰٫۰۱۸</b> است. امروز فقط در خروجیِ دسته‌بندیِ دودویی.</p></div>
+<div><p><b>Tanh</b></p><canvas id="a2"></canvas><div class="f">\[ \tanh(z) = \frac{e^{z}-e^{-z}}{e^{z}+e^{-z}} \]</div><p class="ex">خروجی بین −۱ و ۱، و میانگینِ صفر. بیشترین مشتق <b>۱</b>. ولی در z = 4 مشتق <b>۰٫۰۰۱</b>: باز هم اشباع می‌شود.</p></div>
+<div><p><b>ReLU</b></p><canvas id="a3"></canvas><div class="f">\[ \text{ReLU}(z) = \max(0, z) \]</div><p class="ex">برای z مثبت، مشتق همیشه <b>۱</b> است؛ گرادیان کوچک نمی‌شود. برای z منفی، صفر. محاسبه‌اش خیلی ارزان است. پیش‌فرضِ لایه‌های پنهان.</p></div>
+</div>
+<div dir="ltr" style="margin-top:10px"><table class="num">
+<tr><th>z</th><td>−4</td><td>−2</td><td>0</td><td>2</td><td>4</td></tr>
+<tr><th>σ(z)</th><td>0.018</td><td>0.119</td><td>0.5</td><td>0.881</td><td>0.982</td></tr>
+<tr><th>σ′(z)</th><td>0.018</td><td>0.105</td><td><b>0.25</b></td><td>0.105</td><td>0.018</td></tr>
+<tr><th>tanh′(z)</th><td>0.001</td><td>0.071</td><td><b>1</b></td><td>0.071</td><td>0.001</td></tr>
+<tr><th>ReLU′(z)</th><td>0</td><td>0</td><td>—</td><td>1</td><td>1</td></tr>
+</table></div>
+<h3 style="margin-top:16px">چرا اصلاً به تابعِ غیرخطی نیاز داریم؟</h3>
+<p>اگر فعال‌سازی را برداریم، دو لایه‌ی خطی پشتِ هم <b>هنوز یک لایه‌ی خطی است</b>. با عدد:</p>
+<div class="f">\[ W_1 = \begin{pmatrix} 1 & 2 \\ 0 & 1 \end{pmatrix},\; W_2 = \begin{pmatrix} 3 & -1 \end{pmatrix},\; \mathbf{x} = \begin{pmatrix} 1 \\ 1 \end{pmatrix} \]</div>
+<div class="kinds">
+<div><p><b>دو لایه، پشتِ هم</b></p><p class="ex">\(\mathbf{h} = W_1\mathbf{x} = (3, 1)\)، بعد \(y = W_2\mathbf{h} = 3\cdot 3 - 1 = 8\).</p></div>
+<div><p><b>یک لایه با \(W = W_2 W_1\)</b></p><p class="ex">\(W = (3, 5)\)، پس \(y = 3 + 5 = 8\). همان جواب.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">صد لایه‌ی خطی هم فقط یک ضربِ ماتریس است؛ مرزش باز یک خطِ صاف است. فعال‌سازیِ غیرخطی بینِ لایه‌ها است که به شبکه اجازه می‌دهد خم شود.</p>
+<details class="drop"><summary><b>دیگر فعال‌سازی‌ها: Leaky ReLU، GELU، Softmax</b></summary>
+<ul class="ex">
+<li><b>Leaky ReLU:</b> \(\max(0.01z, z)\). برای z منفی کمی شیب دارد، تا نورون هیچ‌وقت کاملاً «نمیرد».</li>
+<li><b>GELU / SiLU:</b> نسخه‌های نرمِ ReLU. پیش‌فرضِ ترنسفورمرها.</li>
+<li><b>Softmax:</b> فقط در لایه‌ی خروجیِ چنددسته‌ای؛ چند عدد را به احتمال‌هایی با جمعِ ۱ تبدیل می‌کند.</li>
+</ul>
+<p class="ex"><b>مشکلِ ReLU مرده</b> <span class="en">(Dying ReLU)</span>: اگر بایاسِ یک نورون خیلی منفی شود، \(z\) برای همه‌ی داده‌ها منفی است، مشتق صفر است، و آن نورون دیگر هیچ‌وقت یاد نمی‌گیرد. نرخ یادگیریِ خیلی بزرگ معمولاً علتش است.</p>
+</details>
+</section>
+
+<section>
+<h2>Forward pass با عدد</h2>
+<p>یک شبکه‌ی خیلی کوچک: ۲ ورودی، ۲ نورونِ پنهان (سیگموید)، ۱ خروجی (سیگموید). یک نقطه: \(\mathbf{x} = (0.5,\; 1.0)\)، برچسبِ واقعی \(y = 1\).</p>
+<svg class="diag" viewBox="0 0 320 130" dir="ltr">
+<line x1="40" y1="35" x2="150" y2="35"/><line x1="40" y1="35" x2="150" y2="95"/><line x1="40" y1="95" x2="150" y2="35"/><line x1="40" y1="95" x2="150" y2="95"/><line x1="160" y1="35" x2="270" y2="65"/><line x1="160" y1="95" x2="270" y2="65"/>
+<circle cx="30" cy="35" r="15"/><circle cx="30" cy="95" r="15"/><circle cx="160" cy="35" r="17"/><circle cx="160" cy="95" r="17"/><circle cx="280" cy="65" r="17"/>
+<text x="30" y="39">0.5</text><text x="30" y="99">1.0</text><text x="160" y="39">h₁</text><text x="160" y="99">h₂</text><text x="280" y="69">p</text>
+<text x="90" y="28">0.2</text><text x="72" y="52">0.6</text><text x="72" y="86">−0.4</text><text x="95" y="108">0.1</text><text x="215" y="40">0.7</text><text x="215" y="98">−0.3</text>
+<text x="160" y="12" style="font-size:9px">b₁ = (0.1, −0.1)</text><text x="280" y="38" style="font-size:9px">b₂ = 0.2</text>
+</svg>
+<div dir="ltr"><table>
+<tr><th>step</th><th>formula</th><th>value</th></tr>
+<tr><td>hidden 1</td><td>z₁ = 0.2·0.5 + (−0.4)·1.0 + 0.1</td><td><b>−0.2</b></td></tr>
+<tr><td></td><td>h₁ = σ(−0.2)</td><td><b>0.4502</b></td></tr>
+<tr><td>hidden 2</td><td>z₂ = 0.6·0.5 + 0.1·1.0 − 0.1</td><td><b>0.3</b></td></tr>
+<tr><td></td><td>h₂ = σ(0.3)</td><td><b>0.5744</b></td></tr>
+<tr><td>output</td><td>z = 0.7·0.4502 + (−0.3)·0.5744 + 0.2</td><td><b>0.3428</b></td></tr>
+<tr><td></td><td>p = σ(0.3428)</td><td><b>0.5849</b></td></tr>
+<tr><td>loss</td><td>L = −log p (because y = 1)</td><td><b>0.5364</b></td></tr>
+</table></div>
+<p class="ex" style="margin-top:6px">شبکه برای این نقطه می‌گوید ۵۸٪ آبی. جوابِ درست ۱۰۰٪ است. خطا ۰٫۵۳۶. حالا باید بفهمیم هر وزن را کدام طرف و چقدر تکان بدهیم.</p>
+</section>
+
+<section>
+<h2>Backpropagation: همان قاعده‌ی زنجیره‌ای</h2>
+<p>گرادیان کاهشی برای هر وزن یک عدد می‌خواهد: \(\partial L / \partial w\). یعنی «اگر این وزن کمی زیاد شود، خطا چقدر عوض می‌شود؟». Backprop این عددها را از <b>آخر به اول</b> حساب می‌کند، با قاعده‌ی زنجیره‌ای:</p>
+<div class="f">\[ \frac{\partial L}{\partial w} = \frac{\partial L}{\partial z} \cdot \frac{\partial z}{\partial w} \]</div>
+<p>یعنی اثرِ یک وزن روی خطا = (اثرِ قدمِ بعدی روی خطا) × (اثرِ وزن روی قدمِ بعدی). هر لایه عددِ «اثر روی خطا» را از لایه‌ی بعدی می‌گیرد، در مشتقِ خودش ضرب می‌کند، و به لایه‌ی قبلی می‌دهد.</p>
+<p><b>همان مثال، از آخر به اول:</b></p>
+<div dir="ltr"><table>
+<tr><th>gradient</th><th>rule</th><th>value</th></tr>
+<tr><td>∂L/∂z (output)</td><td>p − y (sigmoid + log loss, as in logistic regression)</td><td><b>−0.4151</b></td></tr>
+<tr><td>∂L/∂w₂</td><td>(p − y) · h = −0.4151 · (0.4502, 0.5744)</td><td><b>(−0.1869, −0.2385)</b></td></tr>
+<tr><td>∂L/∂b₂</td><td>p − y</td><td><b>−0.4151</b></td></tr>
+<tr><td>∂L/∂h</td><td>(p − y) · w₂ = −0.4151 · (0.7, −0.3)</td><td><b>(−0.2906, 0.1245)</b></td></tr>
+<tr><td>σ′(z₁), σ′(z₂)</td><td>h(1 − h)</td><td>(0.2475, 0.2445)</td></tr>
+<tr><td>∂L/∂z₁, ∂L/∂z₂</td><td>∂L/∂h · σ′</td><td><b>(−0.0719, 0.0304)</b></td></tr>
+<tr><td>∂L/∂W₁, row h₁</td><td>−0.0719 · x = −0.0719 · (0.5, 1.0)</td><td><b>(−0.0360, −0.0719)</b></td></tr>
+<tr><td>∂L/∂W₁, row h₂</td><td>0.0304 · (0.5, 1.0)</td><td><b>(0.0152, 0.0304)</b></td></tr>
+<tr><td>∂L/∂b₁</td><td>∂L/∂z₁, ∂L/∂z₂</td><td><b>(−0.0719, 0.0304)</b></td></tr>
+</table></div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>معنیِ علامت‌ها</b></p><p class="ex">گرادیانِ منفی یعنی «این وزن را زیاد کن تا خطا کم شود». \(h_2\) گرادیانِ مثبت دارد چون وزنش در خروجی منفی (−۰٫۳) است: شبکه می‌خواهد \(h_2\) کوچک‌تر شود.</p></div>
+<div><p><b>بررسی با عدد</b></p><p class="ex">وزنِ \(W_1[1,2]\) (همان −۰٫۴) را به اندازه‌ی ۰٫۰۰۰۰۰۱ زیاد کردیم و خطا را دوباره حساب کردیم: شیب = <b>−۰٫۰۷۱۹۳</b>. همان عددِ backprop. به این <b>Gradient Check</b> می‌گویند.</p></div>
+</div>
+<p style="margin-top:10px"><b>یک قدم گرادیان کاهشی</b> با نرخ یادگیریِ ۰٫۵ (\(w \leftarrow w - 0.5 \cdot \partial L/\partial w\)):</p>
+<div dir="ltr"><table>
+<tr><th></th><th>before</th><th>after one step</th></tr>
+<tr><td>W₁</td><td>[[0.2, −0.4], [0.6, 0.1]]</td><td>[[0.218, −0.364], [0.5924, 0.0848]]</td></tr>
+<tr><td>b₁</td><td>(0.1, −0.1)</td><td>(0.136, −0.1152)</td></tr>
+<tr><td>w₂, b₂</td><td>(0.7, −0.3), 0.2</td><td>(0.7934, −0.1808), 0.4076</td></tr>
+<tr><td>p</td><td>0.5849</td><td><b>0.6634</b></td></tr>
+<tr><td>loss</td><td>0.5364</td><td><b>0.4104</b></td></tr>
+</table></div>
+<div class="key">Backprop یک الگوریتمِ یادگیری نیست؛ فقط روشی سریع برای حسابِ همه‌ی گرادیان‌ها در <b>یک</b> رفت‌وبرگشت است. یادگیری را گرادیان کاهشی انجام می‌دهد.</div>
+<details class="drop"><summary><b>فرمول‌های کلی برای هر لایه</b></summary>
+<div class="f">\[ \delta^{(L)} = \hat{\mathbf{y}} - \mathbf{y} \qquad \delta^{(l)} = \big(W_{l+1}^\top \delta^{(l+1)}\big) \odot f'(\mathbf{z}^{(l)}) \]</div>
+<div class="f">\[ \frac{\partial L}{\partial W_l} = \delta^{(l)} \, \mathbf{a}^{(l-1)\top} \qquad \frac{\partial L}{\partial \mathbf{b}_l} = \delta^{(l)} \]</div>
+<ul class="sym">
+<li>\(\delta^{(l)}\): \(\partial L / \partial \mathbf{z}\) در لایه‌ی \(l\)</li>
+<li>\(\odot\): ضربِ عضو به عضو</li>
+<li>\(\mathbf{a}^{(l-1)}\): خروجیِ لایه‌ی قبل</li>
+</ul>
+<p class="ex">PyTorch و TensorFlow همین را خودکار انجام می‌دهند <span class="en">(Autograd)</span>: در forward هر عمل را یادداشت می‌کنند، و در backward مشتق‌ها را به ترتیبِ برعکس ضرب می‌کنند.</p>
+</details>
+</section>
+
+<section>
+<h2>حلقه‌ی آموزش: mini-batch، epoch، optimizer</h2>
+<ul class="flow">
+<li><span class="n">۱</span><div><p><b>یک دسته‌ی کوچک بردار</b> <span class="en">(Mini-batch)</span></p><p class="ex">مثلاً ۳۲ نمونه از کلِ داده.</p></div></li>
+<li><span class="n">۲</span><div><p><b>Forward:</b> پیش‌بینی و خطا را حساب کن.</p></div></li>
+<li><span class="n">۳</span><div><p><b>Backward:</b> گرادیانِ همه‌ی وزن‌ها را با backprop حساب کن.</p></div></li>
+<li><span class="n">۴</span><div><p><b>به‌روزرسانی:</b> \(w \leftarrow w - \eta \cdot \text{grad}\) (یا با Adam).</p></div></li>
+<li><span class="n">۵</span><div><p>تکرار تا همه‌ی داده یک بار دیده شود = <b>یک epoch</b>. بعد داده را بُر بزن و epoch بعدی.</p></div></li>
+</ul>
+<p><b>با عدد:</b> ۱۰۰۰ نمونه، batch = ۳۲ ← هر epoch <b>۳۲</b> قدم (۳۱ دسته‌ی ۳۲تایی و یک دسته‌ی ۸تایی). ۲۰ epoch = ۶۴۰ قدم.</p>
+<div class="kinds">
+<div><p><b>batch کوچک (مثلاً ۳۲)</b></p><p class="ex">قدم‌ها پرنویز ولی زیاد. نویز گاهی کمک می‌کند از جواب‌های بد فرار کند.</p></div>
+<div><p><b>batch بزرگ (مثلاً ۴۰۹۶)</b></p><p class="ex">گرادیانِ دقیق‌تر و استفاده‌ی بهتر از GPU. معمولاً نرخ یادگیریِ بزرگ‌تر و warm-up لازم دارد.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">optimizerها (SGD، Momentum، Adam، AdamW) فقط قانونِ قدمِ ۴ را عوض می‌کنند. توضیح و شکلشان در صفحه‌ی <a href="gradient-descent.html">گرادیان کاهشی</a> است. برای شبکه‌ها، Adam یا AdamW با نرخ حدودِ ۰٫۰۰۱ شروعِ رایجی است.</p>
+</section>
+
+<section>
+<h2>گرادیان‌های محوشونده و انفجاری</h2>
+<p>در backprop، گرادیانِ لایه‌ی اول حاصلِ <b>ضربِ</b> عددهای همه‌ی لایه‌های بعدی است. ضربِ چند عددِ کوچک خیلی سریع به صفر می‌رسد، و ضربِ چند عددِ بزرگ به بی‌نهایت:</p>
+<div class="kinds">
+<div><p><b>محوشونده</b> <span class="en">(Vanishing)</span></p><p class="ex">مشتقِ سیگموید حداکثر ۰٫۲۵ است. با ۱۰ لایه: \(0.25^{10} \approx 0.00000095\). لایه‌های اول عملاً یاد نمی‌گیرند.</p></div>
+<div><p><b>انفجاری</b> <span class="en">(Exploding)</span></p><p class="ex">اگر هر لایه سیگنال را ۱٫۵ برابر کند، با ۲۰ لایه: \(1.5^{20} \approx 3325\). وزن‌ها با یک قدم منفجر می‌شوند و خطا NaN می‌شود.</p></div>
+</div>
+<p style="margin-top:10px"><b>خودتان ببینید:</b> یک شبکه‌ی ۱۲ لایه، هر لایه ۴۸ نورون، با وزن‌های تصادفی. نمودار اندازه‌ی سیگنال (رو به جلو) و گرادیان (رو به عقب) را در هر لایه نشان می‌دهد. محورِ عمودی لگاریتمی است:</p>
+<div class="box">
+<canvas id="deep"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>اندازه‌ی سیگنال در forward</span><span><i style="background:var(--red)"></i>اندازه‌ی گرادیان در backward</span></div>
+<div class="ctl">فعال‌سازی: <select id="dact"><option value="sigmoid">Sigmoid</option><option value="tanh">Tanh</option><option value="relu" selected>ReLU</option></select>
+مقداردهی: <select id="dinit"><option value="small">خیلی کوچک (0.01)</option><option value="xavier">Xavier</option><option value="he" selected>He</option><option value="big">خیلی بزرگ</option></select></div>
+<div class="err" id="dinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>Sigmoid، هر مقداردهی</b></p><p class="ex">گرادیانِ لایه‌ی ۱ با Xavier حدودِ <b>۰٫۰۰۰۰۰۰۰۲</b> است، در حالی که لایه‌ی ۱۲ حدودِ ۰٫۲۴. محوشونده.</p></div>
+<div><p><b>ReLU + He</b></p><p class="ex">سیگنال و گرادیان در همه‌ی لایه‌ها نزدیکِ ۱ می‌مانند (گرادیانِ لایه‌ی ۱: ۱٫۱، لایه‌ی ۱۲: ۰٫۶۴). سالم.</p></div>
+<div><p><b>ReLU + خیلی بزرگ</b></p><p class="ex">سیگنالِ لایه‌ی آخر حدودِ <b>۱۲۰</b> و گرادیانِ لایه‌ی ۱ حدودِ <b>۵۰</b>. انفجاری.</p></div>
+<div><p><b>هر فعال‌سازی + خیلی کوچک</b></p><p class="ex">سیگنال تا لایه‌ی آخر تقریباً صفر می‌شود (برای ReLU حدودِ \(10^{-16}\)). شبکه چیزی نمی‌بیند.</p></div>
+</div>
+<p style="margin-top:10px"><b>درمان‌ها:</b></p>
+<ul>
+<li>ReLU و خانواده‌اش به‌جای سیگموید در لایه‌های پنهان.</li>
+<li>مقداردهیِ درست (Xavier یا He؛ پایین‌تر).</li>
+<li>Batch Norm یا Layer Norm.</li>
+<li>اتصالِ میان‌بر <span class="en">(Residual / Skip Connection)</span>: \(\mathbf{h}_{l+1} = \mathbf{h}_l + F(\mathbf{h}_l)\). گرادیان یک راهِ مستقیم به عقب دارد. پایه‌ی ResNet و ترنسفورمرها.</li>
+<li>برای انفجار: بریدنِ گرادیان <span class="en">(Gradient Clipping)</span>؛ اگر اندازه‌ی گرادیان از مثلاً ۱ بیشتر شد، کوچکش کن. در RNNها و مدل‌های زبانی رایج است.</li>
+</ul>
+</section>
+
+<section>
+<h2>مقداردهیِ اولیه‌ی وزن‌ها</h2>
+<h3>چرا همه را صفر نگذاریم؟ تقارن</h3>
+<p>اگر همه‌ی وزن‌ها یکسان شروع کنند، همه‌ی نورون‌های یک لایه <b>یک چیز</b> حساب می‌کنند، <b>یک گرادیان</b> می‌گیرند، و <b>یکسان</b> می‌مانند. ۱۰۰ نورون مثلِ ۱ نورون کار می‌کنند. با همان شبکه‌ی کوچک و همان نقطه:</p>
+<div class="kinds">
+<div><p><b>همه‌ی وزن‌ها ۰٫۵</b></p><p class="ex">\(h_1 = h_2 = 0.6792\). گرادیانِ ردیفِ اولِ \(W_1\): (−۰٫۰۱۸۳، −۰٫۰۳۶۷). ردیفِ دوم: <b>دقیقاً همان</b>. بعد از قدم هم برابرند؛ برای همیشه.</p></div>
+<div><p><b>همه‌ی وزن‌ها ۰</b></p><p class="ex">\(h_1 = h_2 = 0.5\)، \(p = 0.5\). چون وزن‌های خروجی صفرند، گرادیانِ \(W_1\) <b>صفر</b> است. وزن‌های خروجی هر دو گرادیانِ −۰٫۲۵ می‌گیرند؛ باز هم یکسان.</p></div>
+<div><p><b>وزن‌های تصادفی</b></p><p class="ex">مثلِ مثالِ forward: \(h_1 = 0.45\)، \(h_2 = 0.57\)، گرادیان‌ها فرق دارند (−۰٫۰۷۲ و ۰٫۰۳۰). هر نورون راهِ خودش را می‌رود.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">بایاس‌ها را می‌شود صفر گذاشت؛ تصادفی بودنِ وزن‌ها برای شکستنِ تقارن کافی است.</p>
+<h3 style="margin-top:14px">چقدر تصادفی؟ Xavier و He</h3>
+<p>هدف: اندازه‌ی سیگنال از لایه‌ای به لایه‌ی بعد <b>ثابت</b> بماند (نه صفر شود، نه منفجر). برای این، واریانسِ وزن‌ها را به تعدادِ ورودی‌ها \(n_{in}\) وابسته می‌کنیم:</p>
+<div class="kinds">
+<div><p><b>Xavier / Glorot</b> (برای tanh و سیگموید)</p><div class="f">\[ \text{Var}(w) = \frac{2}{n_{in} + n_{out}} \]</div><p class="ex">لایه‌ی ۲۵۶ ← ۱۲۸: انحرافِ معیار \(\sqrt{2/384} = 0.072\).</p></div>
+<div><p><b>He / Kaiming</b> (برای ReLU)</p><div class="f">\[ \text{Var}(w) = \frac{2}{n_{in}} \]</div><p class="ex">لایه با ۲۵۶ ورودی: انحرافِ معیار \(\sqrt{2/256} = 0.088\). ضریبِ ۲ برای این است که ReLU نصفِ ورودی‌ها را صفر می‌کند.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">در شکلِ بالا امتحان کنید: ReLU با Xavier سیگنال را کم‌کم کوچک می‌کند (لایه‌ی ۱۲: حدودِ ۰٫۰۳)، با He ثابت نگه می‌دارد.</p>
+</section>
+
+<section>
+<h2>بیش‌برازش و منظم‌سازی</h2>
+<p>شبکه‌ی عصبی پارامترِ زیادی دارد و می‌تواند <b>نویز را حفظ کند</b>. این‌جا یک شبکه با <b>۴۰</b> نورونِ پنهان (۱۶۱ پارامتر) فقط <b>۴۰</b> نقطه‌ی آموزش دارد، و ۱۲٪ برچسب‌ها اشتباه است. خطای آموزش و خطای داده‌ی سنجش <span class="en">(Validation)</span> را در طولِ ۶۰۰۰ epoch ببینید:</p>
+<div class="box">
+<canvas id="ovc"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>خطای آموزش</span><span><i style="background:var(--red)"></i>خطای سنجش</span><span><i style="background:var(--orange)"></i>بهترین نقطه برای توقف</span></div>
+<label>epoch <input id="ovep" type="range" min="0" max="6000" step="100" value="6000"><b id="ovepv"></b></label>
+<div class="ctl">جریمه‌ی وزن (weight decay): <select id="ovwd"><option value="0">۰ (بدون جریمه)</option><option value="0.001">۰٫۰۰۱</option><option value="0.01">۰٫۰۱ (زیاد)</option></select></div>
+<canvas id="ovr"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>داخل</span><span><i style="background:var(--red)"></i>بیرون</span><span>فقط نقطه‌های آموزش نشان داده شده‌اند</span></div>
+<div class="err" id="ovinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>بدون جریمه</b></p><p class="ex">بهترین خطای سنجش (۰٫۶۰) حدودِ epoch ۲۲۰ است. در epoch ۶۰۰۰ خطای آموزش ۰٫۰۳ ولی خطای سنجش <b>۲٫۴۸</b>؛ دقتِ سنجش از حدودِ ۷۸٪ (در بهترین نقطه) به <b>۶۸٪</b> می‌افتد. مرز دورِ نقطه‌های نویزی پیچ می‌خورد.</p></div>
+<div><p><b>جریمه‌ی ۰٫۰۰۱</b></p><p class="ex">خطای سنجش تا آخر حدودِ <b>۰٫۶۱</b> می‌ماند و دقت حدودِ ۷۶٪. مرز صاف می‌ماند.</p></div>
+<div><p><b>جریمه‌ی ۰٫۰۱</b></p><p class="ex">زیادی: وزن‌ها آن‌قدر کوچک می‌مانند که شبکه دایره را هم یاد نمی‌گیرد. دقتِ سنجش حدودِ ۶۰٪ (کم‌برازش).</p></div>
+</div>
+<h3 style="margin-top:16px">ابزارهای منظم‌سازی</h3>
+<div class="kinds">
+<div><p><b>توقفِ زودهنگام</b> <span class="en">(Early Stopping)</span></p><p class="ex">خطای سنجش را بعد از هر epoch نگاه کن. اگر چند epoch بهتر نشد، بایست و بهترین وزن‌ها را برگردان. در شکلِ بالا: خط‌چینِ نارنجی.</p></div>
+<div><p><b>جریمه‌ی وزن</b> <span class="en">(Weight Decay / L2)</span></p><p class="ex">هر قدم، وزن‌ها را کمی به سمتِ صفر بکش: \(w \leftarrow w - \eta(\text{grad} + \lambda w)\). با \(w = 2\)، \(\eta = 0.1\)، \(\lambda = 0.01\): فقط بخشِ جریمه وزن را ۰٫۰۰۲ کم می‌کند. وزن‌های کوچک ← مرزِ صاف‌تر.</p></div>
+<div><p><b>Dropout</b></p><p class="ex">در آموزش، هر نورون با احتمالِ \(p\) (مثلاً ۰٫۵) صفر می‌شود؛ باقی در \(1/(1-p)\) ضرب می‌شوند. خروجی‌های (۲، ۴، ۱، ۳) با ماسکِ (۱، ۰، ۱، ۰) ← (۴، ۰، ۲، ۰). شبکه نمی‌تواند به یک نورونِ خاص تکیه کند. در زمانِ پیش‌بینی خاموش است.</p></div>
+<div><p><b>Batch Norm</b></p><p class="ex">خروجیِ هر نورون را در هر batch به میانگینِ ۰ و انحرافِ معیارِ ۱ می‌برد، بعد با دو پارامترِ یادگرفتنی (\(\gamma, \beta\)) مقیاس می‌دهد. batchِ (۲، ۴، ۶) ← (−۱٫۲۲، ۰، ۱٫۲۲). آموزش را پایدارتر و سریع‌تر می‌کند و کمی هم منظم‌ساز است. در ترنسفورمرها به‌جایش Layer Norm است.</p></div>
+<div><p><b>داده‌ی بیشتر / Augmentation</b></p><p class="ex">برای عکس: چرخاندن، بریدن، قرینه کردن. بهترین منظم‌ساز معمولاً داده‌ی بیشتر است.</p></div>
+</div>
+</section>
+
+<section>
+<h2>مزایا و معایب</h2>
+<div class="kinds">
+<div><p><b>مزایا</b></p><ul class="ex">
+<li>هر مرزِ پیچیده‌ای را می‌تواند یاد بگیرد (قضیه‌ی تقریبِ جهانی).</li>
+<li>ویژگی‌ها را خودش از داده‌ی خام (پیکسل، متن، صدا) می‌سازد.</li>
+<li>با داده‌ی بیشتر بهتر و بهتر می‌شود.</li>
+<li>روی GPU سریع؛ قطعه‌ها مثلِ لگو ترکیب می‌شوند.</li></ul></div>
+<div><p><b>معایب</b></p><ul class="ex">
+<li>داده‌ی زیاد و محاسبه‌ی زیاد می‌خواهد.</li>
+<li>تنظیم‌های زیاد: نرخ یادگیری، اندازه، منظم‌سازی.</li>
+<li>تابع خطا محدب نیست؛ جواب به شروع بستگی دارد.</li>
+<li>تفسیرش سخت است (جعبه‌ی سیاه).</li></ul></div>
+</div>
+</section>
+
+<section>
+<h2>مقایسه با مدل‌های دیگر</h2>
+<div class="kinds">
+<div><p><b>رگرسیون لجستیک</b></p><p class="ex">یک نورون. مرزِ خطی. روی دایره ۶۸٫۵٪. سریع و قابلِ تفسیر؛ یک خطِ پایه‌ی خوب.</p></div>
+<div><p><b>SVM با کرنل</b></p><p class="ex">مرزِ غیرخطی با کرنلِ ثابت (مثلاً RBF). روی داده‌ی کوچک عالی؛ با میلیون‌ها نمونه کند. ویژگی‌ها را یاد نمی‌گیرد، کرنل را ما انتخاب می‌کنیم.</p></div>
+<div><p><b>گرادیان بوستینگ</b></p><p class="ex">روی داده‌ی <b>جدولی</b> معمولاً بهتر از MLP، با تنظیمِ کمتر.</p></div>
+<div><p><b>شبکه‌ی عصبی</b></p><p class="ex">روی داده‌ی <b>خام و بزرگ</b> (عکس، متن، صدا، رفتارِ کاربر) بهترین است. با Embedding، ویژگی‌های دسته‌ای (مثلاً شناسه‌ی ویدیو) را هم به بردار تبدیل می‌کند.</p></div>
+</div>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>شبکه‌ی دولایه از صفر با NumPy</b> (همان شبکه‌ی شکلِ تعاملی: tanh در لایه‌ی پنهان، سیگموید در خروجی):</p>
+<pre>import numpy as np
+
+def init(n_in, n_hidden, seed=0):
+    rng = np.random.default_rng(seed)
+    return {"W1": rng.normal(0, np.sqrt(1 / n_in), (n_in, n_hidden)),   # Xavier-style
+            "b1": np.zeros(n_hidden),
+            "W2": rng.normal(0, np.sqrt(1 / n_hidden), (n_hidden, 1)),
+            "b2": np.zeros(1)}
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+def forward(P, X):
+    z1 = X @ P["W1"] + P["b1"]
+    h = np.tanh(z1)
+    p = sigmoid(h @ P["W2"] + P["b2"]).ravel()
+    return h, p
+
+def backward(P, X, y, h, p):
+    n = len(y)
+    dz2 = (p - y)[:, None] / n                 # dL/dz at the output (sigmoid + log loss)
+    dW2 = h.T @ dz2
+    db2 = dz2.sum(0)
+    dh = dz2 @ P["W2"].T                       # chain rule: back through W2
+    dz1 = dh * (1 - h ** 2)                    # tanh'(z) = 1 - tanh(z)^2
+    dW1 = X.T @ dz1
+    db1 = dz1.sum(0)
+    return {"W1": dW1, "b1": db1, "W2": dW2, "b2": db2}
+
+def train(X, y, n_hidden=8, lr=0.5, epochs=2000, batch=32, wd=0.0):
+    P = init(X.shape[1], n_hidden)
+    rng = np.random.default_rng(1)
+    for epoch in range(epochs):
+        idx = rng.permutation(len(y))          # shuffle every epoch
+        for s in range(0, len(y), batch):
+            b = idx[s:s + batch]
+            h, p = forward(P, X[b])
+            G = backward(P, X[b], y[b], h, p)
+            for k in P:
+                P[k] -= lr * (G[k] + wd * P[k] * (k[0] == "W"))   # weight decay on W only
+    return P
+
+def log_loss(y, p, eps=1e-12):
+    p = np.clip(p, eps, 1 - eps)
+    return -np.mean(y * np.log(p) + (1 - y) * np.log(1 - p))</pre>
+<p><b>همان شبکه با PyTorch</b> (backprop خودکار، Adam، Dropout و توقفِ زودهنگام):</p>
+<pre>import torch, torch.nn as nn
+
+model = nn.Sequential(
+    nn.Linear(2, 64), nn.ReLU(), nn.Dropout(0.2),
+    nn.Linear(64, 64), nn.ReLU(),
+    nn.Linear(64, 1))                          # logits; sigmoid is inside the loss
+loss_fn = nn.BCEWithLogitsLoss()               # numerically stable sigmoid + log loss
+opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
+loader = torch.utils.data.DataLoader(train_ds, batch_size=32, shuffle=True)
+
+best, bad = float("inf"), 0
+for epoch in range(200):
+    model.train()                              # dropout on
+    for xb, yb in loader:
+        opt.zero_grad()
+        loss = loss_fn(model(xb).squeeze(1), yb)
+        loss.backward()                        # backprop
+        opt.step()                             # gradient step
+    model.eval()                               # dropout off
+    with torch.no_grad():
+        val = loss_fn(model(X_val).squeeze(1), y_val).item()
+    if val &lt; best:
+        best, bad = val, 0
+        torch.save(model.state_dict(), "best.pt")
+    else:
+        bad += 1
+        if bad == 10:                          # early stopping
+            break</pre>
+<p class="ex"><code>nn.Linear</code> به‌طورِ پیش‌فرض مقداردهیِ Kaiming-uniform دارد. برای کنترلِ دستی: <code>nn.init.kaiming_normal_(layer.weight, nonlinearity="relu")</code>.</p>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>What does a single neuron compute, and how is it related to logistic regression?</summary>
+<p>A neuron computes a weighted sum plus a bias, then applies an activation: \(a = f(\mathbf{w}^\top\mathbf{x} + b)\). With a sigmoid activation and log loss, one neuron <b>is</b> logistic regression: its decision boundary \(\mathbf{w}^\top\mathbf{x} + b = 0\) is a hyperplane. Example: \(x = (2, 1)\), \(w = (0.8, -0.5)\), \(b = -0.4\) gives \(z = 0.7\), \(a = \sigma(0.7) = 0.67\). A network stacks many of these so that later neurons work on features built by earlier ones.</p></details>
+
+<details><summary>Why do neural networks need non-linear activation functions?</summary>
+<p>Without them, every layer is a matrix multiplication and the composition of linear maps is linear: \(W_2(W_1\mathbf{x}) = (W_2W_1)\mathbf{x}\). Example: \(W_1 = [[1,2],[0,1]]\), \(W_2 = [3,-1]\), \(\mathbf{x} = (1,1)\): two layers give \(\mathbf{h} = (3,1)\), \(y = 8\); the single matrix \(W_2W_1 = (3,5)\) also gives 8. A deep linear network still has a linear decision boundary, so it cannot solve XOR. Non-linearities let the network bend the boundary; with them, one hidden layer with enough units can approximate any continuous function (universal approximation theorem).</p></details>
+
+<details><summary>Explain backpropagation.</summary>
+<p>Backpropagation computes \(\partial L/\partial w\) for every weight in one backward pass using the chain rule. Forward pass: compute and store every layer's \(z\) and activation. Backward pass: start from \(\partial L/\partial \hat{y}\) and move layer by layer: \(\delta^{(l)} = (W_{l+1}^\top \delta^{(l+1)}) \odot f'(z^{(l)})\), then \(\partial L/\partial W_l = \delta^{(l)} a^{(l-1)\top}\). Example (2-2-1 sigmoid net, \(x = (0.5, 1)\), \(y = 1\)): \(p = 0.5849\), \(\partial L/\partial z_{out} = p - y = -0.4151\); back through \(w_2 = (0.7, -0.3)\) and \(\sigma'(z_1) = 0.2475\) gives \(\delta_1 = -0.0719\), so \(\partial L/\partial W_1[1,2] = -0.0719 \cdot 1.0\), which matches a finite-difference check. Cost: about the same as one forward pass, instead of one forward pass per weight.</p></details>
+
+<details><summary>Sigmoid vs tanh vs ReLU: which do you use and why?</summary>
+<p><b>Sigmoid</b>: output in (0, 1), max derivative 0.25, saturates (derivative 0.018 at \(z = 4\)) and is not zero-centred; use it only for a binary output. <b>Tanh</b>: zero-centred, max derivative 1, but still saturates (0.001 at \(z = 4\)). <b>ReLU</b>: \(\max(0, z)\), derivative exactly 1 for \(z &gt; 0\), so gradients do not shrink through active units; cheap; sparse activations. Default for hidden layers. Its weakness is <b>dying ReLU</b>: a unit whose input is negative for all data gets zero gradient forever (often after a too-large learning rate). Fixes: Leaky ReLU, ELU, GELU/SiLU (used in transformers), smaller learning rate, He init.</p></details>
+
+<details><summary>What are vanishing and exploding gradients? How do you fix them?</summary>
+<p>The gradient at an early layer is a product of many per-layer factors (weights times activation derivatives). If they are below 1 the product goes to zero: \(0.25^{10} \approx 10^{-6}\) for 10 sigmoid layers. If above 1 it blows up: \(1.5^{20} \approx 3325\). Vanishing means early layers stop learning; exploding gives huge steps and NaN losses. In a 12-layer, 48-unit simulation with sigmoid and Xavier init, the first layer's gradient was about \(2\times10^{-8}\) versus 0.24 at the last layer; with ReLU and He init both stayed near 1. Fixes: ReLU-family activations, Xavier/He init, batch/layer normalisation, residual connections, gradient clipping, and gated units (LSTM/GRU) in RNNs.</p></details>
+
+<details><summary>Why not initialise all weights to zero? What are Xavier and He initialisation?</summary>
+<p>If all weights in a layer start equal (zero or any constant), every neuron computes the same output and receives the same gradient, so they stay identical forever: the layer behaves like one neuron (the symmetry problem). With all weights 0.5 in a 2-2-1 net, both rows of \(\partial L/\partial W_1\) are exactly \((-0.0183, -0.0367)\). With all zeros, the hidden gradients are zero because the output weights are zero. Random init breaks the symmetry; biases can be zero. The scale matters too: <b>Xavier/Glorot</b> uses \(\text{Var}(w) = 2/(n_{in} + n_{out})\), designed for tanh/sigmoid; <b>He/Kaiming</b> uses \(\text{Var}(w) = 2/n_{in}\) for ReLU, the factor 2 compensating for ReLU zeroing half its inputs. Both keep the signal variance roughly constant across layers.</p></details>
+
+<details><summary>How does dropout work, and what changes at inference time?</summary>
+<p>During training each unit is set to zero with probability \(p\) (e.g. 0.5), independently per example and step. It prevents units from co-adapting and acts like training an ensemble of thinned networks that share weights. Modern frameworks use <b>inverted dropout</b>: kept activations are scaled by \(1/(1-p)\) during training, e.g. (2, 4, 1, 3) with mask (1, 0, 1, 0) and \(p = 0.5\) becomes (4, 0, 2, 0), so the expected value is unchanged and nothing needs to change at inference, where dropout is simply turned off (<code>model.eval()</code> in PyTorch).</p></details>
+
+<details><summary>What is batch normalization and why does it help?</summary>
+<p>For each feature, BN normalises over the mini-batch: \(\hat{x} = (x - \mu_B)/\sqrt{\sigma_B^2 + \epsilon}\), then applies a learned scale and shift \(y = \gamma\hat{x} + \beta\). Example: batch (2, 4, 6) has mean 4 and std 1.633, giving (−1.22, 0, 1.22). It keeps activations in a stable range, allows larger learning rates, reduces sensitivity to initialisation and adds mild regularisation through batch noise. At inference it uses running averages of \(\mu\) and \(\sigma\), not batch statistics. It behaves poorly with very small batches; transformers use LayerNorm, which normalises across features of one example instead.</p></details>
+
+<details><summary>Batch gradient descent vs SGD vs mini-batch: what is an epoch?</summary>
+<p>Full-batch GD uses all \(n\) examples per step: exact gradient, slow and memory-heavy. SGD uses one example: noisy and cannot use hardware well. Mini-batch (typically 32 to a few thousand) is the standard compromise: a reasonable gradient estimate and efficient GPU use, and the noise can help escape poor regions. An <b>epoch</b> is one pass over the whole training set: with 1000 examples and batch size 32 there are 32 steps per epoch (31 full batches plus one of 8). Very large batches often need a scaled learning rate and warm-up.</p></details>
+
+<details><summary>How do you detect and fight overfitting in a neural network?</summary>
+<p>Detect it by plotting training and validation loss: training keeps falling while validation starts rising. In the demo above (40 noisy points, 40 hidden units), validation loss is lowest (0.60) around epoch 220, then rises to 2.48 by epoch 6000 while training loss falls to 0.03. Fixes: <b>early stopping</b> (keep the best validation checkpoint), <b>weight decay</b> (with 0.001 the validation loss stays near 0.61), <b>dropout</b>, data augmentation, more data, a smaller network, and batch norm. Too much regularisation underfits: with weight decay 0.01 the demo network reaches only about 60% validation accuracy.</p></details>
+
+<details><summary>Why go deep instead of just making one hidden layer very wide?</summary>
+<p>The universal approximation theorem says one wide enough hidden layer can approximate any continuous function, but it may need exponentially many units. Depth composes features: later layers reuse features built by earlier ones (edges, then textures, then parts, then objects), which represents many functions with far fewer parameters and generalises better. The price is harder optimisation (vanishing/exploding gradients), which is why residual connections, normalisation and good initialisation matter for deep nets.</p></details>
+
+<details><summary>Implement a 2-layer neural network forward and backward pass from scratch.</summary>
+<p>See the NumPy code above. Points interviewers check: correct shapes (\(X\): n×d, \(W_1\): d×H); caching \(z\)/\(h\) from the forward pass; the output gradient \(p - y\) for sigmoid + log loss; the chain rule through \(W_2\) and the activation derivative (\(1 - \tanh^2\) or the ReLU mask \(z &gt; 0\)); averaging over the batch; random (not zero) init; a gradient check with finite differences, \(\frac{L(w+\epsilon) - L(w-\epsilon)}{2\epsilon}\); and numerically stable loss (clip probabilities or use log-sum-exp / <code>BCEWithLogitsLoss</code>).</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://mentorcruise.com/questions/deeplearning/">MentorCruise (deep learning questions)</a> · <a href="https://www.simplilearn.com/deep-learning-interview-questions-and-answers-article">Simplilearn</a> · <a href="https://prachub.com/interview-questions/what-happens-when-all-neural-network-weights-start-at-zero">PracHub (zero initialisation)</a> · <a href="https://prachub.com/interview-questions/explain-weight-initialization-methods-and-goals">PracHub (initialisation methods)</a> · <a href="https://machinelearningmastery.com/why-initialize-a-neural-network-with-random-weights/">Machine Learning Mastery (random weights)</a> · <a href="https://www.deeplearningbook.org/">Goodfellow, Bengio, Courville: Deep Learning</a> · <a href="https://proceedings.mlr.press/v9/glorot10a.html">Glorot &amp; Bengio 2010 (Xavier init)</a> · <a href="https://arxiv.org/abs/1502.01852">He et al. 2015 (He init)</a> · <a href="https://jmlr.org/papers/v15/srivastava14a.html">Srivastava et al. 2014 (Dropout)</a> · <a href="https://arxiv.org/abs/1502.03167">Ioffe &amp; Szegedy 2015 (Batch Norm)</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+const sig = z => 1 / (1 + Math.exp(-z));
+const mkRnd = s => { let seed = s; return () => (seed = (seed * 16807) % 2147483647) / 2147483647; };
+const gauss = r => { const u = r() || 1e-9, v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+
+// ---------- data and a 2-H-1 network (tanh hidden, sigmoid output) ----------
+const makeData = (kind, n, s, noise) => { const r = mkRnd(s); return Array.from({ length: n }, () => { const a = r() * 2 - 1, b = r() * 2 - 1;
+  let y = kind === 'circle' ? (a * a + b * b < 0.36 ? 1 : 0) : (a * b > 0 ? 1 : 0); if (r() < noise) y = 1 - y; return [a, b, y]; }); };
+const newNet = (H, s) => { const r = mkRnd(s); return { H, W: Array.from({ length: H }, () => [gauss(r) * 1.4, gauss(r) * 1.4]), b: Array.from({ length: H }, () => gauss(r) * 0.5), v: Array.from({ length: H }, () => gauss(r) / Math.sqrt(H)), c: 0 }; };
+const fwd = (n, a, b) => { const h = n.W.map((w, j) => Math.tanh(w[0] * a + w[1] * b + n.b[j])); let z = n.c; for (let j = 0; j < n.H; j++) z += h[j] * n.v[j]; return [h, sig(z)]; };
+const lossOf = (n, P) => P.reduce((s, [a, b, y]) => { const p = fwd(n, a, b)[1]; return s - (y ? Math.log(p + 1e-12) : Math.log(1 - p + 1e-12)); }, 0) / P.length;
+const accOf = (n, P) => P.filter(([a, b, y]) => (fwd(n, a, b)[1] >= 0.5) === !!y).length / P.length;
+const step = (n, P, lr, wd = 0) => { const H = n.H, gW = n.W.map(() => [0, 0]), gb = new Array(H).fill(0), gv = new Array(H).fill(0); let gc = 0;
+  for (const [a, b, y] of P) { const [h, p] = fwd(n, a, b), d = p - y; gc += d;
+    for (let j = 0; j < H; j++) { gv[j] += d * h[j]; const dz = d * n.v[j] * (1 - h[j] * h[j]); gW[j][0] += dz * a; gW[j][1] += dz * b; gb[j] += dz; } }
+  const N = P.length; for (let j = 0; j < H; j++) { n.v[j] -= lr * (gv[j] / N + wd * n.v[j]); n.W[j][0] -= lr * (gW[j][0] / N + wd * n.W[j][0]); n.W[j][1] -= lr * (gW[j][1] / N + wd * n.W[j][1]); n.b[j] -= lr * gb[j] / N; }
+  n.c -= lr * gc / N; };
+const clone = n => JSON.parse(JSON.stringify(n));
+// draw decision region of a net on [-1.1, 1.1]^2
+const region = (c, W, Ht, n, pts, lines) => { const X = a => (a + 1.1) / 2.2 * W, Y = b => Ht - (b + 1.1) / 2.2 * Ht, cell = 6;
+  if (n) for (let px = 0; px < W; px += cell) for (let py = 0; py < Ht; py += cell) { const a = (px + cell / 2) / W * 2.2 - 1.1, b = (Ht - py - cell / 2) / Ht * 2.2 - 1.1, p = fwd(n, a, b)[1];
+    c.fillStyle = css(p >= 0.5 ? 'blue' : 'red'); c.globalAlpha = 0.07 + 0.25 * Math.abs(p - 0.5) * 2; c.fillRect(px, py, cell, cell); }
+  c.globalAlpha = 1;
+  if (n && lines) { c.save(); c.strokeStyle = css('ink'); c.globalAlpha = 0.55; c.lineWidth = 1.2; c.setLineDash([5, 4]);
+    n.W.forEach((w, j) => { c.beginPath(); if (Math.abs(w[1]) > Math.abs(w[0])) { [-1.1, 1.1].forEach((a, k) => { const b = -(w[0] * a + n.b[j]) / w[1]; k ? c.lineTo(X(a), Y(b)) : c.moveTo(X(a), Y(b)); }); }
+      else { [-1.1, 1.1].forEach((b, k) => { const a = -(w[1] * b + n.b[j]) / w[0]; k ? c.lineTo(X(a), Y(b)) : c.moveTo(X(a), Y(b)); }); } c.stroke(); }); c.restore(); }
+  pts.forEach(([a, b, y]) => { c.fillStyle = css(y ? 'blue' : 'red'); c.beginPath(); c.arc(X(a), Y(b), 3.2, 0, 7); c.fill(); c.strokeStyle = css('card'); c.lineWidth = 0.8; c.stroke(); }); };
+
+// ---------- 1) XOR and circle, side by side ----------
+const CIRC = makeData('circle', 200, 7, 0.05);
+const sideDraw = () => {
+  const [c, W, Ht] = mk(document.getElementById('xorc'), 0.8, 300), X = a => 30 + a * (W - 60), Y = b => Ht - 25 - b * (Ht - 70);
+  c.strokeStyle = css('line'); c.strokeRect(X(0), Y(1), X(1) - X(0), Y(0) - Y(1));
+  c.strokeStyle = css('accent'); c.setLineDash([5, 4]); c.lineWidth = 2; c.beginPath(); c.moveTo(X(-0.1), Y(0.55)); c.lineTo(X(1.1), Y(1.25)); c.stroke(); c.setLineDash([]);
+  [[0, 0, 0], [1, 1, 0], [0, 1, 1], [1, 0, 1]].forEach(([a, b, y]) => { c.fillStyle = css(y ? 'blue' : 'red'); c.beginPath(); c.arc(X(a), Y(b), 8, 0, 7); c.fill();
+    c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; c.fillText(`(${a},${b})`, X(a), Y(b) + (b ? -13 : 20)); });
+  c.fillStyle = css('muted'); c.fillText('این خط، نقطه‌ی پایینِ راست را اشتباه می‌گوید', W / 2, 12);
+  const [c2, W2, H2] = mk(document.getElementById('circc'), 0.8, 300);
+  region(c2, W2, H2, null, CIRC, false);
+  c2.strokeStyle = css('accent'); c2.setLineDash([5, 4]); c2.lineWidth = 1.5; c2.beginPath(); c2.ellipse(W2 / 2, H2 / 2, 0.6 / 2.2 * W2, 0.6 / 2.2 * H2, 0, 0, 7); c2.stroke(); c2.setLineDash([]); };
+
+// ---------- 2) network diagram ----------
+(() => { const s = document.getElementById('netsvg'); let h = '';
+  const L = [[30, [45, 105]], [160, [25, 75, 125]], [290, [75]]];
+  for (let k = 0; k < 2; k++) L[k][1].forEach(y1 => L[k + 1][1].forEach(y2 => { h += `<line x1="${L[k][0]}" y1="${y1}" x2="${L[k + 1][0]}" y2="${y2}"/>`; }));
+  L.forEach(([x, ys], k) => ys.forEach((y, i) => { h += `<circle cx="${x}" cy="${y}" r="15"/><text x="${x}" y="${y + 4}">${[['x₁', 'x₂'], ['h₁', 'h₂', 'h₃'], ['ŷ']][k][i]}</text>`; }));
+  h += `<text x="30" y="146" style="fill:var(--muted)">ورودی</text><text x="160" y="146" style="fill:var(--muted)">لایه‌ی پنهان</text><text x="290" y="146" style="fill:var(--muted)">خروجی</text>`;
+  s.innerHTML = h; })();
+
+// ---------- 3) live training ----------
+const hid = document.getElementById('hid'), ds = document.getElementById('ds'), showl = document.getElementById('showl');
+let D = {}, net, seedBase = 1, hist = [], busy = false;
+const setData = () => { D = { tr: makeData(ds.value, 200, 7, 0.05), te: makeData(ds.value, 400, 99, 0.05) }; };
+const reset = () => { net = newNet(+hid.value, seedBase * 1000 + +hid.value); hist = [lossOf(net, D.tr)]; liveDraw(); };
+const liveDraw = () => {
+  const [c, W, Ht] = mk(document.getElementById('live'), 1, 420); region(c, W, Ht, net, D.tr, showl.checked);
+  const [c2, W2, H2] = mk(document.getElementById('lcurve'), 0.3, 420), X2 = i => 10 + i / 2000 * (W2 - 20), Y2 = v => H2 - 14 - Math.min(v, 1) / 1 * (H2 - 22);
+  c2.strokeStyle = css('line'); c2.beginPath(); c2.moveTo(X2(0), Y2(0)); c2.lineTo(X2(2000), Y2(0)); c2.stroke();
+  c2.strokeStyle = css('accent'); c2.lineWidth = 2; c2.beginPath(); hist.forEach((v, i) => i ? c2.lineTo(X2(i), Y2(v)) : c2.moveTo(X2(i), Y2(v))); c2.stroke();
+  c2.fillStyle = css('muted'); c2.font = '11px Vazirmatn'; c2.textAlign = 'center'; c2.fillText('دور (epoch) →', W2 / 2, H2 - 1);
+  document.getElementById('hidv').textContent = fa(+hid.value);
+  document.getElementById('linfo').innerHTML = `دور: <b>${fa(hist.length - 1)}</b> · خطا: <b>${fa(hist[hist.length - 1], 3)}</b> · درستیِ آموزش: <b>${fa(accOf(net, D.tr) * 100, 1)}٪</b> · درستیِ داده‌ی سنجش: <b>${fa(accOf(net, D.te) * 100, 1)}٪</b> · پارامترها: ${fa(4 * net.H + 1)}`;
+  const box = document.getElementById('units'); box.innerHTML = '';
+  net.W.forEach((w, j) => { const d = document.createElement('div'), cv = document.createElement('canvas'), r = devicePixelRatio || 1; cv.width = 64 * r; cv.height = 64 * r;
+    const g = cv.getContext('2d'); g.setTransform(r, 0, 0, r, 0, 0);
+    for (let px = 0; px < 64; px += 4) for (let py = 0; py < 64; py += 4) { const a = (px + 2) / 64 * 2.2 - 1.1, b = (64 - py - 2) / 64 * 2.2 - 1.1, h = Math.tanh(w[0] * a + w[1] * b + net.b[j]);
+      g.fillStyle = css(h >= 0 ? 'accent' : 'ink'); g.globalAlpha = 0.08 + 0.6 * Math.abs(h); g.fillRect(px, py, 4, 4); }
+    d.append(cv, document.createTextNode('h' + (j + 1) + ' · وزن ' + net.v[j].toFixed(1))); box.append(d); }); };
+document.getElementById('train').onclick = () => { if (busy) return; busy = true; reset(); let k = 0;
+  const go = () => { for (let r = 0; r < 40; r++) { step(net, D.tr, 1.0); hist.push(lossOf(net, D.tr)); } liveDraw(); if (++k < 50) requestAnimationFrame(go); else busy = false; }; go(); };
+document.getElementById('reinit').onclick = () => { if (busy) return; seedBase++; reset(); };
+hid.oninput = () => { if (!busy) reset(); };
+ds.onchange = () => { if (busy) return; setData(); reset(); };
+showl.onchange = liveDraw;
+setData(); net = newNet(+hid.value, seedBase * 1000 + +hid.value); hist = [lossOf(net, D.tr)];
+
+// ---------- 4) activation plots ----------
+const actDraw = () => [['a1', sig, z => sig(z) * (1 - sig(z)), -0.1, 1.1], ['a2', Math.tanh, z => 1 - Math.tanh(z) ** 2, -1.1, 1.1], ['a3', z => Math.max(0, z), z => z > 0 ? 1 : 0, -0.5, 4.2]].forEach(([id, f, df, lo, hi]) => {
+  const [c, W, Ht] = mk(document.getElementById(id), 0.62, 260), X = z => 8 + (z + 4) / 8 * (W - 16), Y = v => Ht - 8 - (v - lo) / (hi - lo) * (Ht - 16);
+  c.strokeStyle = css('line'); c.beginPath(); c.moveTo(X(-4), Y(0)); c.lineTo(X(4), Y(0)); c.moveTo(X(0), Y(lo)); c.lineTo(X(0), Y(hi)); c.stroke();
+  [[f, 'accent', []], [df, 'orange', [4, 3]]].forEach(([g, col, dash]) => { c.strokeStyle = css(col); c.lineWidth = 2.2; c.setLineDash(dash); c.beginPath();
+    for (let i = 0; i <= 200; i++) { const z = -4 + i / 25, y = Y(Math.max(lo, Math.min(hi, g(z)))); i ? c.lineTo(X(z), y) : c.moveTo(X(z), y); } c.stroke(); c.setLineDash([]); });
+  c.fillStyle = css('muted'); c.font = '10px Vazirmatn'; c.textAlign = 'center'; c.fillText('−۴', X(-4) + 8, Y(0) + 12); c.fillText('۴', X(4) - 6, Y(0) + 12); c.fillText('۱', X(0) - 8, Y(1) + 4); });
+
+// ---------- 5) deep net: signal and gradient size per layer ----------
+const deep = (act, init, L = 12, Dm = 48, B = 32) => { const r = mkRnd(42);
+  const f = { sigmoid: sig, tanh: Math.tanh, relu: z => z > 0 ? z : 0 }[act];
+  const df = { sigmoid: (z, h) => h * (1 - h), tanh: (z, h) => 1 - h * h, relu: z => z > 0 ? 1 : 0 }[act];
+  const sd = { small: 0.01, xavier: Math.sqrt(1 / Dm), he: Math.sqrt(2 / Dm), big: Math.sqrt(4 / Dm) }[init];
+  const Ws = Array.from({ length: L }, () => Array.from({ length: Dm }, () => Array.from({ length: Dm }, () => gauss(r) * sd)));
+  let X = Array.from({ length: B }, () => Array.from({ length: Dm }, () => gauss(r))); const Hs = [X], Zs = [];
+  for (let l = 0; l < L; l++) { const Z = X.map(x => Ws[l].map(w => { let s = 0; for (let i = 0; i < Dm; i++) s += w[i] * x[i]; return s; })); Zs.push(Z); X = Z.map(z => z.map(f)); Hs.push(X); }
+  let G = X.map(() => Array.from({ length: Dm }, () => gauss(r))); const gr = [], ar = [];
+  const rms = M => { let s = 0, n = 0; M.forEach(row => row.forEach(v => { s += v * v; n++; })); return Math.sqrt(s / n); };
+  for (let l = L - 1; l >= 0; l--) { const dZ = G.map((g, bi) => g.map((gi, j) => gi * df(Zs[l][bi][j], Hs[l + 1][bi][j]))); gr[l] = rms(dZ);
+    G = dZ.map(dz => { const o = new Array(Dm).fill(0); for (let j = 0; j < Dm; j++) { const d = dz[j]; if (d) for (let i = 0; i < Dm; i++) o[i] += d * Ws[l][j][i]; } return o; }); }
+  for (let l = 0; l < L; l++) ar[l] = rms(Hs[l + 1]); return { gr, ar }; };
+const dact = document.getElementById('dact'), dinit = document.getElementById('dinit');
+const sci = v => { if (v >= 0.01 && v < 1000) return fa(v, v < 1 ? 2 : 1); const e = Math.floor(Math.log10(v)); return '<bdi dir="ltr">' + fa(v / 10 ** e, 1) + '×۱۰<sup>' + fa(e) + '</sup></bdi>'; };
+const deepDraw = () => { const { gr, ar } = deep(dact.value, dinit.value);
+  const [c, W, Ht] = mk(document.getElementById('deep'), 0.6, 532), lo = -22, hi = 4, X = l => 40 + l / 11 * (W - 60), Y = v => Ht - 22 - (Math.max(lo, Math.log10(Math.max(v, 1e-30))) - lo) / (hi - lo) * (Ht - 32);
+  c.font = '10px Vazirmatn'; c.textAlign = 'right'; c.direction = 'ltr';
+  [-20, -15, -10, -5, 0].forEach(e => { c.strokeStyle = css(e ? 'line' : 'muted'); c.setLineDash(e ? [2, 3] : []); c.beginPath(); c.moveTo(X(0) - 4, Y(10 ** e)); c.lineTo(X(11) + 4, Y(10 ** e)); c.stroke();
+    c.fillStyle = css('muted'); c.fillText(e ? '1e' + e : '1', X(0) - 8, Y(10 ** e) + 3); }); c.setLineDash([]); c.direction = 'rtl';
+  [[ar, 'blue'], [gr, 'red']].forEach(([arr, col]) => { c.strokeStyle = c.fillStyle = css(col); c.lineWidth = 2.2; c.beginPath(); arr.forEach((v, l) => l ? c.lineTo(X(l), Y(v)) : c.moveTo(X(l), Y(v))); c.stroke();
+    arr.forEach((v, l) => { c.beginPath(); c.arc(X(l), Y(v), 3, 0, 7); c.fill(); }); });
+  c.fillStyle = css('muted'); c.textAlign = 'center'; for (let l = 0; l < 12; l++) c.fillText(fa(l + 1), X(l), Ht - 8); c.fillText('لایه →', W / 2, Ht);
+  document.getElementById('dinfo').innerHTML = `گرادیانِ لایه‌ی ۱: <b>${sci(gr[0])}</b> · گرادیانِ لایه‌ی ۱۲: <b>${sci(gr[11])}</b><br>سیگنالِ لایه‌ی ۱: <b>${sci(ar[0])}</b> · سیگنالِ لایه‌ی ۱۲: <b>${sci(ar[11])}</b>`; };
+dact.onchange = dinit.onchange = deepDraw;
+
+// ---------- 6) overfitting: train vs validation loss ----------
+const OTR = makeData('circle', 40, 21, 0.12), OVA = makeData('circle', 400, 77, 0.12), ovCache = {};
+const ovRun = wd => { if (ovCache[wd]) return ovCache[wd]; const n = newNet(40, 5), tr = [], va = [], snaps = [], vacc = [];
+  for (let e = 0; e <= 6000; e++) { if (e) step(n, OTR, 1.0, wd); if (e % 20 === 0) { tr.push(lossOf(n, OTR)); va.push(lossOf(n, OVA)); }
+    if (e % 100 === 0) { snaps.push(clone(n)); vacc.push(accOf(n, OVA)); } }
+  const best = va.reduce((b, v, i) => v < va[b] ? i : b, 0); return ovCache[wd] = { tr, va, snaps, vacc, best }; };
+const ovep = document.getElementById('ovep'), ovwd = document.getElementById('ovwd');
+const ovDraw = () => { const R = ovRun(+ovwd.value), k = +ovep.value / 100;
+  const [c, W, Ht] = mk(document.getElementById('ovc'), 0.45, 532), X = i => 12 + i / 300 * (W - 24), mx = 2.6, Y = v => Ht - 16 - Math.min(v, mx) / mx * (Ht - 24);
+  c.strokeStyle = css('line'); c.beginPath(); c.moveTo(X(0), Y(0)); c.lineTo(X(300), Y(0)); c.stroke();
+  [[R.tr, 'blue'], [R.va, 'red']].forEach(([arr, col]) => { c.strokeStyle = css(col); c.lineWidth = 2; c.beginPath(); arr.forEach((v, i) => i ? c.lineTo(X(i), Y(v)) : c.moveTo(X(i), Y(v))); c.stroke(); });
+  c.strokeStyle = css('orange'); c.setLineDash([4, 3]); c.beginPath(); c.moveTo(X(R.best), 0); c.lineTo(X(R.best), Ht - 16); c.stroke();
+  c.strokeStyle = css('ink'); c.setLineDash([2, 3]); c.beginPath(); c.moveTo(X(k * 5), 0); c.lineTo(X(k * 5), Ht - 16); c.stroke(); c.setLineDash([]);
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; c.fillText('epoch →', W / 2, Ht - 2);
+  const [c2, W2, H2] = mk(document.getElementById('ovr'), 0.75, 360); region(c2, W2, H2, R.snaps[k], OTR, false);
+  document.getElementById('ovepv').textContent = fa(+ovep.value);
+  document.getElementById('ovinfo').innerHTML = `در epoch ${fa(+ovep.value)}: خطای آموزش <b>${fa(R.tr[k * 5], 3)}</b> · خطای سنجش <b>${fa(R.va[k * 5], 3)}</b> · درستیِ سنجش <b>${fa(R.vacc[k] * 100)}٪</b><br>کمترین خطای سنجش: ${fa(R.va[R.best], 3)} در epoch <b>${fa(R.best * 20)}</b>`; };
+ovep.oninput = ovwd.onchange = ovDraw;
+
+const all = () => { sideDraw(); liveDraw(); actDraw(); deepDraw(); ovDraw(); };
+addEventListener('resize', () => { if (!busy) all(); }); all();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

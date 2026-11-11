@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>بیز ساده</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; direction: ltr; justify-content: center; }
+.chip { margin: 0; font: 14px/1.4 Georgia, serif; padding: 5px 12px; border-radius: 16px; border: 2px solid var(--muted); color: var(--muted); background: none; }
+.chip.on { border-color: var(--accent); background: var(--accent); color: var(--card); font-weight: 700; }
+.ev { direction: ltr; display: grid; grid-template-columns: 70px 1fr 64px; gap: 4px 8px; align-items: center; font-size: 13px; margin-top: 10px; }
+.ev .nm { font-family: Georgia, serif; }
+.ev .trk { position: relative; height: 12px; background: var(--soft); border-radius: 6px; }
+.ev .trk::after { content: ""; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--muted); }
+.ev .trk i { position: absolute; top: 0; height: 12px; border-radius: 6px; }
+.ev .v { color: var(--muted); text-align: right; }
+.big { font-size: 18px; margin-top: 10px; }
+.big b { color: var(--accent); }
+.meter { height: 14px; border-radius: 7px; background: color-mix(in srgb, var(--blue) 30%, var(--card)); overflow: hidden; direction: ltr; margin-top: 4px; }
+.meter i { display: block; height: 100%; background: var(--red); }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="pca.html">PCA: کم کردن ابعاد</a> · <a href="svm.html">بعدی: ماشین بردار پشتیبان (SVM) ←</a></p>
+<h1>بیز ساده <span class="en">(Naive Bayes)</span></h1>
+<p class="sub">از روی کلمه‌های یک ایمیل، احتمالِ اسپم بودنش را حساب می‌کنیم. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>یک ایمیل می‌رسد: «free money, hi». اسپم است یا نه؟</p>
+<p>بیز ساده این‌طور فکر می‌کند:</p>
+<ol>
+<li>از قبل می‌دانیم چند درصدِ ایمیل‌ها اسپم‌اند.</li>
+<li>برای هر کلمه می‌دانیم در اسپم‌ها چقدر می‌آید و در ایمیل‌های عادی چقدر.</li>
+<li>هر کلمه‌ی ایمیل، احتمالِ اسپم را کمی بالا یا پایین می‌برد.</li>
+<li>اثرِ همه‌ی کلمه‌ها را در هم ضرب می‌کنیم و جواب را می‌گیریم.</li>
+</ol>
+<div class="key">بیز ساده فقط <b>می‌شمارد</b>: کدام کلمه در کدام دسته چند بار آمده. بعد با قانونِ بیز این شمارش‌ها را به احتمال تبدیل می‌کند.</div>
+<p>چرا مهم است:</p>
+<ul>
+<li>آموزش در یک بار گذر روی داده تمام می‌شود؛ گرادیان و تکرار ندارد.</li>
+<li>با داده‌ی کم هم خوب کار می‌کند.</li>
+<li>برای دسته‌بندیِ متن (اسپم، موضوعِ خبر، احساسِ نظر) یک <b>مدلِ پایه</b> <span class="en">(Baseline)</span> استاندارد است.</li>
+<li>در مصاحبه، راهِ رایجی برای سنجیدنِ فهمِ احتمال است: قانون بیز، فرضِ استقلال، هموارسازی، لگاریتم.</li>
+</ul>
+<p>در کلِ این صفحه یک مثال داریم: <b>فیلترِ اسپم از روی کلمه‌ها</b>. به ایمیلِ عادی (غیرِ اسپم) <b>ham</b> می‌گوییم.</p>
+</section>
+
+<section>
+<h2>قانون بیز با یک مثال عددی</h2>
+<p>۱۰۰۰ ایمیل داریم:</p>
+<ul>
+<li>۳۰٪ اسپم‌اند: ۳۰۰ ایمیل.</li>
+<li>۷۰٪ عادی‌اند: ۷۰۰ ایمیل.</li>
+<li>کلمه‌ی free در ۶۰٪ اسپم‌ها هست: ۱۸۰ ایمیل.</li>
+<li>کلمه‌ی free در ۵٪ ایمیل‌های عادی هست: ۳۵ ایمیل.</li>
+</ul>
+<p>سؤال: یک ایمیل free دارد. احتمالِ اسپم بودنش چقدر است؟</p>
+<p>فقط ایمیل‌هایی را نگاه می‌کنیم که free دارند: ۱۸۰ + ۳۵ = ۲۱۵ ایمیل. از این‌ها ۱۸۰ تا اسپم‌اند:</p>
+<div class="f">\[ P(\text{spam} \mid \text{free}) = \frac{180}{180 + 35} = \frac{180}{215} \approx 0.837 \]</div>
+<p>یعنی دیدنِ free، احتمالِ اسپم را از ۳۰٪ به حدودِ <b>۸۴٪</b> رساند.</p>
+<div class="key">قانون بیز همین است: از میانِ همه‌ی حالت‌هایی که با «شواهد» جور درمی‌آیند، چه سهمی مالِ هر دسته است؟</div>
+
+<div class="box">
+<canvas id="grid"></canvas>
+<div class="legend"><span><i style="background:var(--red)"></i>اسپم با free</span><span><i style="background:var(--blue)"></i>عادی با free</span><span><i style="background:var(--line)"></i>بدونِ free (کم‌رنگ)</span></div>
+<label>سهمِ اسپم‌ها <input id="gp" type="range" min="1" max="60" step="1" value="30"><b id="gpv"></b></label>
+<label>free در اسپم <input id="gs" type="range" min="0" max="100" step="5" value="60"><b id="gsv"></b></label>
+<label>free در عادی <input id="gh" type="range" min="1" max="50" step="1" value="5"><b id="ghv"></b></label>
+<div class="err" id="ginfo"></div>
+</div>
+<p class="ex" style="margin-top:8px">هر خانه یک ایمیل است (۱۰۰۰ تا). فقط خانه‌های پررنگ مهم‌اند. امتحان کنید:</p>
+<ul class="ex">
+<li>free در ایمیل‌های عادی را از ۵٪ به ۲۰٪ ببرید: جواب از ۸۴٪ به حدودِ ۵۶٪ می‌افتد. کلمه‌ای که همه‌جا می‌آید، شاهدِ ضعیفی است.</li>
+<li>سهمِ اسپم را خیلی کم کنید: حتی با free، احتمالِ اسپم پایین می‌آید. باورِ اولیه مهم است.</li>
+</ul>
+
+<details class="drop"><summary><b>مثالِ معروفِ دیگر: آزمایشِ پزشکی</b></summary>
+<p>یک بیماری در ۱٪ مردم هست. آزمایش ۹۹٪ بیماران را مثبت نشان می‌دهد، و برای ۵٪ آدم‌های سالم هم به اشتباه مثبت است. جوابِ شما مثبت شد. احتمالِ بیماری؟</p>
+<p>از ۱۰۰۰۰ نفر: ۱۰۰ بیمار، که ۹۹ نفرشان مثبت می‌شوند. ۹۹۰۰ سالم، که ۴۹۵ نفرشان مثبت می‌شوند.</p>
+<div class="f">\[ P(\text{sick} \mid +) = \frac{99}{99 + 495} \approx 0.167 \]</div>
+<p>فقط حدودِ <b>۱۷٪</b>. چون بیماری نادر است، بیشترِ مثبت‌ها از آدم‌های سالمِ زیاد می‌آیند. به این خطای رایج <b>نادیده گرفتنِ نرخِ پایه</b> <span class="en">(Base Rate Fallacy)</span> می‌گویند.</p>
+</details>
+</section>
+
+<section>
+<h2>فرمولِ بیز</h2>
+<p>همان حسابِ بالا، با نماد:</p>
+<div class="f">\[ P(c \mid x) = \frac{P(x \mid c)\, P(c)}{P(x)} \qquad P(x) = \sum_{c'} P(x \mid c')\, P(c') \]</div>
+<ul class="sym">
+<li>\(c\): دسته (spam یا ham)</li>
+<li>\(x\): شواهد (کلمه‌های ایمیل)</li>
+<li>\(P(c)\): احتمالِ پیشین؛ قبل از دیدنِ ایمیل</li>
+<li>\(P(x \mid c)\): درست‌نمایی؛ اگر دسته \(c\) باشد، این کلمه‌ها چقدر محتمل‌اند</li>
+<li>\(P(c \mid x)\): احتمالِ پسین؛ بعد از دیدنِ ایمیل</li>
+<li>\(P(x)\): احتمالِ کلِ شواهد؛ برای همه‌ی دسته‌ها یکی است</li>
+</ul>
+<p>عددهای مثالِ free را جای‌گذاری کنیم:</p>
+<div class="f">\[ P(\text{spam} \mid \text{free}) = \frac{0.6 \times 0.3}{0.6 \times 0.3 + 0.05 \times 0.7} = \frac{0.18}{0.215} \approx 0.837 \]</div>
+<div class="kinds">
+<div><p><b>پیشین</b> <span class="en">(Prior)</span> \(P(c)\)</p><p class="ex">باورِ ما قبل از خواندنِ ایمیل.</p><p class="ex">مثال: \(P(\text{spam}) = 0.3\)</p></div>
+<div><p><b>درست‌نمایی</b> <span class="en">(Likelihood)</span> \(P(x\mid c)\)</p><p class="ex">اگر اسپم باشد، free چقدر می‌آید؟</p><p class="ex">مثال: \(P(\text{free}\mid\text{spam}) = 0.6\)، \(P(\text{free}\mid\text{ham}) = 0.05\)</p></div>
+<div><p><b>پسین</b> <span class="en">(Posterior)</span> \(P(c\mid x)\)</p><p class="ex">باورِ ما بعد از دیدنِ free.</p><p class="ex">مثال: \(P(\text{spam}\mid\text{free}) \approx 0.837\)</p></div>
+</div>
+<p style="margin-top:10px">برای <b>تصمیم</b> گرفتن به \(P(x)\) نیازی نیست، چون برای هر دو دسته یکی است. فقط صورتِ کسر را مقایسه می‌کنیم:</p>
+<div class="f">\[ \hat{c} = \arg\max_c \; P(c)\, P(x \mid c) \]</div>
+<p class="ex">مثال: اسپم \(0.3 \times 0.6 = 0.18\)، عادی \(0.7 \times 0.05 = 0.035\). اسپم بزرگ‌تر است، پس «اسپم».</p>
+</section>
+
+<section>
+<h2>فرضِ «ساده‌لوحانه»</h2>
+<p>ایمیلِ واقعی یک کلمه نیست، ده‌ها کلمه است. برای حسابِ \(P(\text{free, money, hi} \mid \text{spam})\) باید بدانیم این <b>ترکیبِ دقیق</b> چند بار در اسپم‌ها آمده. با هزاران کلمه، تقریباً هر ترکیبی فقط یک بار یا هیچ‌وقت دیده شده. پس این عدد را نمی‌شود از داده تخمین زد.</p>
+<p>بیز ساده یک فرض می‌کند: <b>اگر دسته را بدانیم، کلمه‌ها از هم مستقل‌اند.</b> آن‌وقت احتمالِ ترکیب، ضربِ احتمالِ تک‌تکِ کلمه‌هاست:</p>
+<div class="f">\[ P(x_1, x_2, \dots, x_n \mid c) \approx \prod_{i=1}^{n} P(x_i \mid c) \]</div>
+<ul class="sym">
+<li>\(x_i\): کلمه‌ی \(i\)-ام ایمیل</li>
+<li>\(n\): تعدادِ کلمه‌های ایمیل</li>
+<li>\(\prod\): ضربِ همه</li>
+</ul>
+<p>پس فرمولِ کاملِ بیز ساده:</p>
+<div class="f">\[ \hat{c} = \arg\max_c \; P(c) \prod_{i=1}^{n} P(x_i \mid c) \]</div>
+<div class="kinds">
+<div><p><b>چرا این فرض غلط است</b></p><p class="ex">کلمه‌ها به هم ربط دارند. در اسپم‌ها، اگر win بیاید، احتمالِ prize هم خیلی بیشتر است. «new» و «york» تقریباً همیشه با هم می‌آیند.</p></div>
+<div><p><b>چرا باز هم کار می‌کند</b></p><p class="ex">برای دسته‌بندی فقط لازم است <b>دسته‌ی درست بیشترین امتیاز را بگیرد</b>. لازم نیست خودِ احتمال دقیق باشد. خطای فرض معمولاً امتیازِ هر دو دسته را با هم بالا یا پایین می‌برد و ترتیبشان کمتر عوض می‌شود.</p></div>
+</div>
+<div class="key" style="margin-top:10px">بیز ساده معمولاً <b>دسته</b> را درست حدس می‌زند، ولی <b>احتمالش</b> را بیش از حد مطمئن (نزدیکِ ۰ یا ۱) می‌گوید.</div>
+<p class="ex">به جای شمردنِ ترکیب‌ها (که ممکن نیست)، فقط برای هر کلمه و هر دسته یک عدد لازم داریم. با ۱۰۰۰۰ کلمه و ۲ دسته: ۲۰۰۰۰ عدد.</p>
+</section>
+
+<section>
+<h2>مثالِ کامل: فیلترِ اسپم</h2>
+<p>داده‌ی آموزش: ۱۰ ایمیل؛ ۴ اسپم و ۶ عادی. فقط ۶ کلمه داریم. این جدول نشان می‌دهد هر کلمه <b>جمعاً چند بار</b> در ایمیل‌های هر دسته آمده:</p>
+<div dir="ltr"><table>
+<tr><th>word</th><th>count in spam</th><th>count in ham</th></tr>
+<tr><td>free</td><td>6</td><td>1</td></tr>
+<tr><td>win</td><td>4</td><td>0</td></tr>
+<tr><td>money</td><td>5</td><td>2</td></tr>
+<tr><td>meeting</td><td>0</td><td>5</td></tr>
+<tr><td>report</td><td>1</td><td>6</td></tr>
+<tr><td>hi</td><td>2</td><td>6</td></tr>
+<tr><th>total</th><th>18</th><th>20</th></tr>
+</table></div>
+<p style="margin-top:10px"><b>قدمِ ۱: پیشین.</b> از ۱۰ ایمیل، ۴ اسپم:</p>
+<div class="f">\[ P(\text{spam}) = \tfrac{4}{10} = 0.4 \qquad P(\text{ham}) = \tfrac{6}{10} = 0.6 \]</div>
+<p><b>قدمِ ۲: احتمالِ هر کلمه در هر دسته.</b> تعدادِ کلمه تقسیم بر کلِ کلمه‌های آن دسته:</p>
+<div class="f">\[ P(w \mid c) = \frac{\text{count}(w, c)}{\text{total words in } c} \]</div>
+<div dir="ltr"><table>
+<tr><th>word</th><th>P(w | spam)</th><th>P(w | ham)</th></tr>
+<tr><td>free</td><td>6/18 = 0.333</td><td>1/20 = 0.05</td></tr>
+<tr><td>money</td><td>5/18 = 0.278</td><td>2/20 = 0.10</td></tr>
+<tr><td>hi</td><td>2/18 = 0.111</td><td>6/20 = 0.30</td></tr>
+</table></div>
+<p style="margin-top:10px"><b>قدمِ ۳: ایمیلِ جدید «free money hi».</b> برای هر دسته، پیشین ضربِ احتمالِ کلمه‌ها:</p>
+<div class="f">\[ \text{spam: } 0.4 \times \tfrac{6}{18} \times \tfrac{5}{18} \times \tfrac{2}{18} = 0.004115 \]
+\[ \text{ham: } 0.6 \times \tfrac{1}{20} \times \tfrac{2}{20} \times \tfrac{6}{20} = 0.000900 \]</div>
+<p><b>قدمِ ۴: تبدیل به احتمال.</b> تقسیم بر جمعِ دو امتیاز:</p>
+<div class="f">\[ P(\text{spam} \mid \text{email}) = \frac{0.004115}{0.004115 + 0.000900} \approx 0.82 \]</div>
+<p>جواب: <b>۸۲٪ اسپم</b>. کلمه‌های free و money به سمتِ اسپم هل دادند؛ hi کمی به سمتِ عادی.</p>
+</section>
+
+<section>
+<h2>هموارسازیِ لاپلاس: وقتی یک صفر همه‌چیز را خراب می‌کند</h2>
+<p>ایمیلِ «win report hi» را امتحان کنیم. win در ایمیل‌های عادی <b>هیچ‌وقت</b> نیامده:</p>
+<div class="f">\[ P(\text{win} \mid \text{ham}) = \tfrac{0}{20} = 0 \]</div>
+<p>چون همه‌چیز ضرب می‌شود، کلِ امتیازِ ham صفر می‌شود:</p>
+<div class="f">\[ \text{ham: } 0.6 \times 0 \times \tfrac{6}{20} \times \tfrac{6}{20} = 0 \quad\Rightarrow\quad P(\text{spam} \mid \text{email}) = 1 \]</div>
+<p>مدل <b>۱۰۰٪ مطمئن</b> است که اسپم است، با این‌که report و hi هر دو کلمه‌های عادی‌اند. فقط چون در ۱۰ ایمیلِ آموزش، win تصادفاً در ایمیلِ عادی نیامده. بدتر: اگر کلمه‌ای در هیچ دسته‌ای نیامده باشد، هر دو امتیاز صفر می‌شوند و جواب \(0/0\) است.</p>
+<p><b>راه‌حل:</b> به هر شمارش یک عددِ کوچک \(\alpha\) اضافه کن، انگار هر کلمه را از قبل \(\alpha\) بار دیده‌ای <span class="en">(Laplace / Additive Smoothing)</span>:</p>
+<div class="f">\[ P(w \mid c) = \frac{\text{count}(w, c) + \alpha}{\text{total words in } c + \alpha \, V} \]</div>
+<ul class="sym">
+<li>\(\alpha\): مقدارِ هموارسازی؛ \(\alpha = 1\) یعنی لاپلاس</li>
+<li>\(V\): تعدادِ کلمه‌های واژگان (این‌جا ۶)</li>
+<li>\(\alpha V\): تا جمعِ احتمال‌ها هنوز ۱ شود</li>
+</ul>
+<p>با \(\alpha = 1\): مخرجِ اسپم \(18 + 6 = 24\)، مخرجِ عادی \(20 + 6 = 26\).</p>
+<div dir="ltr"><table>
+<tr><th>word</th><th>P(w | spam)</th><th>P(w | ham)</th></tr>
+<tr><td>win</td><td>(4+1)/24 = 0.208</td><td>(0+1)/26 = 0.038</td></tr>
+<tr><td>report</td><td>(1+1)/24 = 0.083</td><td>(6+1)/26 = 0.269</td></tr>
+<tr><td>hi</td><td>(2+1)/24 = 0.125</td><td>(6+1)/26 = 0.269</td></tr>
+</table></div>
+<div class="kinds" style="margin-top:10px">
+<div><p><b>بدونِ هموارسازی (\(\alpha = 0\))</b></p><p class="ex">«win report hi» ← <b>۱۰۰٪</b> اسپم. یک صفر، بقیه‌ی شواهد را پاک کرد.</p></div>
+<div><p><b>\(\alpha = 0.1\)</b></p><p class="ex">«win report hi» ← حدودِ <b>۷۰٪</b> اسپم. win هنوز خیلی قوی است.</p></div>
+<div><p><b>لاپلاس (\(\alpha = 1\))</b></p><p class="ex">«win report hi» ← حدودِ <b>۳۴٪</b> اسپم. win به سمتِ اسپم می‌برد، دو کلمه‌ی دیگر به سمتِ عادی.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">هموارسازی ایمیلِ «free money hi» را هم کمی عوض می‌کند: از ۸۲٪ به حدودِ ۷۲٪. هموارسازی احتمال‌ها را کمی به هم نزدیک می‌کند، پس مدل کمتر افراطی است. \(\alpha\) یک هایپرپارامتر است و با اعتبارسنجی انتخاب می‌شود.</p>
+</section>
+
+<section>
+<h2>کار در فضای لگاریتم</h2>
+<p>یک ایمیلِ ۵۰۰ کلمه‌ای. اگر احتمالِ هر کلمه حدودِ ۰٫۰۰۱ باشد:</p>
+<div class="f">\[ 0.001^{500} = 10^{-1500} \]</div>
+<p>کوچک‌ترین عددی که کامپیوتر (float64) نگه می‌دارد حدودِ \(10^{-308}\) است. پس حاصل‌ضرب <b>صفر</b> می‌شود <span class="en">(Underflow)</span> و امتیازِ هر دو دسته صفر است. (در JavaScript، <code>0.001 ** 500</code> دقیقاً <code>0</code> می‌دهد.)</p>
+<p><b>راه‌حل:</b> لگاریتم بگیر. لگاریتمِ ضرب، جمعِ لگاریتم‌هاست:</p>
+<div class="f">\[ \log\Big( P(c) \prod_i P(x_i \mid c) \Big) = \log P(c) + \sum_i \log P(x_i \mid c) \]</div>
+<p class="ex">برای همان ایمیلِ ۵۰۰ کلمه‌ای: \(500 \times \ln 0.001 \approx -3454\). عددی معمولی، بدونِ مشکل.</p>
+<p>چون لگاریتم صعودی است، دسته‌ای که بیشترین لگاریتم را دارد، همان دسته‌ی برنده است. مثالِ «free money hi» با لاپلاس:</p>
+<div class="f">\[ \text{spam: } \ln 0.4 + \ln\tfrac{7}{24} + \ln\tfrac{6}{24} + \ln\tfrac{3}{24} \approx -5.614 \]
+\[ \text{ham: } \ln 0.6 + \ln\tfrac{2}{26} + \ln\tfrac{3}{26} + \ln\tfrac{7}{26} \approx -6.547 \]</div>
+<p>اسپم بزرگ‌تر (کمتر منفی) است. برای برگرداندن به احتمال، از اختلافِ دو عدد استفاده می‌کنیم (همان سیگموید):</p>
+<div class="f">\[ P(\text{spam}\mid x) = \frac{1}{1 + e^{-(-5.614 - (-6.547))}} = \frac{1}{1 + e^{-0.933}} \approx 0.72 \]</div>
+<p class="ex">با بیش از دو دسته، از ترفندِ <code>log-sum-exp</code> استفاده می‌شود: اول بزرگ‌ترین لگاریتم را از همه کم کن، بعد \(e\) بگیر. این‌طوری هیچ عددی صفر یا بی‌نهایت نمی‌شود.</p>
+</section>
+
+<section>
+<h2>خودتان امتحان کنید: یک ایمیل بسازید</h2>
+<p>روی کلمه‌ها بزنید تا در ایمیل باشند یا نباشند. مدل همان جدولِ ۱۰ ایمیلی است. هر نوار نشان می‌دهد آن کلمه چقدر به سمتِ اسپم (قرمز، راست) یا عادی (آبی، چپ) هل می‌دهد: \(\ln \frac{P(w\mid\text{spam})}{P(w\mid\text{ham})}\).</p>
+<div class="box">
+<div class="chips" id="chips"></div>
+<div class="ctl">هموارسازی \(\alpha\):
+<select id="alpha"><option value="0">۰ (بدونِ هموارسازی)</option><option value="0.1">۰٫۱</option><option value="1" selected>۱ (لاپلاس)</option></select></div>
+<div class="ev" id="ev"></div>
+<div class="big" id="res"></div>
+<div class="meter"><i id="meterI"></i></div>
+<div class="legend"><span><i style="background:var(--red)"></i>سهمِ اسپم</span><span><i style="background:color-mix(in srgb, var(--blue) 30%, var(--card))"></i>سهمِ عادی</span></div>
+</div>
+<p class="ex" style="margin-top:8px">چیزهایی که ببینید:</p>
+<ul class="ex">
+<li>بدونِ هیچ کلمه، جواب همان پیشین است: ۴۰٪.</li>
+<li>«free money hi» با لاپلاس حدودِ ۷۲٪ است؛ با \(\alpha = 0\) حدودِ ۸۲٪.</li>
+<li>فقط «meeting report» را روشن کنید: حدودِ ۴٪ اسپم.</li>
+<li>«win report hi» را با \(\alpha = 0\) بسازید: ۱۰۰٪ اسپم. بعد \(\alpha\) را ۱ کنید: حدودِ ۳۴٪.</li>
+<li>«win meeting» با \(\alpha = 0\): هر دو امتیاز صفر می‌شوند و جواب تعریف‌نشده است.</li>
+</ul>
+<p>اثرِ کلمه‌ها <b>جمع</b> می‌شود: لگاریتمِ نسبتِ شانسِ نهایی = لگاریتمِ نسبتِ شانسِ پیشین (\(\ln\frac{0.4}{0.6} \approx -0.405\)) + جمعِ نوارها.</p>
+</section>
+
+<section>
+<h2>سه نوعِ بیز ساده</h2>
+<p>فرمولِ اصلی یکی است. فرق فقط در این است که \(P(x_i \mid c)\) را چطور حساب کنیم، که به نوعِ ویژگی بستگی دارد:</p>
+<div class="kinds">
+<div><p><b>چندجمله‌ای</b> <span class="en">(Multinomial)</span></p><p class="ex">ویژگی: <b>تعداد</b> (کلمه چند بار آمده).</p><p class="ex">همان مثالِ بالا: \(P(\text{free}\mid\text{spam}) = \frac{6+1}{18+6} \approx 0.29\). اگر free دو بار بیاید، دو بار ضرب می‌شود.</p><p class="ex">کاربرد: دسته‌بندیِ متن، بهترین انتخابِ پیش‌فرض.</p></div>
+<div><p><b>برنولی</b> <span class="en">(Bernoulli)</span></p><p class="ex">ویژگی: <b>بله/نه</b> (کلمه هست یا نیست).</p><p class="ex">مثلاً free در ۳ تا از ۴ اسپم و ۱ تا از ۶ ایمیلِ عادی هست. با لاپلاس: \(P = \frac{3+1}{4+2} \approx 0.67\) و \(\frac{1+1}{6+2} = 0.25\). <b>نبودنِ</b> کلمه هم حساب می‌شود: ضربِ \(1 - 0.67 = 0.33\) در اسپم و \(1 - 0.25 = 0.75\) در عادی.</p><p class="ex">کاربرد: متن‌های کوتاه (مثلِ پیامک، توییت).</p></div>
+<div><p><b>گاوسی</b> <span class="en">(Gaussian)</span></p><p class="ex">ویژگی: <b>عدد پیوسته</b> (مثلاً تعدادِ لینک، طولِ ایمیل).</p><p class="ex">برای هر دسته یک منحنیِ زنگوله‌ای با میانگین \(\mu_c\) و انحراف معیار \(\sigma_c\) برازش می‌دهیم:</p><p class="ex">\(P(x\mid c) = \frac{1}{\sigma_c\sqrt{2\pi}} e^{-\frac{(x-\mu_c)^2}{2\sigma_c^2}}\)</p><p class="ex">کاربرد: داده‌ی عددی، مثلِ اندازه‌گیری‌های پزشکی.</p></div>
+</div>
+<p style="margin-top:12px"><b>بیز سادهِ گاوسی را ببینید.</b> ویژگی: تعدادِ لینک در ایمیل. در اسپم‌ها میانگین ۸ لینک با انحراف معیار ۳؛ در عادی‌ها میانگین ۱ با انحراف معیار ۱٫۵. پیشین همان ۰٫۴ و ۰٫۶. عدد را عوض کنید:</p>
+<div class="box">
+<canvas id="gauss"></canvas>
+<div class="legend"><span><i style="background:var(--red)"></i>\(P(\text{spam})\,P(x\mid\text{spam})\)</span><span><i style="background:var(--blue)"></i>\(P(\text{ham})\,P(x\mid\text{ham})\)</span></div>
+<label>تعدادِ لینک <input id="gx" type="range" min="0" max="15" step="0.5" value="5"><b id="gxv"></b></label>
+<div class="err" id="gxinfo"></div>
+</div>
+<p class="ex" style="margin-top:8px">در هر نقطه، احتمالِ اسپم = ارتفاعِ منحنیِ قرمز تقسیم بر جمعِ دو ارتفاع. با ۲ لینک حدودِ ۵٪ اسپم، با ۵ لینک حدودِ ۸۸٪. مرز (۵۰٪) حدودِ ۴ لینک است؛ جایی که دو منحنی هم‌قد می‌شوند.</p>
+</section>
+
+<section>
+<h2>مولد در برابر متمایزکننده: بیز ساده و رگرسیون لجستیک</h2>
+<p>هر دو مدل احتمالِ اسپم را می‌دهند، ولی از دو راهِ مختلف:</p>
+<div class="kinds">
+<div><p><b>بیز ساده: مدلِ مولد</b> <span class="en">(Generative)</span></p><ul class="ex">
+<li>یاد می‌گیرد «ایمیلِ اسپم چطور <b>ساخته</b> می‌شود»: \(P(x \mid c)\) و \(P(c)\).</li>
+<li>بعد با قانونِ بیز \(P(c \mid x)\) را حساب می‌کند.</li>
+<li>وزن‌ها با <b>شمردن</b> به دست می‌آیند؛ بدونِ بهینه‌سازی.</li>
+<li>با داده‌ی کم سریع به بهترین حالتِ خودش می‌رسد.</li>
+<li>مثال: وزنِ free = \(\ln\frac{7/24}{2/26} \approx 1.33\)، مستقل از بقیه‌ی کلمه‌ها.</li></ul></div>
+<div><p><b>رگرسیون لجستیک: مدلِ متمایزکننده</b> <span class="en">(Discriminative)</span></p><ul class="ex">
+<li>مستقیم \(P(c \mid x)\) را یاد می‌گیرد؛ کاری به ساختنِ ایمیل ندارد.</li>
+<li>وزن‌ها با <b>کم کردنِ خطا</b> (log loss) و گرادیان کاهشی پیدا می‌شوند.</li>
+<li>فرضِ استقلال ندارد؛ اگر دو کلمه همیشه با هم بیایند، وزن را بینشان تقسیم می‌کند.</li>
+<li>با داده‌ی زیاد معمولاً دقیق‌تر است.</li>
+<li>مثال: وزنِ free با توجه به بقیه‌ی کلمه‌ها تنظیم می‌شود.</li></ul></div>
+</div>
+<p style="margin-top:10px">نکته‌ی جالب: بیز سادهِ چندجمله‌ای هم یک مدلِ <b>خطی</b> است. لگاریتمِ نسبتِ شانس:</p>
+<div class="f">\[ \ln\frac{P(\text{spam}\mid x)}{P(\text{ham}\mid x)} = \underbrace{\ln\frac{P(\text{spam})}{P(\text{ham})}}_{b} + \sum_{w} n_w \underbrace{\ln\frac{P(w\mid\text{spam})}{P(w\mid\text{ham})}}_{\theta_w} \]</div>
+<ul class="sym">
+<li>\(n_w\): تعدادِ کلمه‌ی \(w\) در ایمیل</li>
+<li>\(\theta_w\): وزنِ کلمه</li>
+<li>\(b\): عرض از مبدأ (این‌جا \(-0.405\))</li>
+</ul>
+<p>این دقیقاً شکلِ رگرسیون لجستیک است: \(b + \sum \theta_w n_w\) و بعد سیگموید. فرق فقط در <b>روشِ پیدا کردنِ وزن‌ها</b> است.</p>
+<p class="ex">Ng و Jordan (۲۰۰۱) نشان دادند: بیز ساده با داده‌ی کم زودتر به خطای نهاییِ خودش می‌رسد، ولی رگرسیون لجستیک با داده‌ی زیاد به خطای نهاییِ کمتری می‌رسد. پس با داده‌ی کم بیز ساده معمولاً بهتر است و با داده‌ی زیاد رگرسیون لجستیک.</p>
+</section>
+
+<section>
+<h2>خوبی‌ها و بدی‌ها</h2>
+<div class="kinds">
+<div><p><b>خوبی‌ها</b></p><ul class="ex">
+<li><b>خیلی سریع</b>: آموزش یعنی یک بار شمردن. برای \(N\) ایمیل و \(d\) کلمه، زمان \(O(Nd)\).</li>
+<li><b>داده‌ی کم</b> کافی است؛ برای هر کلمه فقط یک عدد در هر دسته تخمین می‌زند.</li>
+<li>با <b>ویژگی‌های خیلی زیاد</b> (ده‌ها هزار کلمه) مشکلی ندارد.</li>
+<li>آموزشِ <b>افزایشی</b>: ایمیلِ جدید آمد؟ فقط شمارش‌ها را به‌روز کن.</li>
+<li>تفسیرپذیر: وزنِ هر کلمه معلوم است.</li>
+<li>یک <b>مدلِ پایه‌ی قوی برای متن</b>.</li></ul></div>
+<div><p><b>بدی‌ها</b></p><ul class="ex">
+<li><b>احتمال‌ها کالیبره نیستند</b>: معمولاً خیلی نزدیکِ ۰ یا ۱.</li>
+<li><b>ویژگی‌های وابسته دو بار شمرده می‌شوند</b>.</li>
+<li>بدونِ هموارسازی، یک صفر همه‌چیز را خراب می‌کند.</li>
+<li>رابطه‌ی بینِ ویژگی‌ها را نمی‌بیند (مثلاً «not good» را نمی‌فهمد).</li>
+<li>نوعِ گاوسی فرض می‌کند داده زنگوله‌ای است.</li>
+<li>با داده‌ی زیاد، معمولاً از رگرسیون لجستیک و مدل‌های قوی‌تر عقب می‌ماند.</li></ul></div>
+</div>
+<p style="margin-top:12px"><b>شمردنِ دوباره، با عدد.</b> ایمیلی که فقط free دارد (با لاپلاس):</p>
+<div class="kinds">
+<div><p><b>free یک بار شمرده شود</b></p><p class="ex">نسبتِ شانس = \(\frac{0.4}{0.6} \times 3.79 \approx 2.53\) ← <b>۷۲٪</b> اسپم.</p></div>
+<div><p><b>یک ویژگیِ تکراری</b> (مثلاً free و FREE دو ستونِ جدا)</p><p class="ex">همان شاهد دو بار ضرب می‌شود: \(\frac{0.4}{0.6} \times 3.79^2 \approx 9.58\) ← <b>۹۱٪</b> اسپم. اطلاعاتِ جدیدی نیامده، ولی مدل مطمئن‌تر شد.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">به همین دلیل احتمال‌ها افراطی می‌شوند. ایمیلی که free را ۱۰ بار دارد: احتمالِ اسپم \(0.999998\). اگر احتمالِ دقیق لازم دارید (مثلاً برای آستانه گذاشتن)، احتمال‌ها را با <code>CalibratedClassifierCV</code> کالیبره کنید. برای رتبه‌بندی و انتخابِ دسته، معمولاً همین کافی است.</p>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>بیز سادهِ چندجمله‌ای از صفر</b> (با NumPy، لاپلاس و لگاریتم):</p>
+<pre>import numpy as np
+
+class MultinomialNB:
+    def __init__(self, alpha=1.0):
+        self.alpha = alpha
+
+    def fit(self, X, y):                      # X: (n_docs, n_words) word counts
+        self.classes = np.unique(y)
+        V = X.shape[1]
+        self.log_prior, self.log_lik = [], []
+        for c in self.classes:
+            Xc = X[y == c]
+            self.log_prior.append(np.log(len(Xc) / len(X)))
+            counts = Xc.sum(axis=0) + self.alpha          # Laplace smoothing
+            self.log_lik.append(np.log(counts / counts.sum()))  # sum = total + alpha*V
+        self.log_prior = np.array(self.log_prior)
+        self.log_lik = np.array(self.log_lik)               # (n_classes, V)
+        return self
+
+    def predict_log_scores(self, X):
+        return X @ self.log_lik.T + self.log_prior          # sums, not products
+
+    def predict_proba(self, X):
+        s = self.predict_log_scores(X)
+        s -= s.max(axis=1, keepdims=True)                   # log-sum-exp trick
+        p = np.exp(s)
+        return p / p.sum(axis=1, keepdims=True)
+
+    def predict(self, X):
+        return self.classes[self.predict_log_scores(X).argmax(axis=1)]
+
+# The table on this page, as class totals (one row per class is enough for counts):
+# words: free win money meeting report hi
+X = np.array([[6, 4, 5, 0, 1, 2],      # all spam words
+              [1, 0, 2, 5, 6, 6]])     # all ham words
+model = MultinomialNB(alpha=1.0).fit(X, np.array([1, 0]))
+model.log_prior = np.log([0.6, 0.4])   # real prior: 6 ham, 4 spam emails
+email = np.array([[1, 0, 1, 0, 0, 1]]) # "free money hi"
+print(model.predict_proba(email))      # [[0.282 0.718]] -> 72% spam</pre>
+<p><b>با scikit-learn</b> (CountVectorizer کلمه‌ها را می‌شمارد):</p>
+<pre>from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import make_pipeline
+
+emails = ["free money now", "win free money", "hi meeting report", "report for the meeting"]
+labels = [1, 1, 0, 0]                 # 1 = spam
+
+clf = make_pipeline(CountVectorizer(), MultinomialNB(alpha=1.0))
+clf.fit(emails, labels)
+print(clf.predict(["free money hi"]))          # [1]
+print(clf.predict_proba(["free money hi"]))    # [[P(ham), P(spam)]]
+
+# Look at the learned word weights (log P(w | c)):
+nb = clf.named_steps["multinomialnb"]
+words = clf.named_steps["countvectorizer"].get_feature_names_out()
+weight = nb.feature_log_prob_[1] - nb.feature_log_prob_[0]
+print(sorted(zip(weight, words))[-3:])         # most "spammy" words</pre>
+<p class="ex">برای ویژگی‌های بله/نه از <code>BernoulliNB</code> و برای عددهای پیوسته از <code>GaussianNB</code> استفاده کنید. اگر کلمه‌ای در زمانِ تست در واژگان نباشد، CountVectorizer آن را نادیده می‌گیرد.</p>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>How does Naive Bayes classify an example?</summary>
+<p>It applies Bayes' rule, \(P(c\mid x) = P(x\mid c)P(c)/P(x)\), and picks the class with the largest \(P(c)\prod_i P(x_i\mid c)\). The denominator \(P(x)\) is the same for all classes, so it can be dropped for the decision. Training is just counting: class frequencies give the priors, and per-class feature frequencies give the likelihoods. Example: 4 spam and 6 ham emails give \(P(\text{spam}) = 0.4\); if "free" appears 6 times among 18 spam words, \(P(\text{free}\mid\text{spam}) = 6/18\). For "free money hi" the scores are \(0.004115\) (spam) vs \(0.0009\) (ham), so \(P(\text{spam}\mid x) \approx 0.82\).</p>
+<p class="src">Analytics Vidhya; GeeksforGeeks</p></details>
+
+<details><summary>Why is it called "naive"? Why does it work if the assumption is false?</summary>
+<p>It assumes the features are conditionally independent given the class: \(P(x_1,\dots,x_n\mid c) = \prod_i P(x_i\mid c)\). In text this is clearly false ("New" and "York" co-occur). It still classifies well because classification only needs the correct class to have the highest score, not accurate probabilities. The errors from the assumption often push both class scores in the same direction, so the argmax stays correct even when the probabilities are badly off. Domingos and Pazzani (1997) showed the classifier can be optimal under 0-1 loss even with strong dependencies. The price is poorly calibrated, over-confident probabilities.</p>
+<p class="src">Analytics Vidhya; mockquestions.com ("Why is Bayes naive?")</p></details>
+
+<details><summary>What is the zero-frequency problem and how do you fix it?</summary>
+<p>If a word never appears with a class in training, its estimate \(P(w\mid c) = 0\), and because the likelihoods are multiplied, the whole class score becomes 0 no matter what the other words say. Example: "win" never appears in the 6 ham emails, so "win report hi" gets \(P(\text{spam}) = 1\) even though "report" and "hi" are ham words. Fix it with additive (Laplace) smoothing: \(P(w\mid c) = \frac{n_{wc}+\alpha}{N_c+\alpha V}\), where \(n_{wc}\) is the count of word \(w\) in class \(c\), \(N_c\) the total words in \(c\) and \(V\) the vocabulary size. With \(\alpha = 1\), \(P(\text{win}\mid\text{ham}) = 1/26\) and the same email becomes about 34% spam. \(\alpha\) is a hyperparameter; \(\alpha < 1\) is called Lidstone smoothing.</p>
+<p class="src">PracHub; GeeksforGeeks</p></details>
+
+<details><summary>Why do implementations work with log probabilities?</summary>
+<p>Multiplying hundreds of small probabilities underflows: \(0.001^{500} = 10^{-1500}\), far below the smallest float64 (~\(10^{-308}\)), so it becomes exactly 0 for every class. Taking logs turns the product into a sum, \(\log P(c) + \sum_i \log P(x_i\mid c)\), which is numerically stable (\(500\ln 0.001 \approx -3454\)) and faster. Since log is monotonic, the argmax is unchanged. To recover probabilities, use the log-sum-exp trick: subtract the max log score before exponentiating and normalising.</p>
+<p class="src">PracHub (log-space scoring)</p></details>
+
+<details><summary>Multinomial vs Bernoulli vs Gaussian Naive Bayes?</summary>
+<p><b>Multinomial:</b> features are counts (word counts, TF-IDF also works in practice); a word that appears twice contributes twice; absent words contribute nothing. The usual choice for documents. <b>Bernoulli:</b> features are binary presence/absence; absent words do contribute a factor \(1 - P(w\mid c)\). Often good for short texts. <b>Gaussian:</b> continuous features, each modelled by a per-class normal distribution with mean \(\mu_c\) and variance \(\sigma_c^2\). Example: links per email with spam \(\mu=8,\sigma=3\) and ham \(\mu=1,\sigma=1.5\); an email with 5 links is about 88% spam. Mixed data can combine models, or continuous features can be binned.</p>
+<p class="src">scikit-learn user guide; Analytics Vidhya</p></details>
+
+<details><summary>Naive Bayes vs logistic regression: generative vs discriminative?</summary>
+<p>Naive Bayes is generative: it models \(P(x\mid c)\) and \(P(c)\) and derives \(P(c\mid x)\) with Bayes' rule. Logistic regression is discriminative: it models \(P(c\mid x)\) directly by minimising log loss. For multinomial/Bernoulli NB the log-odds are linear in the features, so both produce a linear decision boundary of the same form; they differ in how the weights are fit (counting vs optimisation). Ng and Jordan (2001) showed NB approaches its (higher) asymptotic error with far fewer samples (logarithmic vs linear in the number of features), while logistic regression reaches lower asymptotic error. Rule of thumb: little data, NB; lots of data, logistic regression.</p>
+<p class="src">Ng &amp; Jordan, NIPS 2001</p></details>
+
+<details><summary>Are Naive Bayes probabilities well calibrated?</summary>
+<p>No. Because correlated evidence is multiplied as if it were independent, the posteriors are pushed towards 0 and 1. Example: an email containing "free" once gets 72% spam in our model; the same word counted ten times gives 0.999998. The ranking of examples is often still good (decent AUC), but if you need real probabilities (thresholds, expected cost), calibrate with Platt scaling or isotonic regression (<code>CalibratedClassifierCV</code>) on held-out data.</p>
+<p class="src">scikit-learn user guide (probability calibration)</p></details>
+
+<details><summary>What happens with correlated or duplicated features?</summary>
+<p>They are double-counted. If a feature is duplicated, its likelihood ratio is multiplied twice. Example: "free" alone has likelihood ratio 3.79; prior odds 0.4/0.6 give posterior odds 2.53 (72% spam). Duplicate the column and the odds become \(0.667 \times 3.79^2 \approx 9.58\) (91% spam), though no new information was added. Mitigations: remove redundant features, feature selection, or use a model without the independence assumption such as logistic regression.</p>
+<p class="src">Analytics Vidhya; GeeksforGeeks</p></details>
+
+<details><summary>Is Naive Bayes a linear classifier?</summary>
+<p>Multinomial and Bernoulli NB are linear in the (count or binary) features: \(\log\frac{P(1\mid x)}{P(0\mid x)} = b + \sum_w n_w\theta_w\) with \(\theta_w = \log\frac{P(w\mid 1)}{P(w\mid 0)}\). Gaussian NB is linear only if the variances are shared across classes; with class-specific variances the boundary is quadratic.</p></details>
+
+<details><summary>How do you handle words at test time that were never seen in training?</summary>
+<p>A word not in the vocabulary has no parameter, so it is simply ignored (CountVectorizer drops it); this is the standard choice. Words in the vocabulary but unseen in one class are handled by smoothing. Some systems add an explicit &lt;UNK&gt; token and give it smoothed counts. Never let an unseen word produce a zero probability.</p>
+<p class="src">PracHub (unknown vocabulary)</p></details>
+
+<details><summary>When would you choose Naive Bayes in practice?</summary>
+<p>As a fast baseline for text classification (spam, topic, sentiment); when training data is small; when there are very many features; when you need training and prediction in linear time or online updates (just update counts); and when you need a simple, explainable model. Avoid relying on it when features are strongly dependent, when calibrated probabilities matter, or when you have lots of data and can afford logistic regression, gradient boosting or a fine-tuned language model.</p>
+<p class="src">GeeksforGeeks; Devinterview.io question list</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://www.analyticsvidhya.com/blog/2022/10/frequently-asked-interview-questions-on-naive-bayes-classifier/">Analytics Vidhya</a> · <a href="https://prachub.com/resources/naive-bayes-interview-questions-smoothing-log-probabilities-and-text-features">PracHub</a> · <a href="https://www.geeksforgeeks.org/important-naive-bayes-interview-questions/">GeeksforGeeks</a> · <a href="https://github.com/Devinterview-io/naive-bayes-interview-questions">Devinterview.io</a> · <a href="https://www.mockquestions.com/position/Machine+Learning/Bayes-Theorem-is-often-described-as-Naive-Why-is-Bayes-naive-3315635.html">MockQuestions</a> · <a href="https://papers.nips.cc/paper/2001/hash/7b7a53e239400a13bd6be6c91c4f6c4e-Abstract.html">Ng &amp; Jordan, NIPS 2001</a> · <a href="https://scikit-learn.org/stable/modules/naive_bayes.html">scikit-learn: Naive Bayes</a> · <a href="https://scikit-learn.org/stable/modules/calibration.html">scikit-learn: calibration</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+
+// Figure 1: 1000 emails grid
+const gp = document.getElementById('gp'), gs = document.getElementById('gs'), gh = document.getElementById('gh');
+const drawGrid = () => {
+  const ps = +gp.value / 100, fs = +gs.value / 100, fh = +gh.value / 100;
+  const nS = Math.round(1000 * ps), nSF = Math.round(nS * fs), nH = 1000 - nS, nHF = Math.round(nH * fh);
+  const [c, W, Ht] = mk(document.getElementById('grid'), 0.625, 532), cols = 40, cw = W / cols, ch = Ht / 25;
+  for (let i = 0; i < 1000; i++) {
+    const col = i % cols, row = Math.floor(i / cols), spam = i < nS, free = spam ? i < nSF : (i - nS) < nHF;
+    c.fillStyle = css(spam ? 'red' : 'blue'); c.globalAlpha = free ? 1 : 0.15;
+    c.fillRect(col * cw + 1, row * ch + 1, cw - 2, ch - 2);
+  }
+  c.globalAlpha = 1;
+  const post = ps * fs / (ps * fs + (1 - ps) * fh);
+  document.getElementById('gpv').textContent = fa(ps * 100) + '٪';
+  document.getElementById('gsv').textContent = fa(fs * 100) + '٪';
+  document.getElementById('ghv').textContent = fa(fh * 100) + '٪';
+  document.getElementById('ginfo').innerHTML = `ایمیل‌های با free: <b>${fa(nSF)}</b> اسپم + <b>${fa(nHF)}</b> عادی<br>احتمالِ اسپم وقتی free هست: <b>${fa(post * 100, 1)}٪</b> (پیشین: ${fa(ps * 100)}٪)`;
+};
+gp.oninput = gs.oninput = gh.oninput = drawGrid;
+
+// Figure 2: build an email
+const WORDS = ['free', 'win', 'money', 'meeting', 'report', 'hi'], CS = [6, 4, 5, 0, 1, 2], CH = [1, 0, 2, 5, 6, 6];
+const TS = 18, TH = 20, PRIOR = 0.4;
+const on = new Set(['free', 'money', 'hi']);
+const chips = document.getElementById('chips'), alphaSel = document.getElementById('alpha');
+WORDS.forEach(w => { const b = document.createElement('button'); b.className = 'chip'; b.textContent = w; b.dataset.w = w;
+  b.onclick = () => { on.has(w) ? on.delete(w) : on.add(w); drawEmail(); }; chips.appendChild(b); });
+const drawEmail = () => {
+  const a = +alphaSel.value, V = WORDS.length;
+  [...chips.children].forEach(b => b.classList.toggle('on', on.has(b.dataset.w)));
+  let lo = Math.log(PRIOR / (1 - PRIOR)), zS = false, zH = false;
+  const rows = [['prior', lo, false]];
+  WORDS.forEach((w, i) => { if (!on.has(w)) return;
+    const ps = (CS[i] + a) / (TS + a * V), ph = (CH[i] + a) / (TH + a * V);
+    if (ps === 0) zS = true; if (ph === 0) zH = true;
+    const v = ps === 0 && ph === 0 ? NaN : ps === 0 ? -Infinity : ph === 0 ? Infinity : Math.log(ps / ph);
+    rows.push([w, v, true]); if (isFinite(v)) lo += v; });
+  const mx = 2.5;
+  document.getElementById('ev').innerHTML = rows.map(([w, v]) => {
+    const inf = !isFinite(v), f = inf ? 1 : Math.min(Math.abs(v) / mx, 1), pos = v > 0;
+    const style = isNaN(v) ? '' : `left:${pos ? 50 : 50 - f * 50}%;width:${f * 50}%;background:${css(pos ? 'red' : 'blue')}`;
+    const txt = isNaN(v) ? '0/0' : inf ? (pos ? '+∞' : '−∞') : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+    return `<span class="nm">${w}</span><span class="trk"><i style="${style}"></i></span><span class="v">${txt}</span>`; }).join('');
+  let p, msg;
+  if (zS && zH) { p = NaN; msg = 'هر دو امتیاز صفر شدند: جواب <b>تعریف‌نشده</b> است (۰/۰).'; }
+  else if (zH) { p = 1; msg = 'امتیازِ عادی صفر شد، پس احتمالِ اسپم: <b>۱۰۰٪</b> (فقط به خاطرِ یک صفر).'; }
+  else if (zS) { p = 0; msg = 'امتیازِ اسپم صفر شد، پس احتمالِ اسپم: <b>۰٪</b> (فقط به خاطرِ یک صفر).'; }
+  else { p = 1 / (1 + Math.exp(-lo)); msg = `جمعِ نوارها: ${lo < 0 ? '−' : ''}${fa(Math.abs(lo), 2)} ← احتمالِ اسپم: <b>${fa(p * 100, 1)}٪</b>`; }
+  document.getElementById('res').innerHTML = msg;
+  document.getElementById('meterI').style.width = (isNaN(p) ? 0 : p * 100) + '%';
+};
+alphaSel.onchange = drawEmail;
+
+// Figure 3: Gaussian NB
+const gx = document.getElementById('gx');
+const norm = (x, m, s) => Math.exp(-((x - m) ** 2) / (2 * s * s)) / (s * Math.sqrt(2 * Math.PI));
+const fS = x => 0.4 * norm(x, 8, 3), fH = x => 0.6 * norm(x, 1, 1.5);
+const drawGauss = () => {
+  const x0 = +gx.value, [c, W, Ht] = mk(document.getElementById('gauss'), 0.5, 532);
+  const X = x => 14 + x / 15 * (W - 28), Y = y => Ht - 22 - y / 0.17 * (Ht - 34);
+  c.strokeStyle = css('line'); c.lineWidth = 1; c.beginPath(); c.moveTo(X(0), Y(0)); c.lineTo(X(15), Y(0)); c.stroke();
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center';
+  for (let t = 0; t <= 15; t += 3) c.fillText(fa(t), X(t), Ht - 8);
+  [['red', fS], ['blue', fH]].forEach(([col, f]) => { c.strokeStyle = css(col); c.lineWidth = 2.5; c.beginPath();
+    for (let i = 0; i <= 300; i++) { const x = i / 20; i ? c.lineTo(X(x), Y(f(x))) : c.moveTo(X(x), Y(f(x))); } c.stroke(); });
+  c.strokeStyle = css('ink'); c.setLineDash([4, 4]); c.lineWidth = 1; c.beginPath(); c.moveTo(X(x0), Y(0)); c.lineTo(X(x0), 6); c.stroke(); c.setLineDash([]);
+  [['red', fS], ['blue', fH]].forEach(([col, f]) => { c.fillStyle = css(col); c.beginPath(); c.arc(X(x0), Y(f(x0)), 4.5, 0, 7); c.fill(); });
+  const p = fS(x0) / (fS(x0) + fH(x0));
+  document.getElementById('gxv').textContent = fa(x0, 1);
+  document.getElementById('gxinfo').innerHTML = `ارتفاعِ قرمز ${fa(fS(x0), 4)} · ارتفاعِ آبی ${fa(fH(x0), 4)}<br>احتمالِ اسپم با ${fa(x0, 1)} لینک: <b>${fa(p * 100, 1)}٪</b>`;
+};
+gx.oninput = drawGauss;
+
+const drawAll = () => { drawGrid(); drawGauss(); };
+addEventListener('resize', drawAll); drawAll(); drawEmail();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نزدیک‌ترین همسایه‌ها</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.ctl button { margin-top: 0; }
+.ctl button.on { background: var(--accent); color: var(--card); }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+tr.near td { font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="gradient-boosting.html">گرادیان بوستینگ</a> · <a href="kmeans.html">بعدی: خوشه‌بندی K-Means ←</a></p>
+<h1>نزدیک‌ترین همسایه‌ها <span class="en">(k-Nearest Neighbors, k-NN)</span></h1>
+<p class="sub">برای پیش‌بینی، به شبیه‌ترین نمونه‌های قبلی نگاه کن. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>یک خانه‌ی تازه آگهی شده: <b>۸۵ متر</b>، <b>۰٫۵ کیلومتر</b> تا مترو. ارزان است یا گران؟</p>
+<p>k-NN ساده‌ترین جواب را می‌دهد:</p>
+<ol>
+<li>همه‌ی خانه‌هایی را که قبلاً دیده‌ای نگه دار.</li>
+<li>فاصله‌ی خانه‌ی تازه را تا هر کدام حساب کن.</li>
+<li>\(k\) خانه‌ی <b>نزدیک‌تر</b> را بردار (مثلاً ۳ تا).</li>
+<li>دسته‌بندی: بیشترِ آن‌ها چه هستند؟ همان را بگو (<b>رأی اکثریت</b>).</li>
+<li>رگرسیون: میانگینِ قیمتِ آن‌ها را بگو.</li>
+</ol>
+<div class="key">k-NN اصلاً «آموزش» ندارد. فقط داده را نگه می‌دارد و همه‌ی کار را موقعِ پیش‌بینی انجام می‌دهد. به همین دلیل به آن یادگیرِ <b>تنبل</b> <span class="en">(Lazy Learner)</span> می‌گویند.</div>
+<p>چرا مهم است:</p>
+<ul>
+<li>یک مدلِ پایه‌ی خوب و قابل‌فهم است.</li>
+<li>ایده‌ی «نزدیک‌ترین همسایه» پایه‌ی سیستم‌های پیشنهاد (فیلمِ مشابه، محصولِ مشابه) است.</li>
+<li>همین ایده در جست‌وجوی برداری و RAG برای پیدا کردنِ متن‌های مرتبط با سؤال استفاده می‌شود.</li>
+<li>در مصاحبه زیاد می‌پرسند: انتخابِ k، مقیاس‌بندی، نفرینِ ابعاد، هزینه‌ی پیش‌بینی.</li>
+</ul>
+</section>
+
+<section>
+<h2>مثال با عدد</h2>
+<p>شش خانه‌ی قبلی (قیمت به میلیون):</p>
+<div dir="ltr"><table>
+<tr><th>house</th><th>area (m²)</th><th>metro (km)</th><th>price</th><th>label</th><th>scaled area</th><th>scaled metro</th><th>distance to new</th></tr>
+<tr><td>A</td><td>70</td><td>0.4</td><td>620</td><td>expensive</td><td>0.250</td><td>0.000</td><td>0.376</td></tr>
+<tr><td>B</td><td>95</td><td>4.0</td><td>480</td><td>cheap</td><td>0.875</td><td>1.000</td><td>1.004</td></tr>
+<tr><td>C</td><td>80</td><td>3.5</td><td>450</td><td>cheap</td><td>0.500</td><td>0.861</td><td>0.843</td></tr>
+<tr><td>D</td><td>100</td><td>0.7</td><td>820</td><td>expensive</td><td>1.000</td><td>0.083</td><td>0.379</td></tr>
+<tr><td>E</td><td>60</td><td>3.0</td><td>350</td><td>cheap</td><td>0.000</td><td>0.722</td><td>0.934</td></tr>
+<tr><td>F</td><td>75</td><td>0.8</td><td>600</td><td>expensive</td><td>0.375</td><td>0.111</td><td>0.264</td></tr>
+<tr><td><b>new</b></td><td>85</td><td>0.5</td><td>?</td><td>?</td><td>0.625</td><td>0.028</td><td>—</td></tr>
+</table></div>
+<ul class="ex" style="margin-top:8px">
+<li><b>قدمِ ۱، هم‌اندازه کردن:</b> متراژ بین ۶۰ و ۱۰۰ است و فاصله تا مترو بین ۰٫۴ و ۴. هر دو را به بازه‌ی ۰ تا ۱ می‌بریم. مثلاً متراژِ ۸۵: \((85-60)/(100-60) = 0.625\). بدونِ این کار، متراژ چون عددهای بزرگ‌تری دارد، فاصله را قبضه می‌کند.</li>
+<li><b>قدمِ ۲، فاصله:</b> برای F: \(\sqrt{(0.625-0.375)^2 + (0.028-0.111)^2} = 0.264\).</li>
+<li><b>قدمِ ۳، سه همسایه‌ی نزدیک (k = ۳):</b> F (۰٫۲۶۴)، A (۰٫۳۷۶)، D (۰٫۳۷۹).</li>
+<li><b>دسته‌بندی:</b> هر سه «گران»‌اند. پس جواب: <b>گران</b>.</li>
+<li><b>رگرسیون:</b> قیمت = میانگینِ قیمتِ سه همسایه = \((600+620+820)/3 \approx 680\) میلیون.</li>
+</ul>
+<p>همین. نه وزنی یاد گرفتیم، نه درختی ساختیم.</p>
+</section>
+
+<section>
+<h2>فرمول‌ها</h2>
+<p>اگر \(N_k(x)\) مجموعه‌ی \(k\) نمونه‌ی نزدیک به \(x\) باشد:</p>
+<div class="f">\[ \text{classification:}\quad \hat y = \arg\max_{c} \sum_{i \in N_k(x)} \mathbb{1}[y_i = c] \qquad\quad \text{regression:}\quad \hat y = \frac{1}{k}\sum_{i \in N_k(x)} y_i \]</div>
+<ul class="sym">
+<li>\(x\): نمونه‌ی تازه</li>
+<li>\(N_k(x)\): \(k\) نمونه‌ی نزدیک</li>
+<li>\(y_i\): برچسب یا قیمتِ همسایه‌ی \(i\)</li>
+<li>\(c\): یک دسته (ارزان، گران)</li>
+<li>\(\mathbb{1}[\cdot]\): اگر درست باشد ۱، وگرنه ۰</li>
+<li>\(\hat y\): پیش‌بینی</li>
+</ul>
+<p>برای دسته‌بندی، احتمالِ هر دسته هم ساده است: سهمِ آن دسته بین همسایه‌ها. مثلاً اگر ۲ از ۳ همسایه گران باشند، \(P(\text{expensive}) = 2/3\).</p>
+<p class="ex">برای دو دسته، k را <b>فرد</b> بگیرید تا رأی مساوی نشود.</p>
+</section>
+
+<section>
+<h2>اندازه‌گیری فاصله</h2>
+<p>«نزدیک» یعنی چه؟ سه انتخابِ رایج، با همان خانه‌ی تازه و خانه‌ی F (عددهای ۰ تا ۱):</p>
+<p class="ex">اختلاف‌ها: متراژ \(0.625-0.375 = 0.250\)، مترو \(0.028-0.111 = -0.083\).</p>
+<div class="kinds">
+<div><p><b>اقلیدسی <span class="en">(Euclidean, L2)</span></b></p>
+<p>خطِ مستقیم.</p>
+<div class="f">\[ d = \sqrt{\textstyle\sum_j (a_j - b_j)^2} \]</div>
+<p class="ex">\(\sqrt{0.250^2 + 0.083^2} = 0.264\)<br>پیش‌فرضِ رایج برای ویژگی‌های عددی.</p></div>
+<div><p><b>منهتن <span class="en">(Manhattan, L1)</span></b></p>
+<p>جمعِ قدرمطلقِ اختلاف‌ها؛ مثل راه رفتن در خیابان‌های شطرنجی.</p>
+<div class="f">\[ d = \textstyle\sum_j |a_j - b_j| \]</div>
+<p class="ex">\(0.250 + 0.083 = 0.333\)<br>یک اختلافِ خیلی بزرگ را کمتر از اقلیدسی بزرگ می‌کند (توان ۲ ندارد).</p></div>
+<div><p><b>کسینوسی <span class="en">(Cosine)</span></b></p>
+<p>فقط <b>جهت</b> مهم است، نه اندازه.</p>
+<div class="f">\[ d = 1 - \frac{a \cdot b}{\lVert a\rVert\,\lVert b\rVert} \]</div>
+<p class="ex">برای متن، embedding و سلیقه‌ی کاربر. مثال پایین.</p></div>
+</div>
+<svg viewBox="0 0 320 130" style="width:100%;max-width:420px;display:block;margin:12px auto">
+<g transform="translate(80,65)">
+<line x1="-55" y1="0" x2="55" y2="0" stroke="var(--line)"/><line x1="0" y1="-55" x2="0" y2="55" stroke="var(--line)"/>
+<circle r="45" fill="none" stroke="var(--blue)" stroke-width="2"/>
+<circle r="3" fill="var(--ink)"/>
+</g>
+<g transform="translate(240,65)">
+<line x1="-55" y1="0" x2="55" y2="0" stroke="var(--line)"/><line x1="0" y1="-55" x2="0" y2="55" stroke="var(--line)"/>
+<polygon points="45,0 0,45 -45,0 0,-45" fill="none" stroke="var(--orange)" stroke-width="2"/>
+<circle r="3" fill="var(--ink)"/>
+</g>
+<text x="80" y="127" font-size="11" text-anchor="middle">اقلیدسی: دایره</text>
+<text x="240" y="127" font-size="11" text-anchor="middle">منهتن: لوزی</text>
+</svg>
+<p class="legend" style="justify-content:center">همه‌ی نقطه‌هایی که فاصله‌شان تا مرکز دقیقاً ۱ است.</p>
+<p><b>مثالِ کسینوسی:</b> ساعتِ تماشای سه کاربر در چهار ژانر (اکشن، کمدی، درام، ترسناک):</p>
+<div dir="ltr"><table>
+<tr><th>user</th><th>action</th><th>comedy</th><th>drama</th><th>horror</th><th>Euclidean to u1</th><th>cosine similarity to u1</th></tr>
+<tr><td>u1</td><td>5</td><td>4</td><td>0</td><td>1</td><td>—</td><td>—</td></tr>
+<tr><td>u2</td><td>4</td><td>5</td><td>1</td><td>0</td><td>2.000</td><td>0.952</td></tr>
+<tr><td>u3</td><td>1</td><td>1</td><td>0</td><td>0</td><td>5.099</td><td>0.982</td></tr>
+</table></div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>از نگاهِ اقلیدسی</b></p><p class="ex">u2 نزدیک‌تر است (۲٫۰ در برابرِ ۵٫۱)، چون u3 کلاً کم تماشا می‌کند و عددهایش کوچک‌اند.</p></div>
+<div><p><b>از نگاهِ کسینوسی</b></p><p class="ex">u3 شبیه‌تر است (۰٫۹۸۲ در برابرِ ۰٫۹۵۲)، چون <b>نسبتِ</b> ژانرهایش مثلِ u1 است: فقط اکشن و کمدی. برای پیشنهادِ فیلم معمولاً همین مهم است.</p></div>
+</div>
+<details class="drop"><summary><b>فاصله‌ی مینکوفسکی: اقلیدسی و منهتن در یک فرمول</b></summary>
+<div class="f">\[ d_p(a,b) = \Big(\textstyle\sum_j |a_j - b_j|^p\Big)^{1/p} \]</div>
+<p>\(p=1\) منهتن است و \(p=2\) اقلیدسی. در scikit-learn پیش‌فرض <code>metric="minkowski", p=2</code> است. برای ویژگی‌های دسته‌ای (بله/خیر) فاصله‌ی همینگ <span class="en">(Hamming)</span> رایج است: تعدادِ ویژگی‌هایی که فرق دارند.</p>
+</details>
+</section>
+
+<section>
+<h2>چرا مقیاس‌بندی لازم است</h2>
+<p>اگر عددهای خام را بدهیم، متراژ تا ۴۰ واحد فرق می‌کند ولی فاصله تا مترو حداکثر ۳٫۶. پس فاصله تقریباً فقط از متراژ ساخته می‌شود.</p>
+<p>فاصله‌ی خامِ خانه‌ی تازه تا F:</p>
+<div class="f">\[ \sqrt{(85-75)^2 + (0.5-0.8)^2} = \sqrt{100 + 0.09} = 10.004 \]</div>
+<p>از ۱۰۰٫۰۹، فقط ۰٫۰۹ سهمِ مترو است. مدل عملاً مترو را نمی‌بیند. دکمه‌ها را بزنید:</p>
+<div class="box">
+<canvas id="scl"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>گران</span><span><i style="background:var(--red)"></i>ارزان</span><span><i style="background:var(--ink)"></i>خانه‌ی تازه</span><span><i style="background:var(--accent)"></i>محدوده‌ی ۳ همسایه</span></div>
+<div class="ctl"><button id="sRaw">عددهای خام</button><button id="sNorm">مقیاس‌شده (۰ تا ۱)</button></div>
+<div class="err" id="sinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>بدونِ مقیاس‌بندی</b></p><p class="ex">همسایه‌ها: C (۵٫۸۳)، F (۱۰٫۰۰)، B (۱۰٫۵۹). دو ارزان، یک گران ← <b>ارزان</b>. قیمت: \((450+600+480)/3 = 510\). C و B هر دو ۳ تا ۴ کیلومتر از مترو دورند، ولی چون متراژشان شبیه است «نزدیک» حساب شدند.</p></div>
+<div><p><b>با مقیاس‌بندی</b></p><p class="ex">همسایه‌ها: F، A، D. هر سه گران ← <b>گران</b>. قیمت: ۶۸۰. حالا هر دو ویژگی سهم دارند.</p></div>
+</div>
+<p style="margin-top:8px">دو روشِ رایج:</p>
+<div class="kinds">
+<div><p><b>Min-Max</b></p><div class="f">\[ x' = \frac{x - \min}{\max - \min} \]</div><p class="ex">به بازه‌ی ۰ تا ۱. متراژِ ۸۵ ← ۰٫۶۲۵. به داده‌ی پرت حساس است.</p></div>
+<div><p><b>استانداردسازی <span class="en">(Standardization)</span></b></p><div class="f">\[ x' = \frac{x - \mu}{\sigma} \]</div><p class="ex">میانگین ۰ و انحراف معیار ۱. در عمل رایج‌تر است (<code>StandardScaler</code>).</p></div>
+</div>
+<div class="key">min، max، میانگین و انحراف معیار را <b>فقط از داده‌ی آموزش</b> حساب کنید و همان را روی داده‌ی تست و داده‌ی تازه بزنید. وگرنه اطلاعاتِ تست به مدل نشت می‌کند.</div>
+</section>
+
+<section>
+<h2>انتخابِ k</h2>
+<p>۱۰۰ خانه‌ی آموزشی. محورِ افقی متراژ و محورِ عمودی فاصله تا مترو (هر دو مقیاس‌شده). مرزِ واقعی موج‌دار است و ۱۵٪ برچسب‌ها عمداً اشتباه‌اند (نویز). رنگِ زمینه پیش‌بینیِ مدل است. k را عوض کنید:</p>
+<div class="box">
+<canvas id="reg"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>گران</span><span><i style="background:var(--red)"></i>ارزان</span><span><i style="background:var(--muted)"></i>مرزِ واقعی</span></div>
+<label>k <input id="kk" type="range" min="0" max="49" step="1" value="0"><b id="kv"></b></label>
+<canvas id="kcurve"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>دقتِ آموزش</span><span><i style="background:var(--red)"></i>دقتِ داده‌ی جدید (۵۰۰ خانه)</span></div>
+<div class="err" id="kinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>k = ۱: بیش‌برازش</b></p><p class="ex">دقتِ آموزش ۱۰۰٪ (هر خانه نزدیک‌ترین همسایه‌ی خودش است). ولی دقت روی داده‌ی جدید ۷۵٫۴٪. مرز پر از جزیره‌های کوچک دورِ نقطه‌های نویزی است.</p></div>
+<div><p><b>k متوسط: خوب</b></p><p class="ex">بهترین دقتِ داده‌ی جدید با k = ۱۹: ۸۰٫۲٪. از حدودِ k = ۵ تا ۴۳ دقت تقریباً ثابت و حدودِ ۷۹ تا ۸۰٪ است. مرز صاف ولی هنوز موج را دنبال می‌کند.</p></div>
+<div><p><b>k خیلی بزرگ: کم‌برازش</b></p><p class="ex">از k = ۸۱ به بعد، اکثرِ همسایه‌ها همیشه ارزان‌اند (۵۸ از ۱۰۰ خانه). مدل برای همه می‌گوید «ارزان». دقت: آموزش ۵۸٪، داده‌ی جدید ۵۰٫۶٪.</p></div>
+</div>
+<p style="margin-top:8px">به زبانِ بایاس و واریانس:</p>
+<ul>
+<li>k کوچک: بایاسِ کم، واریانسِ زیاد. یک نقطه‌ی نویزی پیش‌بینی را عوض می‌کند.</li>
+<li>k بزرگ: واریانسِ کم، بایاسِ زیاد. جزئیاتِ واقعی هم صاف می‌شوند.</li>
+</ul>
+<p>در عمل k را با <b>اعتبارسنجیِ متقابل</b> <span class="en">(Cross-Validation)</span> انتخاب کنید. یک نقطه‌ی شروعِ رایج \(k \approx \sqrt{n}\) است؛ این‌جا \(\sqrt{100} = 10\).</p>
+</section>
+
+<section>
+<h2>k-NN وزن‌دار</h2>
+<p>در رأیِ ساده، همسایه‌ی خیلی نزدیک و همسایه‌ی دور یک رأی دارند. در نسخه‌ی <b>وزن‌دار</b>، وزنِ هر همسایه عکسِ فاصله‌اش است:</p>
+<div class="f">\[ w_i = \frac{1}{d(x, x_i)} \qquad \hat y = \frac{\sum_{i \in N_k} w_i\, y_i}{\sum_{i \in N_k} w_i} \]</div>
+<ul class="sym">
+<li>\(d(x, x_i)\): فاصله تا همسایه‌ی \(i\)</li>
+<li>\(w_i\): وزنِ همسایه‌ی \(i\)</li>
+<li>\(y_i\): قیمت (یا برای دسته‌بندی: ۱ اگر گران)</li>
+</ul>
+<p>مثال: سه همسایه‌ی یک خانه‌ی دیگر:</p>
+<div dir="ltr"><table>
+<tr><th>neighbor</th><th>distance</th><th>label</th><th>price</th><th>weight 1/d</th></tr>
+<tr><td>1</td><td>0.1</td><td>expensive</td><td>700</td><td>10.0</td></tr>
+<tr><td>2</td><td>0.5</td><td>cheap</td><td>450</td><td>2.0</td></tr>
+<tr><td>3</td><td>0.6</td><td>cheap</td><td>420</td><td>1.667</td></tr>
+</table></div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>رأیِ ساده</b></p><p class="ex">۲ ارزان در برابرِ ۱ گران ← <b>ارزان</b>.<br>قیمت: \((700+450+420)/3 = 523.3\)</p></div>
+<div><p><b>رأیِ وزن‌دار</b></p><p class="ex">گران: ۱۰٫۰، ارزان: \(2.0 + 1.667 = 3.667\) ← <b>گران</b> (احتمال \(10/13.667 = 0.732\)).<br>قیمت: \(\frac{10\cdot700 + 2\cdot450 + 1.667\cdot420}{13.667} = 629.3\)</p></div>
+</div>
+<p class="ex" style="margin-top:8px">همسایه‌ای که تقریباً روی خانه‌ی تازه است، حرفِ مهم‌تری دارد. وزن‌دار کردن حساسیت به انتخابِ k را هم کمتر می‌کند. اگر فاصله صفر شود (نمونه‌ی تکراری)، همان برچسب را مستقیم برمی‌گردانند. در scikit-learn: <code>weights="distance"</code>.</p>
+</section>
+
+<section>
+<h2>نفرینِ ابعاد</h2>
+<p>k-NN فرض می‌کند «نزدیک» یعنی «شبیه». در فضای با ابعادِ زیاد این فرض خراب می‌شود: <b>همه‌ی نقطه‌ها تقریباً به یک اندازه دورند</b>.</p>
+<p>آزمایش: ۵۰۰ نقطه‌ی تصادفی در مکعبِ واحد با \(d\) بُعد، و یک نقطه‌ی پرسش. نزدیک‌ترین و دورترین چقدر فرق دارند؟</p>
+<div class="box">
+<canvas id="cod"></canvas>
+<div class="legend"><span><i style="background:var(--accent)"></i>فاصله‌ی هر نقطه، تقسیم بر دورترین فاصله (۰ تا ۱)</span></div>
+<label>تعدادِ ابعاد <input id="dd" type="range" min="0" max="10" step="1" value="1"><b id="dv"></b></label>
+<div class="err" id="dinfo"></div>
+</div>
+<div dir="ltr" style="margin-top:8px"><table>
+<tr><th>dimensions d</th><th>nearest</th><th>farthest</th><th>nearest / farthest</th><th>(farthest − nearest) / nearest</th></tr>
+<tr><td>2</td><td>0.010</td><td>1.114</td><td>0.009</td><td>106.7</td></tr>
+<tr><td>10</td><td>0.479</td><td>1.906</td><td>0.251</td><td>2.98</td></tr>
+<tr><td>100</td><td>3.398</td><td>4.591</td><td>0.740</td><td>0.351</td></tr>
+<tr><td>1000</td><td>12.299</td><td>13.631</td><td>0.902</td><td>0.108</td></tr>
+</table></div>
+<ul class="ex" style="margin-top:8px">
+<li>در ۲ بُعد، فاصله‌ی دورترین نقطه حدودِ ۱۰۸ برابرِ نزدیک‌ترین است. «نزدیک» معنی دارد.</li>
+<li>در ۱۰۰۰ بُعد، دورترین فقط ۱۱٪ دورتر از نزدیک‌ترین است. «نزدیک‌ترین همسایه» تقریباً یک انتخابِ تصادفی است.</li>
+</ul>
+<p>یک عددِ دیگر: برای این‌که یک مکعبِ کوچک ۱٪ داده را بگیرد، ضلعش باید \(0.01^{1/d}\) باشد. در ۲ بُعد ۰٫۱۰، در ۱۰ بُعد ۰٫۶۳، در ۱۰۰ بُعد ۰٫۹۵۵. یعنی «همسایگی» تقریباً کلِ فضا را می‌گیرد.</p>
+<div class="key">راه‌حل‌ها: ویژگی‌های بی‌ربط را حذف کنید، ابعاد را کم کنید (PCA)، یا از embedding یادگرفته‌شده استفاده کنید؛ داده‌ی واقعی معمولاً روی یک سطحِ کم‌بُعد قرار دارد و برای همین k-NN روی embeddingها هنوز کار می‌کند.</div>
+</section>
+
+<section>
+<h2>هزینه‌ی پیش‌بینی و جست‌وجوی سریع</h2>
+<div class="kinds">
+<div><p><b>آموزش</b></p><p class="ex">تقریباً صفر: فقط داده را ذخیره کن. ولی حافظه: کلِ داده، \(O(nd)\).</p></div>
+<div><p><b>پیش‌بینیِ ساده (Brute Force)</b></p><p class="ex">برای هر پرسش، فاصله تا <b>همه</b>: \(O(nd)\). مثال: ۱ میلیون سند با embeddingِ ۷۶۸ بُعدی ← ۷۶۸ میلیون ضرب و جمع برای <b>هر</b> پرسش.</p></div>
+</div>
+<p style="margin-top:8px">برای سریع‌تر کردن:</p>
+<div class="kinds">
+<div><p><b>KD-tree و Ball tree</b></p>
+<svg viewBox="0 0 160 100" style="width:100%;max-width:220px;display:block;margin:4px auto">
+<rect x="2" y="2" width="156" height="96" fill="none" stroke="var(--line)"/>
+<line x1="80" y1="2" x2="80" y2="98" stroke="var(--accent)" stroke-width="2"/>
+<line x1="2" y1="40" x2="80" y2="40" stroke="var(--orange)" stroke-width="1.5"/>
+<line x1="80" y1="62" x2="158" y2="62" stroke="var(--orange)" stroke-width="1.5"/>
+<g fill="var(--muted)"><circle cx="20" cy="20" r="3"/><circle cx="55" cy="28" r="3"/><circle cx="30" cy="70" r="3"/><circle cx="62" cy="85" r="3"/><circle cx="100" cy="30" r="3"/><circle cx="140" cy="45" r="3"/><circle cx="110" cy="80" r="3"/><circle cx="145" cy="88" r="3"/></g>
+<circle cx="120" cy="22" r="4" fill="var(--ink)"/>
+</svg>
+<p class="ex">فضا را مرتب نصف می‌کند (اول با خطِ سبز، بعد نارنجی). برای پرسشِ سیاه فقط خانه‌ی بالا-راست بررسی می‌شود و بقیه کنار گذاشته می‌شوند. برای ۱ میلیون نقطه حدودِ \(\log_2 10^6 \approx 20\) سطح. دقیق است، ولی فقط در ابعادِ کم (حدوداً زیرِ ۲۰) خوب کار می‌کند.</p></div>
+<div><p><b>نزدیک‌ترین همسایه‌ی تقریبی (ANN)</b></p><p class="ex">کمی دقت را می‌دهد تا خیلی سریع شود. روش‌های رایج:</p>
+<ul class="ex">
+<li>HNSW: یک گرافِ چندلایه؛ از همسایه به همسایه به سمتِ پرسش می‌رود.</li>
+<li>IVF: داده را خوشه‌بندی می‌کند و فقط چند خوشه‌ی نزدیک را می‌گردد.</li>
+<li>PQ: بردارها را فشرده می‌کند تا در حافظه جا شوند.</li>
+</ul>
+<p class="ex">کتابخانه‌ها: FAISS، ScaNN، Annoy. پایگاه‌های داده‌ی برداری: pgvector، Milvus، Qdrant، Pinecone.</p></div>
+</div>
+<p style="margin-top:8px">کجا استفاده می‌شود:</p>
+<div class="kinds">
+<div><p><b>سیستمِ پیشنهاد</b></p><p class="ex">هر فیلم یک بردار (embedding) دارد. «فیلم‌های مشابه» = k فیلمِ نزدیک با فاصله‌ی کسینوسی.</p></div>
+<div><p><b>RAG</b></p><p class="ex">سؤالِ کاربر به بردار تبدیل می‌شود. k تکه‌ی متنِ نزدیک از پایگاهِ برداری پیدا می‌شود و به مدلِ زبانی داده می‌شود.</p></div>
+</div>
+</section>
+
+<section>
+<h2>مزایا و معایب</h2>
+<div class="kinds">
+<div><p><b>مزایا</b></p><ul class="ex">
+<li>خیلی ساده؛ بدونِ آموزش.</li>
+<li>مرزِ تصمیمِ هر شکلی را می‌گیرد (غیرخطی).</li>
+<li>داده‌ی تازه را فوراً اضافه کن؛ بازآموزی لازم نیست.</li>
+<li>هم دسته‌بندی، هم رگرسیون، هم چنددسته‌ای.</li>
+<li>قابلِ توضیح: «چون این ۳ خانه‌ی مشابه گران بودند».</li></ul></div>
+<div><p><b>معایب</b></p><ul class="ex">
+<li>پیش‌بینیِ کُند و حافظه‌ی زیاد روی داده‌ی بزرگ.</li>
+<li>بدونِ مقیاس‌بندی، خراب.</li>
+<li>در ابعادِ بالا ضعیف (نفرینِ ابعاد).</li>
+<li>ویژگی‌های بی‌ربط هم در فاصله سهم دارند و آن را خراب می‌کنند.</li>
+<li>با داده‌ی نامتوازن، دسته‌ی بزرگ رأی‌ها را می‌برد.</li></ul></div>
+</div>
+</section>
+
+<section>
+<h2>k-NN در برابر رگرسیون لجستیک</h2>
+<div class="kinds">
+<div><p><b>k-NN</b></p><ul class="ex">
+<li><b>ناپارامتری:</b> چیزی خلاصه نمی‌کند؛ کلِ داده مدل است.</li>
+<li>آموزش: هیچ. پیش‌بینی: \(O(nd)\).</li>
+<li>مرز: هر شکلی، مثلاً یک مرزِ موج‌دار.</li>
+<li>به مقیاس‌بندی خیلی حساس.</li>
+<li>مثال: خانه‌ی ۸۵ متری ← «۳ همسایه‌ی گران» ← گران.</li></ul></div>
+<div><p><b>رگرسیون لجستیک</b></p><ul class="ex">
+<li><b>پارامتری:</b> همه‌چیز در \(d+1\) وزن خلاصه می‌شود.</li>
+<li>آموزش: گرادیان کاهشی. پیش‌بینی: \(O(d)\)، خیلی سریع.</li>
+<li>مرز: یک خطِ صاف (مگر ویژگیِ جدید بسازید).</li>
+<li>وزن‌ها می‌گویند هر ویژگی چقدر اثر دارد.</li>
+<li>مثال: \(P = \sigma(w_1\cdot\text{area} + w_2\cdot\text{metro} + b)\).</li></ul></div>
+</div>
+<p class="ex" style="margin-top:8px">داده‌ی کم با مرزِ پیچیده و ابعادِ کم: k-NN. داده‌ی زیاد، ابعادِ زیاد، نیاز به سرعت یا تفسیرِ وزن‌ها: رگرسیون لجستیک. هر دو را به‌عنوان مدلِ پایه امتحان کنید.</p>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>k-NN از صفر با NumPy:</b></p>
+<pre>import numpy as np
+
+class KNN:
+    def __init__(self, k=5, weighted=False):
+        self.k, self.weighted = k, weighted
+
+    def fit(self, X, y):                       # "training" = just store the data
+        self.mu, self.sd = X.mean(0), X.std(0) + 1e-12
+        self.X, self.y = (X - self.mu) / self.sd, y
+        return self
+
+    def _neighbors(self, X):
+        Xs = (X - self.mu) / self.sd           # same scaling as the training data
+        d = np.sqrt(((Xs[:, None, :] - self.X[None, :, :]) ** 2).sum(-1))  # (m, n)
+        idx = np.argpartition(d, self.k - 1, axis=1)[:, :self.k]           # k smallest
+        dk = np.take_along_axis(d, idx, axis=1)
+        w = 1 / (dk + 1e-12) if self.weighted else np.ones_like(dk)
+        return idx, w
+
+    def predict(self, X):                      # classification: (weighted) majority vote
+        idx, w = self._neighbors(X)
+        classes = np.unique(self.y)
+        votes = np.stack([(w * (self.y[idx] == c)).sum(1) for c in classes], axis=1)
+        return classes[votes.argmax(1)]
+
+    def predict_value(self, X):                # regression: (weighted) average
+        idx, w = self._neighbors(X)
+        return (w * self.y[idx]).sum(1) / w.sum(1)</pre>
+<p><b>با scikit-learn</b> (مقیاس‌بندی داخلِ Pipeline، و k با اعتبارسنجیِ متقابل):</p>
+<pre>from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import GridSearchCV
+
+pipe = make_pipeline(StandardScaler(), KNeighborsClassifier())
+grid = GridSearchCV(pipe, {
+    "kneighborsclassifier__n_neighbors": list(range(1, 52, 2)),
+    "kneighborsclassifier__weights": ["uniform", "distance"],
+    "kneighborsclassifier__metric": ["euclidean", "manhattan"],
+}, cv=5)
+grid.fit(X_train, y_train)
+print(grid.best_params_, grid.score(X_test, y_test))
+
+# regression: KNeighborsRegressor; fast search: algorithm="kd_tree" or "ball_tree"</pre>
+<p class="ex">Pipeline باعث می‌شود scaler در هر fold فقط روی داده‌ی آموزشِ همان fold یاد بگیرد.</p>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>How does k-NN work, and why is it called a lazy learner?</summary>
+<p>To predict for a new point, compute its distance to every training point, take the \(k\) closest, and return the majority class (classification) or the average target (regression). There is no training phase that builds a model: "fit" just stores the data, and all the work happens at prediction time. That is what "lazy" (instance-based) means, as opposed to eager learners like logistic regression that compress the data into parameters. Example: a new 85 m² house 0.5 km from the metro; its 3 nearest neighbours (after scaling) are all expensive, so it is predicted expensive, and the regression prediction is \((600+620+820)/3 \approx 680\).</p>
+<p class="src">Analytics Vidhya (30 KNN questions); Towards AI</p></details>
+
+<details><summary>How do you choose k? What happens if k is too small or too large?</summary>
+<p>Small \(k\) gives low bias and high variance: \(k=1\) memorises the training set (100% training accuracy) and follows noise. Large \(k\) gives high variance reduction but high bias: the boundary is over-smoothed, and with \(k=n\) the model predicts the majority class everywhere. Choose \(k\) by cross-validation; \(\sqrt{n}\) is a common starting point, and use odd \(k\) for binary problems to avoid ties. In the demo above (100 training points, 15% label noise): \(k=1\) gives 75.4% test accuracy, \(k=19\) gives 80.2%, and \(k \ge 81\) predicts "cheap" for everything, giving 50.6%.</p>
+<p class="src">Analytics Vidhya; TechPrep</p></details>
+
+<details><summary>Why is feature scaling important for k-NN?</summary>
+<p>Distances add up differences across features, so a feature with a large numeric range dominates. With raw values, area differs by up to 40 m² and metro distance by at most 3.6 km: the raw distance from the new house to house F is \(\sqrt{10^2 + 0.3^2} = \sqrt{100 + 0.09}\), so metro distance contributes 0.09 out of 100.09. The nearest neighbours then change (C, F, B instead of F, A, D) and the prediction flips from expensive to cheap. Use standardisation or min-max scaling, fitted on the training set only (e.g. inside a scikit-learn Pipeline).</p>
+<p class="src">Analytics Vidhya (most frequently asked KNN questions); devinterview-io</p></details>
+
+<details><summary>Which distance metrics can you use, and when would you choose cosine?</summary>
+<p>Euclidean (L2) is the default for continuous features; Manhattan (L1) is less sensitive to one large coordinate difference; Minkowski generalises both (\(p=1\), \(p=2\)); Hamming is used for categorical or binary features. Cosine distance \(1 - \frac{a\cdot b}{\|a\|\|b\|}\) ignores vector length and compares direction, which suits text, embeddings and user-preference vectors. Example: watch hours u1 = (5,4,0,1), u2 = (4,5,1,0), u3 = (1,1,0,0). Euclidean says u2 is closer (2.0 vs 5.1), but cosine says u3 is more similar (0.982 vs 0.952) because u3 has the same taste, just watches less.</p>
+<p class="src">TechPrep; devinterview-io</p></details>
+
+<details><summary>What is the time and space complexity of k-NN? How can you speed it up?</summary>
+<p>Training is \(O(1)\) beyond storing the data, which takes \(O(nd)\) memory. Brute-force prediction is \(O(nd)\) per query (plus selecting the top \(k\)). For 1 million 768-dimensional embeddings that is 768 million multiply-adds per query. Speed-ups: KD-trees and ball trees (exact, roughly logarithmic query time in low dimensions, but they degrade toward brute force above about 20 dimensions); approximate nearest neighbour indexes such as HNSW graphs, IVF (cluster then search a few clusters) and product quantisation, available in FAISS, ScaNN, Annoy and vector databases; and reducing \(d\) with PCA or reducing \(n\) by condensing the training set.</p>
+<p class="src">TechPrep; scikit-learn documentation (Nearest Neighbors)</p></details>
+
+<details><summary>What is the curse of dimensionality and how does it affect k-NN?</summary>
+<p>As the number of dimensions grows, distances concentrate: the nearest and farthest points become almost equally far, so "nearest" carries little information, and you need exponentially more data to keep neighbourhoods small. Example with 500 uniform random points: in 2 dimensions the farthest point is about 108 times as far as the nearest (relative gap 106.7); in 1000 dimensions the farthest is only about 11% farther (relative gap 0.108). Also, a cube that holds 1% of the data needs side \(0.01^{1/d}\): 0.10 for \(d=2\) but 0.955 for \(d=100\). Fixes: feature selection, PCA, learned embeddings, metric learning.</p>
+<p class="src">Analytics Vidhya; Towards AI</p></details>
+
+<details><summary>What is weighted k-NN?</summary>
+<p>Each neighbour's vote is weighted, usually by \(w_i = 1/d_i\), so closer neighbours count more: \(\hat y = \sum w_i y_i / \sum w_i\). Example: neighbours at distances 0.1 (expensive, 700), 0.5 (cheap, 450) and 0.6 (cheap, 420). Plain vote says cheap (2 vs 1); weighted vote gives expensive \(10\) vs cheap \(2 + 1.667 = 3.667\), so expensive with probability 0.732. The weighted price is 629.3 instead of 523.3. It reduces sensitivity to \(k\); handle \(d=0\) by returning the duplicate's label. In scikit-learn: <code>weights="distance"</code>.</p>
+<p class="src">TechPrep; devinterview-io</p></details>
+
+<details><summary>What is the difference between k-NN and k-means?</summary>
+<p>k-NN is a supervised method for classification or regression; \(k\) is the number of neighbours used to predict a label, and there is no training. k-means is an unsupervised clustering method; \(k\) is the number of clusters, and it is trained iteratively (assign points to the nearest centroid, move each centroid to the mean of its points). Both rely on a distance metric and both need feature scaling. They also meet in practice: IVF indexes for fast approximate k-NN use k-means to partition the vectors.</p>
+<p class="src">Prepfully (k-means vs KNN); Analytics Vidhya</p></details>
+
+<details><summary>How does k-NN handle imbalanced classes, ties and categorical features?</summary>
+<p>Imbalance: the majority class wins most votes, especially for large \(k\) (in the demo, \(k \ge 81\) predicts the majority class everywhere). Remedies: distance weighting, class-weighted votes, resampling, or tuning a threshold on the neighbour vote fraction instead of using 0.5. Ties: use odd \(k\) for binary problems, or break ties by distance weighting or by the closest neighbour. Categorical features: one-hot encode (and scale), or use Hamming or Gower distance for mixed types.</p>
+<p class="src">Analytics Vidhya (30 questions to test your skills on KNN); TechPrep</p></details>
+
+<details><summary>When would you choose k-NN over logistic regression, and vice versa?</summary>
+<p>k-NN is non-parametric: it can model any boundary shape and needs no training, so it is good for small, low-dimensional data with complex boundaries, or when new data must be usable immediately. Logistic regression is parametric: \(d+1\) weights, \(O(d)\) prediction, interpretable coefficients and a linear boundary; it scales to large and high-dimensional data and is less sensitive to irrelevant features with regularisation. k-NN prediction cost grows with \(n\), logistic regression's does not.</p>
+<p class="src">Towards AI; devinterview-io</p></details>
+
+<details><summary>Implement k-NN from scratch.</summary>
+<p>See the NumPy code above: fit stores standardised training data (keeping the mean and std); predict scales the queries the same way, computes all pairwise Euclidean distances, takes the \(k\) smallest with <code>argpartition</code> (\(O(n)\) per query instead of a full sort), and returns the (weighted) majority vote or average. Mention vectorisation, memory of the \(m \times n\) distance matrix (process queries in batches), and that for large data you would use a KD-tree or an ANN index.</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://www.analyticsvidhya.com/blog/2017/09/30-questions-test-k-nearest-neighbors-algorithm/">Analytics Vidhya (30 KNN questions)</a> · <a href="https://www.analyticsvidhya.com/blog/2022/10/most-frequently-asked-interview-questions-on-knn-algorithm/">Analytics Vidhya (most frequently asked)</a> · <a href="https://www.analyticsvidhya.com/blog/2021/05/20-questions-to-test-your-skills-on-k-nearest-neighbour/">Analytics Vidhya (30 questions to test your skills)</a> · <a href="https://www.techprep.app/blog/k-nearest-neighbors-interview-questions">TechPrep</a> · <a href="https://github.com/devinterview-io/k-nearest-neighbors-interview-questions">devinterview-io (GitHub)</a> · <a href="https://prepfully.com/answers/kmeans-vs-knn">Prepfully</a> · <a href="https://towardsai.com/p/machine-learning/crack-ml-interviews-with-confidence-k-nearest-neighbors-knn-20-qa">Towards AI</a> · <a href="https://scikit-learn.org/stable/modules/neighbors.html">scikit-learn: Nearest Neighbors</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+
+// ---------- 1. feature scaling ----------
+const HOUSES = [['A', 70, 0.4, 620, 1], ['B', 95, 4.0, 480, 0], ['C', 80, 3.5, 450, 0], ['D', 100, 0.7, 820, 1], ['E', 60, 3.0, 350, 0], ['F', 75, 0.8, 600, 1]];
+const NEW = [85, 0.5], MN = [60, 0.4], RG = [40, 3.6];
+let scaled = false;
+const drawScale = () => {
+  const [c, W, Ht] = mk(document.getElementById('scl'), 0.7, 532);
+  const L = 34, R = W - 10, T = 10, B = Ht - 30;
+  const X = a => L + (a - 55) / 50 * (R - L), Y = m => B - (m - 0) / 4.5 * (B - T);
+  c.strokeStyle = css('line'); c.strokeRect(L, T, R - L, B - T);
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center';
+  [60, 70, 80, 90, 100].forEach(a => c.fillText(fa(a), X(a), B + 13)); c.fillText('متراژ (متر) →', (L + R) / 2, B + 27);
+  c.textAlign = 'right'; [0, 1, 2, 3, 4].forEach(m => c.fillText(fa(m), L - 5, Y(m) + 4));
+  const dist = h => scaled ? Math.hypot((h[1] - NEW[0]) / RG[0], (h[2] - NEW[1]) / RG[1]) : Math.hypot(h[1] - NEW[0], h[2] - NEW[1]);
+  const ord = HOUSES.map(h => [dist(h), h]).sort((a, b) => a[0] - b[0]), nb = ord.slice(0, 3), r3 = nb[2][0];
+  // neighbourhood: all points within r3 of the new house, in the chosen metric
+  const rx = scaled ? r3 * RG[0] : r3, ry = scaled ? r3 * RG[1] : r3;
+  c.save(); c.beginPath(); c.rect(L, T, R - L, B - T); c.clip();
+  c.fillStyle = css('accent'); c.globalAlpha = 0.13; c.beginPath();
+  c.ellipse(X(NEW[0]), Y(NEW[1]), rx / 50 * (R - L), ry / 4.5 * (B - T), 0, 0, 7); c.fill(); c.globalAlpha = 1;
+  c.strokeStyle = css('accent'); c.lineWidth = 1.5; c.stroke(); c.restore();
+  nb.forEach(([, h]) => { c.strokeStyle = css('muted'); c.setLineDash([3, 3]); c.beginPath(); c.moveTo(X(NEW[0]), Y(NEW[1])); c.lineTo(X(h[1]), Y(h[2])); c.stroke(); c.setLineDash([]); });
+  HOUSES.forEach(h => { c.fillStyle = css(h[4] ? 'blue' : 'red'); c.beginPath(); c.arc(X(h[1]), Y(h[2]), 6, 0, 7); c.fill();
+    if (nb.some(n => n[1] === h)) { c.strokeStyle = css('ink'); c.lineWidth = 2; c.beginPath(); c.arc(X(h[1]), Y(h[2]), 9, 0, 7); c.stroke(); }
+    c.fillStyle = css('ink'); c.font = '700 12px Vazirmatn'; c.textAlign = 'left'; c.fillText(h[0], X(h[1]) + 9, Y(h[2]) - 7); });
+  c.fillStyle = css('ink'); c.beginPath(); c.arc(X(NEW[0]), Y(NEW[1]), 6, 0, 7); c.fill();
+  c.save(); c.translate(11, (T + B) / 2); c.rotate(-Math.PI / 2); c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; c.fillText('فاصله تا مترو (کیلومتر) →', 0, 0); c.restore();
+  const exp = nb.filter(n => n[1][4]).length, price = nb.reduce((s, n) => s + n[1][3], 0) / 3;
+  document.getElementById('sinfo').innerHTML = `همسایه‌ها: ${nb.map(([d, h]) => h[0] + ' (' + fa(d, scaled ? 3 : 2) + ')').join('، ')}<br>رأی: ${fa(exp)} گران، ${fa(3 - exp)} ارزان ← <b>${exp >= 2 ? 'گران' : 'ارزان'}</b> · قیمتِ پیش‌بینی: <b>${fa(price)}</b>`;
+  document.getElementById('sRaw').classList.toggle('on', !scaled); document.getElementById('sNorm').classList.toggle('on', scaled);
+};
+document.getElementById('sRaw').onclick = () => { scaled = false; drawScale(); };
+document.getElementById('sNorm').onclick = () => { scaled = true; drawScale(); };
+
+// ---------- 2. choosing k ----------
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const lab = (x, y) => y < 0.4 + 0.2 * Math.sin(6 * x) + 0.2 * x ? 0 : 1;   // 0 = expensive (near metro), 1 = cheap
+const gen = n => Array.from({ length: n }, () => { const x = rnd(), y = rnd(); let c = lab(x, y); if (rnd() < 0.15) c = 1 - c; return [x, y, c]; });
+const TR = gen(100), TE = gen(500);
+const nbrs = (x, y) => TR.map(p => [(p[0] - x) ** 2 + (p[1] - y) ** 2, p[2]]).sort((a, b) => a[0] - b[0]).map(d => d[1]);
+const cum = L => { const s = [0]; L.forEach(v => s.push(s[s.length - 1] + v)); return s; };
+const TRc = TR.map(p => cum(nbrs(p[0], p[1]))), TEc = TE.map(p => cum(nbrs(p[0], p[1])));
+const accAt = (C, D, k) => D.filter((p, i) => (C[i][k] * 2 > k ? 1 : 0) === p[2]).length / D.length;
+const KS = []; for (let k = 1; k <= 99; k += 2) KS.push(k);
+const CURVE = KS.map(k => [accAt(TRc, TR, k), accAt(TEc, TE, k)]);
+const BEST = CURVE.reduce((b, v, i) => v[1] > CURVE[b][1] ? i : b, 0);
+let grid = null;
+const kk = document.getElementById('kk');
+const drawK = () => {
+  const i = +kk.value, k = KS[i];
+  const [c, W, Ht] = mk(document.getElementById('reg'), 0.75, 532), X = x => x * W, Y = y => Ht - y * Ht, cell = 6;
+  const nx = Math.ceil(W / cell), ny = Math.ceil(Ht / cell);
+  if (!grid || grid.W !== W) { grid = { W, g: [] }; for (let a = 0; a < nx; a++) for (let b = 0; b < ny; b++) grid.g.push([a, b, cum(nbrs((a + 0.5) * cell / W, 1 - (b + 0.5) * cell / Ht))]); }
+  grid.g.forEach(([a, b, s]) => { c.fillStyle = css(s[k] * 2 > k ? 'red' : 'blue'); c.globalAlpha = 0.16; c.fillRect(a * cell, b * cell, cell, cell); });
+  c.globalAlpha = 1;
+  c.strokeStyle = css('muted'); c.setLineDash([4, 4]); c.lineWidth = 1.5; c.beginPath();
+  for (let j = 0; j <= 100; j++) { const x = j / 100, y = 0.4 + 0.2 * Math.sin(6 * x) + 0.2 * x; j ? c.lineTo(X(x), Y(y)) : c.moveTo(X(x), Y(y)); } c.stroke(); c.setLineDash([]);
+  TR.forEach(p => { c.fillStyle = css(p[2] ? 'red' : 'blue'); c.beginPath(); c.arc(X(p[0]), Y(p[1]), 3.5, 0, 7); c.fill(); });
+  const [c2, W2, H2] = mk(document.getElementById('kcurve'), 0.35, 532), X2 = j => 14 + j / (KS.length - 1) * (W2 - 24), Y2 = v => H2 - 16 - (v - 0.45) / 0.57 * (H2 - 24);
+  [['blue', 0], ['red', 1]].forEach(([col, j]) => { c2.strokeStyle = css(col); c2.lineWidth = 2; c2.beginPath(); CURVE.forEach((v, t) => t ? c2.lineTo(X2(t), Y2(v[j])) : c2.moveTo(X2(t), Y2(v[j]))); c2.stroke(); });
+  c2.strokeStyle = css('ink'); c2.setLineDash([3, 3]); c2.beginPath(); c2.moveTo(X2(i), 0); c2.lineTo(X2(i), H2 - 14); c2.stroke(); c2.setLineDash([]);
+  c2.fillStyle = css('muted'); c2.font = '11px Vazirmatn'; c2.textAlign = 'center'; c2.fillText('k →', W2 / 2, H2 - 2);
+  document.getElementById('kv').textContent = fa(k);
+  document.getElementById('kinfo').innerHTML = `دقتِ آموزش: <b>${fa(CURVE[i][0] * 100, 1)}٪</b> · دقتِ داده‌ی جدید: <b>${fa(CURVE[i][1] * 100, 1)}٪</b><br>بهترین دقتِ داده‌ی جدید: ${fa(CURVE[BEST][1] * 100, 1)}٪ با k = <b>${fa(KS[BEST])}</b>`;
+};
+kk.oninput = drawK;
+
+// ---------- 3. curse of dimensionality ----------
+const DIMS = [1, 2, 3, 5, 10, 20, 50, 100, 200, 500, 1000], codCache = {};
+const codData = d => { if (codCache[d]) return codCache[d];
+  let s = 1; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const pts = Array.from({ length: 500 }, () => Array.from({ length: d }, r)), q = Array.from({ length: d }, r);
+  const ds = pts.map(p => Math.sqrt(p.reduce((a, v, j) => a + (v - q[j]) ** 2, 0)));
+  return codCache[d] = { ds, mn: Math.min(...ds), mx: Math.max(...ds) }; };
+const dd = document.getElementById('dd');
+const drawCod = () => {
+  const d = DIMS[+dd.value], { ds, mn, mx } = codData(d);
+  const [c, W, Ht] = mk(document.getElementById('cod'), 0.28, 532), X = v => 12 + v * (W - 24);
+  c.strokeStyle = css('line'); c.beginPath(); c.moveTo(X(0), Ht - 22); c.lineTo(X(1), Ht - 22); c.stroke();
+  c.strokeStyle = css('accent'); c.globalAlpha = 0.35; ds.forEach(v => { c.beginPath(); c.moveTo(X(v / mx), 8); c.lineTo(X(v / mx), Ht - 24); c.stroke(); }); c.globalAlpha = 1;
+  c.strokeStyle = css('red'); c.lineWidth = 2; c.beginPath(); c.moveTo(X(mn / mx), 4); c.lineTo(X(mn / mx), Ht - 22); c.stroke(); c.lineWidth = 1;
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center';
+  c.fillText('۰', X(0), Ht - 8); c.fillText('۱ (دورترین)', X(1) - 22, Ht - 8); c.fillStyle = css('red'); c.fillText('نزدیک‌ترین', Math.min(Math.max(X(mn / mx), 60), W - 110), Ht - 8);
+  document.getElementById('dv').textContent = fa(d);
+  document.getElementById('dinfo').innerHTML = `نزدیک‌ترین: ${fa(mn, 3)} · دورترین: ${fa(mx, 3)}<br>نزدیک‌ترین تقسیم بر دورترین: <b>${fa(mn / mx, 3)}</b> · دورترین ${fa((mx - mn) / mn * 100, 1)}٪ دورتر از نزدیک‌ترین`;
+};
+dd.oninput = drawCod;
+
+const drawAll = () => { drawScale(); drawK(); drawCod(); };
+addEventListener('resize', drawAll); drawAll();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

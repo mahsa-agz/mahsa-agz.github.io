@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مدل‌های زبانی بزرگ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.pb { display: grid; grid-template-columns: 76px 1fr 54px; gap: 8px; align-items: center; direction: ltr; font-size: 13px; margin: 3px 0; }
+.pb span { font-family: ui-monospace, Consolas, monospace; white-space: pre; }
+.pb .track { background: var(--soft); border-radius: 4px; height: 12px; position: relative; overflow: hidden; }
+.pb .track i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 4px; transition: width .15s; }
+.pb.off .track i { background: var(--line); }
+.pb.off span, .pb.off b { color: var(--muted); text-decoration: line-through; }
+.pb b { font-weight: 400; text-align: right; }
+.pb.pick span { color: var(--orange); font-weight: 700; }
+.chips { direction: ltr; text-align: left; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 4px 0; }
+.chip { font: 14px ui-monospace, Consolas, monospace; padding: 1px 6px; border-radius: 6px; background: color-mix(in srgb, var(--accent) 22%, var(--card)); border: 1px solid var(--line); }
+.chip.new { background: color-mix(in srgb, var(--orange) 35%, var(--card)); }
+.wrow { display: flex; gap: 10px; align-items: center; direction: ltr; margin: 4px 0; font-size: 13px; color: var(--muted); }
+.wrow .cnt { width: 54px; }
+.gen { direction: ltr; text-align: left; font: 14px/1.8 ui-monospace, Consolas, monospace; background: var(--soft); border-radius: 8px; padding: 6px 10px; margin: 4px 0; min-height: 30px; }
+.gen.old { opacity: .55; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="transformer.html">ترنسفورمر و Attention</a> · <a href="recommender.html">بعدی: سیستم‌های پیشنهاد ←</a></p>
+<h1>مدل‌های زبانی بزرگ <span class="en">(Large Language Models, LLM)</span></h1>
+<p class="sub">یک ترنسفورمرِ خیلی بزرگ که فقط یک کار بلد است: حدس زدنِ تکه‌ی بعدیِ متن. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>LLM یک متن می‌گیرد و فقط <b>یک تکه‌ی بعدی</b> را حدس می‌زند. بعد همان تکه را به آخرِ متن می‌چسباند و دوباره حدس می‌زند. همین.</p>
+<ol>
+<li>ورودی: <code>Your order will arrive in</code></li>
+<li>مدل برای هر تکه‌ی ممکن یک احتمال می‌دهد: <code> 2</code> با ۴۴٪، <code> 3</code> با ۲۲٪، …</li>
+<li>یکی را انتخاب می‌کنیم (مثلاً <code> 2</code>) و به متن اضافه می‌کنیم.</li>
+<li>حالا ورودی <code>Your order will arrive in 2</code> است. از قدمِ ۲ تکرار.</li>
+</ol>
+<div class="key">LLM فقط «تکه‌ی بعدی» را پیش‌بینی می‌کند. جواب‌های طولانی، کد، ترجمه و استدلال همه از تکرارِ همین یک کار ساخته می‌شوند.</div>
+<p><b>مثالِ این صفحه:</b> یک دستیارِ پشتیبانی برای یک فروشگاهِ اینترنتی. به سؤالِ مشتری جواب می‌دهد، سیاستِ مرجوعی را می‌داند، و وضعیتِ سفارش را چک می‌کند. در طولِ صفحه همین دستیار را قدم‌به‌قدم می‌سازیم.</p>
+<p>چرا مهم است: ChatGPT، Claude، Gemini و Llama همه LLM هستند. در مصاحبه‌های ML امروز تقریباً همیشه درباره‌ی توکن، نمونه‌گیری، fine-tuning، LoRA و RAG سؤال می‌شود.</p>
+<div class="kinds">
+<div><p><b>زیرِ کاپوت</b></p><p class="ex">یک <b>ترنسفورمرِ decoder-only</b>: هر توکن فقط توکن‌های قبلی را می‌بیند (attention با ماسکِ علّی).</p></div>
+<div><p><b>چه چیزی «بزرگ» است؟</b></p><p class="ex">میلیاردها پارامتر (مثلاً ۷ میلیارد در Llama 2 7B) و تریلیون‌ها توکن داده‌ی آموزش (۲ تریلیون برای همین مدل).</p></div>
+<div><p><b>یادگیری از چه؟</b></p><p class="ex">خودِ متن. برچسبِ هر جایگاه، توکنِ بعدی است. پس برچسب‌زنیِ دستی لازم نیست <span class="en">(self-supervised)</span>.</p></div>
+</div>
+</section>
+
+<section>
+<h2>توکن و توکن‌سازی <span class="en">(Tokenization)</span></h2>
+<p>مدل با کلمه کار نمی‌کند. با <b>توکن</b> کار می‌کند: تکه‌هایی از کلمه که از قبل در یک فهرستِ ثابت <span class="en">(vocabulary)</span> هستند. هر توکن یک شماره دارد.</p>
+<div class="kinds">
+<div><p><b>اگر واحد «کلمه» بود</b></p><p class="ex">فهرست باید میلیون‌ها کلمه داشته باشد. کلمه‌ی جدید (مثلاً <code>lowest</code> اگر در داده نبوده) اصلاً قابل نوشتن نیست.</p></div>
+<div><p><b>اگر واحد «حرف» بود</b></p><p class="ex">فهرست کوچک است، ولی متن خیلی طولانی می‌شود. هر جمله صدها قدم پیش‌بینی می‌خواهد و هزینه‌ی attention بالا می‌رود.</p></div>
+<div><p><b>توکن (تکه‌ی کلمه)</b></p><p class="ex">وسطِ این دو. کلمه‌های پرتکرار یک توکن‌اند. کلمه‌های کمیاب به چند تکه شکسته می‌شوند. هیچ کلمه‌ای «ناشناخته» نیست.</p></div>
+</div>
+<p style="margin-top:10px"><b>BPE</b> <span class="en">(Byte-Pair Encoding)</span> رایج‌ترین روشِ ساختنِ این فهرست است:</p>
+<ol>
+<li>از حرف‌ها شروع کن.</li>
+<li>جفتِ کنارِ همی را که در داده بیشتر از همه تکرار شده پیدا کن.</li>
+<li>آن جفت را یک توکنِ جدید کن.</li>
+<li>تکرار کن تا فهرست به اندازه‌ی دلخواه برسد (مثلاً ۵۰ هزار یا ۱۰۰ هزار توکن).</li>
+</ol>
+<p>یک داده‌ی خیلی کوچک: کلمه‌ی <code>low</code> ۵ بار، <code>lower</code> ۲ بار، <code>newest</code> ۶ بار، <code>widest</code> ۳ بار. دکمه را بزنید تا ادغام‌ها را ببینید:</p>
+<div class="box">
+<div id="bpe"></div>
+<div class="err" id="bpeinfo"></div>
+<div class="ctl"><button id="bpestep">ادغامِ بعدی</button><button id="bpereset">از نو</button></div>
+</div>
+<ul class="ex" style="margin-top:8px">
+<li>ادغامِ اول <code>e + s</code> است (۶ بار در newest و ۳ بار در widest = ۹ بار). <code>s + t</code> هم ۹ بار است؛ در تساوی، اولی را برمی‌داریم.</li>
+<li>بعد از ۶ ادغام، فهرست از ۱۰ به ۱۶ توکن رسیده و کلِ داده از ۷۹ توکن به ۳۵ توکن کوتاه شده.</li>
+<li>کلمه‌ی <code>lowest</code> در داده نبود، ولی با همین ادغام‌ها می‌شود <code>low</code> + <code>est</code>: دو توکن.</li>
+</ul>
+<p><b>هزینه با توکن شمرده می‌شود.</b> APIها پول را برای توکنِ ورودی و توکنِ خروجی جدا می‌گیرند. سقفِ طولِ متن هم با توکن است.</p>
+<ul class="ex">
+<li>قانونِ سرانگشتی برای انگلیسی: هر توکن حدود ۰٫۷۵ کلمه.</li>
+<li>متنِ فارسی معمولاً برای همان معنا توکنِ بیشتری لازم دارد، چون داده‌ی آموزشِ توکنایزر بیشتر انگلیسی بوده.</li>
+<li>مثالِ هزینه (قیمت‌ها فرضی‌اند): ورودی ۳ دلار برای هر میلیون توکن، خروجی ۱۵ دلار. یک سؤالِ دستیار با ۲۰۰۰ توکن ورودی و ۵۰۰ توکن خروجی: \(2000 \times 3/10^6 + 500 \times 15/10^6 = 0.0135\) دلار.</li>
+</ul>
+</section>
+
+<section>
+<h2>پیش‌بینیِ توکنِ بعدی: softmax و cross-entropy</h2>
+<p>ترنسفورمر در آخر برای <b>هر</b> توکنِ فهرست یک عدد می‌دهد به اسمِ <b>logit</b>. softmax این عددها را به احتمال تبدیل می‌کند: همه مثبت، و جمعشان ۱.</p>
+<div class="f">\[ P(x_t = i \mid x_{&lt;t}) = \text{softmax}(z)_i = \frac{e^{z_i}}{\sum_{j=1}^{V} e^{z_j}} \]</div>
+<ul class="sym">
+<li>\(x_{&lt;t}\): همه‌ی توکن‌های قبلی</li>
+<li>\(z_i\): logitِ توکنِ \(i\)</li>
+<li>\(V\): اندازه‌ی فهرست (مثلاً ۵۰ هزار)</li>
+</ul>
+<p><b>مثال با عدد</b> (فقط سه توکن، برای سادگی). بعد از <code>Your order will arrive in</code>:</p>
+<div dir="ltr"><table>
+<tr><th>token</th><th>logit z</th><th>e^z</th><th>probability</th></tr>
+<tr><td><code> 2</code></td><td>2.0</td><td>7.389</td><td>0.659</td></tr>
+<tr><td><code> 3</code></td><td>1.0</td><td>2.718</td><td>0.242</td></tr>
+<tr><td><code> banana</code></td><td>0.1</td><td>1.105</td><td>0.099</td></tr>
+</table></div>
+<p class="ex" style="margin-top:6px">جمعِ ستونِ سوم ۱۱٫۲۱۲ است. هر عدد را بر آن تقسیم کنید تا احتمال به دست بیاید.</p>
+<p><b>تابع خطا: cross-entropy.</b> در آموزش، توکنِ درست را می‌دانیم. خطا منفیِ لگاریتمِ احتمالی است که مدل به توکنِ درست داده:</p>
+<div class="f">\[ L = -\frac{1}{T}\sum_{t=1}^{T} \log P(x_t \mid x_{&lt;t}) \]</div>
+<ul class="sym">
+<li>\(T\): تعدادِ توکن‌های متن</li>
+<li>\(x_t\): توکنِ درست در جایگاهِ \(t\)</li>
+<li>\(\log\): لگاریتمِ طبیعی</li>
+</ul>
+<div class="kinds">
+<div><p><b>اگر توکنِ درست <code> 2</code> باشد</b></p><p class="ex">\(L = -\ln 0.659 = 0.417\). احتمالِ زیاد، خطای کم.</p></div>
+<div><p><b>اگر توکنِ درست <code> banana</code> باشد</b></p><p class="ex">\(L = -\ln 0.099 = 2.317\). مدل غافلگیر شده؛ خطا بزرگ است و گرادیان logitِ banana را بالا می‌برد.</p></div>
+</div>
+<p style="margin-top:10px">نکته‌ی مهم: در آموزش، یک متنِ ۱۰۰۰ توکنی در <b>یک بار</b> عبور ۱۰۰۰ پیش‌بینی می‌دهد، چون ماسکِ علّی نمی‌گذارد هر جایگاه آینده را ببیند. به این <span class="en">teacher forcing</span> می‌گویند. در تولیدِ متن ولی باید توکن به توکن جلو رفت.</p>
+</section>
+
+<section>
+<h2>تولیدِ متن: دما، top-k و top-p</h2>
+<p>وقتی احتمال‌ها را داریم، باید یک توکن <b>انتخاب</b> کنیم. سه دکمه‌ی اصلی:</p>
+<div class="kinds">
+<div><p><b>دما</b> <span class="en">(Temperature, T)</span></p><p class="ex">قبل از softmax، logitها را بر T تقسیم می‌کنیم. T کمتر از ۱ توزیع را تیزتر می‌کند. T بیشتر از ۱ صاف‌ترش می‌کند.</p></div>
+<div><p><b>top-k</b></p><p class="ex">فقط k توکنِ محتمل‌تر می‌مانند. بقیه حذف و احتمال‌ها دوباره نرمال می‌شوند.</p></div>
+<div><p><b>top-p</b> <span class="en">(nucleus)</span></p><p class="ex">کوچک‌ترین گروهی از توکن‌های اول که جمعِ احتمالشان حداقل p شود. اندازه‌ی گروه با اطمینانِ مدل عوض می‌شود.</p></div>
+</div>
+<div class="f">\[ p_i = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}} \]</div>
+<ul class="sym">
+<li>\(T \to 0\): همیشه محتمل‌ترین توکن</li>
+<li>\(T = 1\): همان توزیعِ مدل</li>
+<li>\(T\) بزرگ: نزدیک به یکنواخت</li>
+</ul>
+<p>توزیعِ زیر <b>ساختگی</b> است (فقط برای آموزش): ۸ توکنِ ممکن بعد از <code>Your order will arrive in</code>. ترتیب: اول دما، بعد top-k، بعد top-p.</p>
+<div class="box">
+<div id="dist"></div>
+<label>دما T <input id="temp" type="range" min="0.1" max="2" step="0.1" value="1"><b id="tempv"></b></label>
+<label>top-k <input id="topk" type="range" min="1" max="8" step="1" value="8"><b id="topkv"></b></label>
+<label>top-p <input id="topp" type="range" min="0.1" max="1" step="0.05" value="1"><b id="toppv"></b></label>
+<div class="ctl"><button id="draw1">یک توکن نمونه بگیر</button><span id="drawn"></span></div>
+<div class="legend"><span><i style="background:var(--accent)"></i>توکنِ مجاز</span><span><i style="background:var(--line)"></i>حذف‌شده</span><span><i style="background:var(--orange)"></i>آخرین نمونه</span></div>
+<div class="err" id="distinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>دمای پایین (۰٫۵)</b></p><p class="ex">احتمالِ <code> 2</code> از ۰٫۴۳۸ به ۰٫۷۱۳ می‌رسد. جواب قابلِ پیش‌بینی و تکراری است. برای کد، استخراجِ اطلاعات و جوابِ دقیق خوب است.</p></div>
+<div><p><b>دمای بالا (۲)</b></p><p class="ex">احتمالِ <code> 2</code> به ۰٫۲۶۹ می‌افتد و <code> banana</code> از ۰٫۰۰۷ به ۰٫۰۳۳ می‌رسد (حدود ۵ برابر). متن متنوع‌تر ولی پرخطاتر است.</p></div>
+<div><p><b>top-p = ۰٫۹</b></p><p class="ex">با دمای ۱، پنج توکن می‌مانند (جمع ۰٫۹۲۴). با دمای ۰٫۵، فقط سه توکن (جمع ۰٫۹۵۳). وقتی مدل مطمئن است، گروه خودبه‌خود کوچک می‌شود. top-k این کار را نمی‌کند.</p></div>
+</div>
+</section>
+
+<section>
+<h2>حریصانه در برابر نمونه‌گیری</h2>
+<div class="kinds">
+<div><p><b>حریصانه</b> <span class="en">(Greedy)</span></p><p class="ex">هر بار محتمل‌ترین توکن. همیشه همان جواب. ولی بهترین <b>قدم</b> لزوماً بهترین <b>جمله</b> نیست و ممکن است در حلقه‌ی تکرار بیفتد.</p></div>
+<div><p><b>نمونه‌گیری</b> <span class="en">(Sampling)</span></p><p class="ex">توکن را به نسبتِ احتمالش قرعه می‌کشیم. هر بار جوابی کمی متفاوت. معمولاً با دما و top-p کنترل می‌شود.</p></div>
+</div>
+<p style="margin-top:10px">یک «مدلِ زبانی» خیلی کوچک و <b>ساختگی</b> که فقط کلمه‌ی قبلی را می‌بیند (مثلاً بعد از <code>is</code>: <code>ready</code> ۰٫۵، <code>late</code> ۰٫۳، <code>here</code> ۰٫۲). هر دو روش از <code>your</code> شروع می‌کنند و حداکثر ۱۴ کلمه می‌سازند:</p>
+<div class="box">
+<p class="ex" style="margin:0">حریصانه:</p>
+<div class="gen" id="g-greedy"></div>
+<p class="ex" style="margin:6px 0 0">نمونه‌گیری (جدیدترین بالا):</p>
+<div id="g-samp"></div>
+<div class="ctl"><button id="g-btn">دوباره تولید کن</button></div>
+</div>
+<p class="ex" style="margin-top:8px">حریصانه بعد از <code>ready</code> همیشه <code>and</code> (۰٫۶) را برمی‌دارد و بعد از <code>and</code> همیشه <code>your</code> (۰٫۷)، پس تا سقف در حلقه می‌ماند. نمونه‌گیری گاهی <code>.</code> را برمی‌دارد و جمله تمام می‌شود. در LLMهای واقعی هم greedy گاهی جمله‌ها را تکرار می‌کند. راه‌های دیگر: <span class="en">beam search</span> (چند مسیرِ محتمل را با هم نگه می‌دارد؛ بیشتر برای ترجمه) و جریمه‌ی تکرار <span class="en">(repetition penalty)</span>.</p>
+</section>
+
+<section>
+<h2>مسیرِ آموزش: سه مرحله</h2>
+<svg viewBox="0 0 360 318" style="width:100%;max-width:560px;display:block;margin:8px auto">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<g font-size="11" text-anchor="middle">
+<rect x="10" y="4" width="340" height="86" rx="10" fill="var(--l1)" stroke="var(--line)"/>
+<text x="180" y="24" font-weight="700" font-size="13">۱. پیش‌آموزش (Pre-training)</text>
+<text x="180" y="44">داده: تریلیون‌ها توکن از وب، کتاب و کد</text>
+<text x="180" y="62">یاد می‌گیرد: زبان، دانشِ عمومی، ادامه دادنِ متن</text>
+<text x="180" y="80" fill="var(--muted)" font-size="10">بیشترِ هزینه‌ی محاسبه این‌جاست · خروجی: مدلِ پایه</text>
+<line x1="180" y1="92" x2="180" y2="110" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="10" y="114" width="340" height="86" rx="10" fill="var(--l2)" stroke="var(--line)"/>
+<text x="180" y="134" font-weight="700" font-size="13">۲. تنظیمِ دستوری (SFT)</text>
+<text x="180" y="154">داده: هزاران جفتِ «دستور ← جوابِ خوب» که آدم نوشته</text>
+<text x="180" y="172">یاد می‌گیرد: مثلِ دستیار جواب بدهد، نه فقط متن را ادامه</text>
+<text x="180" y="190" fill="var(--muted)" font-size="10">همان cross-entropy، فقط روی توکن‌های جواب</text>
+<line x1="180" y1="202" x2="180" y2="220" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="10" y="224" width="340" height="86" rx="10" fill="var(--l3)" stroke="var(--line)"/>
+<text x="180" y="244" font-weight="700" font-size="13">۳. تنظیم با ترجیح (RLHF یا DPO)</text>
+<text x="180" y="264">داده: دو جواب به یک سؤال؛ آدم گفته کدام بهتر است</text>
+<text x="180" y="282">یاد می‌گیرد: مفیدتر، صادق‌تر، بی‌خطرتر</text>
+<text x="180" y="300" fill="var(--muted)" font-size="10">جوابِ «درست» نمی‌دهیم؛ فقط می‌گوییم کدام بهتر است</text>
+</g></svg>
+<p>دستیارِ فروشگاه را با همین سه مرحله تصور کنید:</p>
+<div class="kinds">
+<div><p><b>مدلِ پایه</b></p><p class="ex">به «سفارشم کجاست؟» ممکن است با یک سؤالِ دیگر جواب بدهد، چون در وب سؤال‌ها اغلب پشتِ هم می‌آیند.</p></div>
+<div><p><b>بعد از SFT</b></p><p class="ex">جواب می‌دهد و قالبِ گفت‌وگو را بلد است.</p></div>
+<div><p><b>بعد از RLHF/DPO</b></p><p class="ex">جوابِ مؤدبانه‌تر و دقیق‌تر را ترجیح می‌دهد و اطلاعاتِ خطرناک نمی‌دهد.</p></div>
+</div>
+<div class="kinds" style="margin-top:12px">
+<div><p><b>RLHF</b></p><p class="ex">۱) یک <b>مدلِ پاداش</b> روی جفت‌های ترجیح آموزش می‌دهیم. ۲) LLM را با یادگیریِ تقویتی (معمولاً PPO) طوری تنظیم می‌کنیم که پاداشِ بیشتر بگیرد، ولی از مدلِ SFT زیاد دور نشود (جریمه‌ی KL). در مقاله‌ی InstructGPT، آدم‌ها جوابِ مدلِ ۱٫۳ میلیاردیِ تنظیم‌شده را به GPT-3ِ ۱۷۵ میلیاردی ترجیح دادند.</p></div>
+<div><p><b>DPO</b></p><p class="ex">مدلِ پاداش و یادگیریِ تقویتی را حذف می‌کند. مستقیم روی جفت‌ها یک loss شبیهِ دسته‌بندی می‌گذارد: احتمالِ جوابِ بهتر را نسبت به مدلِ مرجع بالا ببر، احتمالِ جوابِ بدتر را پایین. ساده‌تر و پایدارتر.</p></div>
+</div>
+<details class="drop"><summary><b>فرمول‌ها (اختیاری)</b></summary>
+<div class="f">\[ \text{RLHF:}\quad \max_{\pi}\; \mathbb{E}_{y\sim\pi(\cdot|x)}\big[r(x,y)\big] - \beta\, \text{KL}\big(\pi(\cdot|x)\,\|\,\pi_{\text{ref}}(\cdot|x)\big) \]</div>
+<div class="f">\[ \text{DPO:}\quad L = -\log \sigma\!\Big(\beta \log\frac{\pi(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log\frac{\pi(y_l|x)}{\pi_{\text{ref}}(y_l|x)}\Big) \]</div>
+<ul class="sym">
+<li>\(\pi\): مدلی که آموزش می‌دهیم</li>
+<li>\(\pi_{\text{ref}}\): مدلِ SFT (ثابت)</li>
+<li>\(r\): مدلِ پاداش</li>
+<li>\(y_w, y_l\): جوابِ بهتر و بدتر</li>
+<li>\(\beta\): چقدر از مرجع دور شویم</li>
+<li>\(\sigma\): سیگموید</li>
+</ul>
+</details>
+</section>
+
+<section>
+<h2>مقیاس: پارامتر، داده، محاسبه</h2>
+<p>خطای LLM با بزرگ‌تر شدنِ سه چیز به‌شکلِ قابلِ پیش‌بینی کم می‌شود <span class="en">(scaling laws)</span>: تعدادِ پارامتر \(N\)، تعدادِ توکنِ آموزش \(D\)، و محاسبه \(C\).</p>
+<div class="f">\[ C \approx 6\,N\,D \;\text{FLOPs} \]</div>
+<ul class="sym">
+<li>\(N\): تعدادِ پارامترها</li>
+<li>\(D\): تعدادِ توکن‌های آموزش</li>
+<li>۶: حدوداً ۲ برای عبورِ رو به جلو و ۴ برای برگشت</li>
+</ul>
+<div class="kinds">
+<div><p><b>قانونِ Chinchilla</b></p><p class="ex">برای یک بودجه‌ی محاسبه‌ی ثابت، بهتر است حدود <b>۲۰ توکن به ازای هر پارامتر</b> آموزش بدهیم. مدلِ ۷ میلیاردی ← ۱۴۰ میلیارد توکن ← \(6 \times 7\times10^9 \times 1.4\times10^{11} = 5.88\times10^{21}\) FLOP.</p></div>
+<div><p><b>در عمل</b></p><p class="ex">مدل‌ها را خیلی بیشتر از این آموزش می‌دهند (Llama 2 7B با ۲ تریلیون توکن؛ حدود ۲۸۶ توکن برای هر پارامتر)، چون مدلِ کوچک‌تر در <b>استفاده</b> ارزان‌تر است و هزینه‌ی استفاده بارها تکرار می‌شود.</p></div>
+</div>
+</section>
+
+<section>
+<h2>سفارشی کردن: پرامپت، fine-tuning یا LoRA</h2>
+<p>دستیارِ فروشگاه باید لحنِ برند را داشته باشد و قالبِ جوابِ ثابتی بدهد. سه راه:</p>
+<div class="kinds">
+<div><p><b>پرامپت</b> <span class="en">(Prompting)</span></p><ul class="ex">
+<li>دستور و چند مثال در خودِ ورودی <span class="en">(few-shot)</span>.</li>
+<li>هیچ وزنی عوض نمی‌شود.</li>
+<li>در چند دقیقه آماده؛ اولین چیزی که باید امتحان کنید.</li>
+<li>هر درخواست توکنِ بیشتری مصرف می‌کند.</li></ul></div>
+<div><p><b>fine-tuning کامل</b></p><ul class="ex">
+<li><b>همه‌ی</b> وزن‌ها روی داده‌ی شما آموزش می‌بینند.</li>
+<li>برای مدلِ ۷ میلیاردی: گرادیان و حالتِ Adam برای ۷ میلیارد عدد؛ چندین GPU.</li>
+<li>برای هر کار یک نسخه‌ی کاملِ مدل.</li>
+<li>خطرِ فراموشیِ دانشِ قبلی <span class="en">(catastrophic forgetting)</span>.</li></ul></div>
+<div><p><b>LoRA</b></p><ul class="ex">
+<li>وزن‌های اصلی <b>ثابت</b>. فقط دو ماتریسِ باریکِ اضافه آموزش می‌بینند.</li>
+<li>کمتر از ۱٪ پارامترها؛ روی یک GPU ممکن است.</li>
+<li>فایلِ هر کار چند ده مگابایت؛ می‌شود عوضشان کرد.</li>
+<li>دقتش معمولاً نزدیکِ fine-tuning کامل.</li></ul></div>
+</div>
+<p style="margin-top:10px"><b>ایده‌ی LoRA:</b> تغییرِ لازم در وزن‌ها \(\Delta W\) را به‌صورتِ ضربِ دو ماتریسِ باریک می‌نویسیم:</p>
+<div class="f">\[ W' = W + \Delta W = W + \frac{\alpha}{r}\, B A, \qquad B \in \mathbb{R}^{d\times r},\; A \in \mathbb{R}^{r\times k} \]</div>
+<ul class="sym">
+<li>\(W\): وزنِ اصلی (ثابت)</li>
+<li>\(r\): رتبه (مثلاً ۸)، خیلی کوچک‌تر از \(d\)</li>
+<li>\(\alpha\): ضریبِ مقیاس</li>
+<li>\(B\): در شروع صفر، پس اول \(\Delta W = 0\)</li>
+<li>\(A\): مقدارِ اولیه‌ی تصادفی</li>
+</ul>
+<div class="box">
+<label>رتبه‌ی r <input id="rank" type="range" min="1" max="64" step="1" value="8"><b id="rankv"></b></label>
+<svg id="lorasvg" viewBox="0 0 320 130" style="width:100%;display:block;margin:6px auto"></svg>
+<div class="err" id="lorainfo"></div>
+</div>
+<p class="ex" style="margin-top:8px">با یک ماتریسِ \(4096 \times 4096\): fine-tuning کامل \(4096^2 = 16{,}777{,}216\) پارامتر (حدود ۱۶٫۸ میلیون). LoRA با \(r = 8\): \(2 \times 4096 \times 8 = 65{,}536\) پارامتر (حدود ۶۵٫۵ هزار)، یعنی ۰٫۳۹٪. اگر در یک مدلِ ۳۲ لایه روی ۴ ماتریسِ attention هر لایه بگذاریم: ۸٬۳۸۸٬۶۰۸ پارامتر، حدود ۰٫۱۲٪ از ۷ میلیارد. <b>QLoRA</b> همین کار را روی مدلِ پایه‌ای می‌کند که با ۴ بیت ذخیره شده، تا حافظه باز هم کم شود.</p>
+</section>
+
+<section>
+<h2>RAG: دادنِ دانشِ تازه به مدل</h2>
+<p>مشتری می‌پرسد «کالای حراجی را می‌شود پس داد؟». سیاستِ مرجوعیِ این فروشگاه در داده‌ی آموزشِ مدل نبوده. مدل یا نمی‌داند یا با اعتمادبه‌نفس یک جوابِ ساختگی می‌دهد. <b>RAG</b> <span class="en">(Retrieval-Augmented Generation)</span>: اول متنِ مرتبط را پیدا کن، بعد آن را در پرامپت بگذار.</p>
+<svg viewBox="0 0 360 300" style="width:100%;max-width:560px;display:block;margin:8px auto">
+<defs><marker id="ar2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<g font-size="10.5" text-anchor="middle">
+<text x="270" y="14" fill="var(--muted)" font-size="10">از قبل (یک بار)</text>
+<rect x="190" y="22" width="160" height="40" rx="8" fill="var(--l1)" stroke="var(--line)"/>
+<text x="270" y="38">سندهای فروشگاه</text><text x="270" y="54" fill="var(--muted)" font-size="9.5">سیاستِ مرجوعی، ارسال، …</text>
+<line x1="270" y1="63" x2="270" y2="78" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar2)"/>
+<rect x="190" y="82" width="160" height="40" rx="8" fill="var(--l1)" stroke="var(--line)"/>
+<text x="270" y="98">تکه‌تکه کردن + embedding</text><text x="270" y="114" fill="var(--muted)" font-size="9.5">هر تکه ← یک بردار</text>
+<line x1="270" y1="123" x2="270" y2="138" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar2)"/>
+<rect x="190" y="142" width="160" height="40" rx="8" fill="var(--l5)" stroke="var(--accent)"/>
+<text x="270" y="166" font-weight="700">پایگاهِ داده‌ی برداری</text>
+<text x="90" y="14" fill="var(--muted)" font-size="10">هر سؤال</text>
+<rect x="10" y="22" width="160" height="40" rx="8" fill="var(--l3)" stroke="var(--line)"/>
+<text x="90" y="38">سؤال: کالای حراجی را</text><text x="90" y="54">می‌شود پس داد؟</text>
+<line x1="90" y1="63" x2="90" y2="78" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar2)"/>
+<rect x="10" y="82" width="160" height="40" rx="8" fill="var(--l3)" stroke="var(--line)"/>
+<text x="90" y="98">۱. embedding سؤال</text><text x="90" y="114" fill="var(--muted)" font-size="9.5">همان مدلِ embedding</text>
+<line x1="90" y1="123" x2="90" y2="138" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar2)"/>
+<rect x="10" y="142" width="160" height="40" rx="8" fill="var(--l3)" stroke="var(--line)"/>
+<text x="90" y="158">۲. جست‌وجوی نزدیک‌ترین</text><text x="90" y="174">k تکه (مثلاً ۳ تا)</text>
+<line x1="171" y1="162" x2="186" y2="162" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar2)"/>
+<line x1="189" y1="170" x2="174" y2="170" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar2)"/>
+<line x1="90" y1="183" x2="90" y2="198" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar2)"/>
+<rect x="10" y="202" width="340" height="44" rx="8" fill="var(--l2)" stroke="var(--line)"/>
+<text x="180" y="219">۳. پرامپت = دستور + تکه‌های پیداشده + سؤال</text>
+<text x="180" y="237" fill="var(--muted)" font-size="9.5">«فقط از روی این متن جواب بده: … کالای حراجی تا ۷ روز قابلِ مرجوعی است …»</text>
+<line x1="180" y1="247" x2="180" y2="262" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar2)"/>
+<rect x="10" y="266" width="340" height="30" rx="8" fill="var(--l4)" stroke="var(--line)"/>
+<text x="180" y="285">۴. LLM جواب می‌دهد و منبع را هم نشان می‌دهد</text>
+</g></svg>
+<p class="ex">«۷ روز» در شکل فقط یک متنِ نمونه از سندِ فرضیِ فروشگاه است.</p>
+<div class="kinds">
+<div><p><b>چرا RAG؟</b></p><ul class="ex">
+<li>دانشِ <b>تازه</b>: سند را امروز عوض کنید، جواب امروز عوض می‌شود.</li>
+<li>دانشِ <b>خصوصی</b>: سندهای داخلیِ شرکت که هیچ‌وقت در وب نبوده‌اند.</li>
+<li><b>توهمِ کمتر</b>: مدل از روی متن جواب می‌دهد و می‌شود منبع را نشان داد.</li>
+<li>بدونِ آموزشِ دوباره‌ی مدل.</li></ul></div>
+<div><p><b>RAG یا fine-tuning؟</b></p><ul class="ex">
+<li>RAG برای «<b>چه</b> بداند» (واقعیت‌ها، سندها).</li>
+<li>fine-tuning برای «<b>چطور</b> رفتار کند» (لحن، قالب، مهارتِ خاص).</li>
+<li>اغلب هر دو با هم استفاده می‌شوند.</li></ul></div>
+<div><p><b>کجا خراب می‌شود؟</b></p><ul class="ex">
+<li>تکه‌ی درست پیدا نشود (تکه‌بندیِ بد، embedding ضعیف). راه: جست‌وجوی ترکیبی (برداری + کلیدواژه) و rerank.</li>
+<li>تکه‌ی درست وسطِ یک متنِ خیلی طولانی گم شود <span class="en">(lost in the middle)</span>.</li></ul></div>
+</div>
+</section>
+
+<section>
+<h2>پنجره‌ی متن و KV cache</h2>
+<p><b>پنجره‌ی متن</b> <span class="en">(context window)</span> حداکثرِ تعدادِ توکنی است که مدل یک‌جا می‌بیند: پرامپت + تاریخچه‌ی گفت‌وگو + سندهای RAG + جواب. هر چه بیرون بیفتد، برای مدل وجود ندارد. هزینه‌ی attention با طولِ متن \(n\) به‌شکلِ \(n^2\) بالا می‌رود.</p>
+<p><b>KV cache:</b> در تولید، هر توکنِ جدید باید به همه‌ی توکن‌های قبلی attention کند. key و value توکن‌های قبلی عوض نمی‌شوند، پس یک بار حساب و ذخیره می‌شوند. هر قدم فقط query/key/value توکنِ جدید را حساب می‌کند.</p>
+<div class="kinds">
+<div><p><b>بدونِ KV cache</b></p><p class="ex">برای توکنِ ۱۰۰۰ام، key و value هر ۹۹۹ توکنِ قبلی در همه‌ی لایه‌ها دوباره حساب می‌شود.</p></div>
+<div><p><b>با KV cache</b></p><p class="ex">فقط برای یک توکن حساب می‌شود. تولید خیلی سریع‌تر، ولی حافظه مصرف می‌کند.</p></div>
+</div>
+<div class="f">\[ \text{KV bytes} = 2 \times L \times d \times b \times n \]</div>
+<ul class="sym">
+<li>۲: یکی key، یکی value</li>
+<li>\(L\): تعدادِ لایه‌ها</li>
+<li>\(d\): بعدِ مدل</li>
+<li>\(b\): بایت برای هر عدد (۲ برای fp16)</li>
+<li>\(n\): تعدادِ توکن‌ها</li>
+</ul>
+<p class="ex">مثال: Llama 2 7B با \(L = 32\) و \(d = 4096\) در fp16: هر توکن \(2 \times 32 \times 4096 \times 2 = 524{,}288\) بایت (نیم مگابایت). برای ۴۰۹۶ توکن: ۲ گیگابایت، برای <b>هر</b> گفت‌وگو. برای همین روش‌هایی مثلِ GQA (چند head یک key/value مشترک دارند) حافظه‌ی cache را کم می‌کنند.</p>
+</section>
+
+<section>
+<h2>توهم و ارزیابی</h2>
+<p><b>توهم</b> <span class="en">(Hallucination)</span>: مدل متنی روان و مطمئن می‌سازد که غلط است. مثلاً یک سیاستِ مرجوعیِ ساختگی، یا یک شماره‌ی سفارشِ ناموجود. دلیل: مدل برای «متنِ محتمل» آموزش دیده، نه «متنِ درست». وقتی جواب را نمی‌داند، باز هم یک ادامه‌ی محتمل می‌سازد.</p>
+<ul class="ex">
+<li>RAG و نشان دادنِ منبع.</li>
+<li>دستورِ صریح: «اگر در متن نیست، بگو نمی‌دانم».</li>
+<li>دمای پایین برای جواب‌های واقعیت‌محور.</li>
+<li>چک کردنِ خروجی با ابزار یا یک مدلِ دیگر.</li>
+</ul>
+<p><b>Perplexity:</b> مدل چقدر از متنِ واقعی «غافلگیر» می‌شود. همان cross-entropy است که به نما رسیده:</p>
+<div class="f">\[ \text{PPL} = \exp\Big(-\frac{1}{T}\sum_{t=1}^{T}\log P(x_t \mid x_{&lt;t})\Big) \]</div>
+<p class="ex">مثال: مدل به ۴ توکنِ درستِ یک جمله این احتمال‌ها را داده: ۰٫۵، ۰٫۲۵، ۰٫۸، ۰٫۱. منفیِ لگاریتم‌ها: ۰٫۶۹۳، ۱٫۳۸۶، ۰٫۲۲۳، ۲٫۳۰۳. میانگین: ۱٫۱۵۱. پس \(\text{PPL} = e^{1.151} = 3.162\). یعنی مدل به‌طورِ میانگین انگار بین حدودِ ۳٫۲ توکن مردد بوده. مدلی که روی ۵۰ هزار توکن کاملاً یکنواخت حدس بزند، PPL برابرِ ۵۰ هزار دارد. کمتر بهتر است. ولی فقط بین مدل‌هایی با <b>توکنایزرِ یکسان</b> قابلِ مقایسه است.</p>
+<div class="kinds">
+<div><p><b>Perplexity</b></p><p class="ex">ارزان و خودکار. خوب برای پیش‌آموزش. ولی نمی‌گوید جواب مفید یا درست است.</p></div>
+<div><p><b>بنچمارک‌ها</b></p><p class="ex">MMLU: سؤال‌های چندگزینه‌ای در ۵۷ موضوع. GSM8K: مسئله‌ی ریاضیِ ساده. HumanEval: ۱۶۴ مسئله‌ی پایتون با تستِ واحد (pass@k). خطر: سؤال‌ها ممکن است در داده‌ی آموزش آمده باشند <span class="en">(contamination)</span>.</p></div>
+<div><p><b>ارزیابیِ انسانی و LLM-as-judge</b></p><p class="ex">آدم‌ها دو جواب را مقایسه می‌کنند (مثلاً Chatbot Arena). یا یک LLMِ قوی داوری می‌کند: ارزان‌تر، ولی سوگیری دارد: جوابِ اول یا طولانی‌تر یا جوابِ خودش را ترجیح می‌دهد.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">برای دستیارِ فروشگاه: یک مجموعه‌ی ثابت از ۲۰۰ سؤالِ واقعیِ مشتری با جوابِ درست، و بعد از هر تغییر در پرامپت یا مدل، دوباره اجرا. این مهم‌تر از هر بنچمارکِ عمومی است.</p>
+</section>
+
+<section>
+<h2>ایجنت: LLM + ابزار + حلقه</h2>
+<p>ایجنت یعنی LLM در یک حلقه، با اجازه‌ی صدا زدنِ ابزار. مدل به‌جای جوابِ نهایی می‌تواند بنویسد «این تابع را با این ورودی صدا بزن». برنامه تابع را اجرا می‌کند و نتیجه را به متن اضافه می‌کند. مدل ادامه می‌دهد.</p>
+<ol class="flow">
+<li><span class="n">۱</span><div><p><b>مشتری:</b> «سفارشِ ۱۲۳ کجاست؟»</p></div></li>
+<li><span class="n">۲</span><div><p><b>LLM:</b> <code>get_order_status(order_id=123)</code></p><p class="ex">مدل خودش جوابِ واقعی را نمی‌داند؛ یک فراخوانیِ ابزار می‌نویسد.</p></div></li>
+<li><span class="n">۳</span><div><p><b>برنامه:</b> تابع را اجرا می‌کند ← <code>{"status": "shipped", "eta": "2 days"}</code></p></div></li>
+<li><span class="n">۴</span><div><p><b>LLM:</b> «سفارشِ شما ارسال شده و حدودِ ۲ روزِ دیگر می‌رسد.»</p><p class="ex">اگر کار تمام نشده بود، دوباره به قدمِ ۲ برمی‌گشت.</p></div></li>
+</ol>
+<p class="ex">خطرها: حلقه‌ی بی‌پایان (سقفِ تعدادِ قدم بگذارید)، ابزارِ خطرناک (پرداخت، حذف؛ تأییدِ انسان بگیرید)، و <span class="en">prompt injection</span>: متنی در سند یا صفحه‌ی وب که به مدل دستور می‌دهد.</p>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>نمونه‌گیر با دما، top-k و top-p در NumPy:</b></p>
+<pre>import numpy as np
+
+def sample(logits, T=1.0, top_k=None, top_p=1.0, rng=np.random.default_rng(0)):
+    z = np.asarray(logits, dtype=float) / max(T, 1e-6)   # temperature
+    p = np.exp(z - z.max()); p /= p.sum()                 # stable softmax
+    order = np.argsort(-p)                                # most likely first
+    keep = np.zeros_like(p, dtype=bool)
+    keep[order[:top_k or len(p)]] = True                  # top-k
+    q = np.where(keep, p, 0); q /= q.sum()
+    cum = np.cumsum(q[order])
+    n = np.searchsorted(cum, top_p) + 1                   # smallest set with sum >= p
+    keep[:] = False; keep[order[:n]] = True               # top-p
+    q = np.where(keep, q, 0); q /= q.sum()
+    return rng.choice(len(q), p=q), q
+
+tokens = [" 2", " 3", " about", " a", " two", " 24", " Tuesday", " banana"]
+logits = [3.2, 2.5, 2.0, 1.6, 1.0, 0.8, 0.5, -1.0]
+i, q = sample(logits, T=1.0, top_p=0.9)
+print(tokens[i], np.round(q, 3))   # 5 tokens keep non-zero probability</pre>
+<p><b>تولیدِ متن با Hugging Face transformers:</b></p>
+<pre>from transformers import AutoTokenizer, AutoModelForCausalLM
+
+name = "Qwen/Qwen2.5-0.5B-Instruct"          # any causal LM works
+tok = AutoTokenizer.from_pretrained(name)
+model = AutoModelForCausalLM.from_pretrained(name)
+
+msgs = [{"role": "user", "content": "Can I return an item I bought on sale?"}]
+ids = tok.apply_chat_template(msgs, add_generation_prompt=True, return_tensors="pt")
+print(tok.convert_ids_to_tokens(ids[0][-8:]))  # see the tokens
+
+out = model.generate(ids, max_new_tokens=80,
+                     do_sample=True, temperature=0.7, top_k=50, top_p=0.9)
+# greedy instead: model.generate(ids, max_new_tokens=80, do_sample=False)
+print(tok.decode(out[0][ids.shape[1]:], skip_special_tokens=True))</pre>
+<p><b>LoRA با کتابخانه‌ی peft:</b></p>
+<pre>from peft import LoraConfig, get_peft_model
+
+cfg = LoraConfig(r=8, lora_alpha=16, lora_dropout=0.05,
+                 target_modules=["q_proj", "k_proj", "v_proj", "o_proj"])
+model = get_peft_model(model, cfg)
+model.print_trainable_parameters()   # a tiny fraction of all parameters</pre>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>How does an LLM generate text?</summary>
+<p>It is autoregressive. Given tokens \(x_1, \dots, x_{t-1}\), a decoder-only transformer outputs a logit for every token in the vocabulary; softmax turns them into \(P(x_t \mid x_{&lt;t})\). A decoding rule (greedy, sampling with temperature/top-k/top-p, beam search) picks one token, which is appended to the input, and the loop repeats until an end token or a length limit. The probability of a whole sequence is the product \(\prod_t P(x_t \mid x_{&lt;t})\). Example: after "Your order will arrive in", logits [2.0, 1.0, 0.1] for [" 2", " 3", " banana"] give probabilities [0.659, 0.242, 0.099].</p>
+<p class="src">Analytics Vidhya (How do LLMs generate text?)</p></details>
+
+<details><summary>What is tokenization? Why subwords and how does BPE work?</summary>
+<p>Text is split into tokens from a fixed vocabulary, each mapped to an ID. Word-level vocabularies are huge and cannot handle unseen words; character-level sequences are very long. Subwords sit in between. BPE starts from characters (or bytes), counts adjacent pairs in the corpus, merges the most frequent pair into a new token, and repeats until the vocabulary has the target size. Example: corpus low×5, lower×2, newest×6, widest×3. The first merges are e+s (9), es+t (9), l+o (7), lo+w (7); after 6 merges the corpus shrinks from 79 to 35 tokens, and the unseen word "lowest" becomes low + est. WordPiece and SentencePiece are related variants. API cost and context limits are counted in tokens.</p>
+<p class="src">InterviewBIT (tokenization: BPE, WordPiece, SentencePiece)</p></details>
+
+<details><summary>What do temperature, top-k and top-p do?</summary>
+<p>Temperature divides logits before softmax: \(p_i = e^{z_i/T}/\sum_j e^{z_j/T}\). \(T&lt;1\) sharpens, \(T&gt;1\) flattens, \(T\to0\) is greedy. Top-k keeps the k most likely tokens and renormalises. Top-p (nucleus) keeps the smallest set of most likely tokens whose cumulative probability reaches p, so the set adapts to the model's confidence. Example with logits [3.2, 2.5, 2.0, 1.6, 1.0, 0.8, 0.5, −1.0]: the top token has 0.438 at T=1, 0.713 at T=0.5, 0.269 at T=2. With top-p = 0.9 five tokens survive at T=1 (cumulative 0.924) but only three at T=0.5 (0.953). Low T for code and extraction, higher T for creative text; providers usually suggest tuning one of T or top-p, not both.</p>
+<p class="src">Analytics Vidhya (temperature; top-p); InterviewBIT</p></details>
+
+<details><summary>Greedy decoding vs sampling vs beam search?</summary>
+<p>Greedy takes the argmax each step: deterministic, but locally optimal choices may not give the most likely sequence, and it tends to loop and repeat. Beam search keeps the b best partial sequences; good for tasks with one right answer (translation), but on open-ended text it gives bland, repetitive output. Sampling draws from the (truncated, temperature-scaled) distribution: diverse and more human-like, but can drift. That is also why LLM outputs are non-deterministic unless you use greedy decoding (and even then GPU numerics can vary).</p></details>
+
+<details><summary>How are chat LLMs trained? Pre-training vs SFT vs RLHF/DPO.</summary>
+<p>(1) Pre-training: next-token cross-entropy \(L = -\frac1T\sum_t \log P(x_t\mid x_{&lt;t})\) on trillions of tokens; gives a base model with language and world knowledge; most of the compute. (2) Supervised fine-tuning (instruction tuning): the same loss on curated prompt→response pairs, usually only on response tokens; teaches the assistant format. (3) Preference tuning: RLHF trains a reward model on human comparisons (A better than B) and then optimises the policy with PPO against that reward with a KL penalty to the SFT model; DPO skips the reward model and RL and optimises a classification-style loss on the pairs directly. In InstructGPT, outputs of a 1.3B tuned model were preferred to the 175B GPT-3.</p>
+<p class="src">InterviewBIT (RLHF; DPO vs RLHF; instruction tuning); Analytics Vidhya (How are LLMs trained?)</p></details>
+
+<details><summary>Explain LoRA. Why is it parameter-efficient?</summary>
+<p>LoRA freezes the pretrained weight \(W \in \mathbb{R}^{d\times k}\) and learns a low-rank update \(\Delta W = \frac{\alpha}{r} BA\) with \(B\in\mathbb{R}^{d\times r}\), \(A\in\mathbb{R}^{r\times k}\), \(r \ll d\). \(B\) starts at zero so training starts from the original model. For a 4096×4096 matrix, full fine-tuning updates 16,777,216 parameters; rank-8 LoRA trains \(2\times4096\times8 = 65{,}536\) (0.39%). Benefits: far less optimizer memory, small per-task adapter files, the update can be merged into \(W\) so there is no extra inference latency. QLoRA does the same on a 4-bit quantised frozen base model.</p>
+<p class="src">InterviewBIT (LoRA; QLoRA; PEFT)</p></details>
+
+<details><summary>When would you use prompting, RAG or fine-tuning?</summary>
+<p>Start with prompting (instructions, few-shot examples): no training, fast to iterate. Use RAG when the model needs knowledge it does not have or that changes: private documents, fresh data, citations; you update the index, not the model. Use fine-tuning (often LoRA) to change behaviour: a fixed output format, tone, a narrow skill, or to shorten long prompts and reduce cost. They combine: e.g. a support bot fine-tuned for tone that uses RAG over the current policy documents.</p>
+<p class="src">Analytics Vidhya (fine-tuning vs prompt engineering; RAG)</p></details>
+
+<details><summary>What is RAG and how would you build and evaluate it?</summary>
+<p>Offline: split documents into chunks (e.g. a few hundred tokens with overlap), embed each chunk, store vectors in a vector database (FAISS, Milvus, pgvector, …). Online: embed the query, retrieve the top-k nearest chunks (cosine similarity), optionally combine with keyword search (BM25) and rerank with a cross-encoder, then put the chunks in the prompt with an instruction to answer only from them and cite. Evaluate retrieval (recall@k, MRR on labelled question→chunk pairs) and generation (faithfulness to the retrieved text, answer correctness) separately. Failure modes: bad chunking, the right chunk not retrieved, "lost in the middle" of long contexts.</p>
+<p class="src">InterviewBIT (RAG pipeline; chunking; hybrid search; evaluating RAG)</p></details>
+
+<details><summary>What is the KV cache and why does it matter?</summary>
+<p>During generation, the keys and values of past tokens never change, so they are cached per layer; each new step computes Q/K/V only for the new token and attends over the cache. This avoids recomputing the whole prefix every step. Cost: memory \(= 2 \times L \times d \times \text{bytes} \times n\). For Llama 2 7B (\(L=32, d=4096\), fp16) that is 524,288 bytes per token, about 2 GB for 4096 tokens per sequence, which limits batch size and context length. Grouped-query attention, quantised caches and paged attention (vLLM) reduce it.</p>
+<p class="src">InterviewBIT (What is KV cache in LLM inference?)</p></details>
+
+<details><summary>What is perplexity and how do you evaluate LLMs?</summary>
+<p>Perplexity is the exponential of the average next-token cross-entropy: \(\text{PPL} = \exp(-\frac1T\sum_t \log P(x_t\mid x_{&lt;t}))\). Example: probabilities 0.5, 0.25, 0.8, 0.1 for the correct tokens give mean NLL 1.151 and PPL 3.162, as if the model were choosing among about 3 tokens. Lower is better, but it is only comparable with the same tokenizer and says nothing about helpfulness. So also use task benchmarks (MMLU, GSM8K, HumanEval with pass@k), human preference comparisons, and LLM-as-a-judge (cheap but with position, verbosity and self-preference biases), plus a fixed in-house eval set for your product, watching for benchmark contamination.</p>
+<p class="src">InterviewBIT (perplexity); Analytics Vidhya (evaluating LLM quality)</p></details>
+
+<details><summary>Why do LLMs hallucinate and how do you reduce it?</summary>
+<p>The training objective rewards plausible continuations, not true ones; the model has no built-in signal for "I don't know", knowledge may be missing or outdated, and sampling can pick low-probability wrong tokens. Mitigations: ground answers with RAG and require citations, instruct the model to abstain when the context lacks the answer, use lower temperature for factual tasks, verify with tools (search, code execution, database lookups) or a second model, and preference-tune for honesty.</p>
+<p class="src">Analytics Vidhya (Why do LLMs sometimes hallucinate?); InterviewBIT</p></details>
+
+<details><summary>What is an LLM agent?</summary>
+<p>An LLM in a loop with tools. The model receives the task and tool descriptions (name, JSON schema), and instead of answering it can emit a structured tool call; the application executes it, appends the result to the context, and calls the model again until it produces a final answer. Example: "Where is order 123?" → <code>get_order_status(123)</code> → <code>{"status":"shipped"}</code> → final reply. Practical concerns: step limits, error handling, human approval for risky actions, and prompt injection through tool results.</p>
+<p class="src">InterviewBIT (AI agents; function calling / tool use)</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://www.interviewbit.com/llm-interview-questions-answers/">InterviewBIT: LLM Interview Questions</a> · <a href="https://www.analyticsvidhya.com/blog/2026/01/llm-interview-questions-and-answers/">Analytics Vidhya: 20 LLM Interview Questions</a> · <a href="https://arxiv.org/abs/1508.07909">Sennrich et al., BPE for NMT</a> · <a href="https://arxiv.org/abs/1904.09751">Holtzman et al., nucleus sampling</a> · <a href="https://arxiv.org/abs/2203.02155">Ouyang et al., InstructGPT</a> · <a href="https://arxiv.org/abs/2305.18290">Rafailov et al., DPO</a> · <a href="https://arxiv.org/abs/2203.15556">Hoffmann et al., Chinchilla</a> · <a href="https://arxiv.org/abs/2106.09685">Hu et al., LoRA</a> · <a href="https://arxiv.org/abs/2005.11401">Lewis et al., RAG</a> · <a href="https://arxiv.org/abs/2306.05685">Zheng et al., LLM-as-a-judge</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const $ = id => document.getElementById(id);
+let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+// ---------- BPE stepper ----------
+const CORPUS = [['low', 5], ['lower', 2], ['newest', 6], ['widest', 3]];
+let bpe;
+const bpeReset = () => { bpe = { toks: CORPUS.map(([w]) => w.split('')), merges: [], last: null, vocab: new Set(CORPUS.flatMap(([w]) => w.split(''))) }; bpeDraw(); };
+const bpeStep = () => {
+  if (bpe.merges.length >= 6) return;
+  const cnt = new Map();
+  bpe.toks.forEach((t, k) => { for (let i = 0; i < t.length - 1; i++) { const key = t[i] + '|' + t[i + 1]; cnt.set(key, (cnt.get(key) || 0) + CORPUS[k][1]); } });
+  let best = null; for (const [key, v] of cnt) if (!best || v > best[1]) best = [key, v];
+  if (!best) return;
+  const [a, b] = best[0].split('|');
+  bpe.toks = bpe.toks.map(t => { const n = []; for (let i = 0; i < t.length; i++) { if (i < t.length - 1 && t[i] === a && t[i + 1] === b) { n.push(a + b); i++; } else n.push(t[i]); } return n; });
+  bpe.merges.push([a, b, best[1]]); bpe.last = a + b; bpe.vocab.add(a + b); bpeDraw();
+};
+const bpeDraw = () => {
+  $('bpe').innerHTML = bpe.toks.map((t, k) => `<div class="wrow"><span class="cnt">×${CORPUS[k][1]}</span><div class="chips">${t.map(s => `<span class="chip${s === bpe.last ? ' new' : ''}">${s}</span>`).join('')}</div></div>`).join('');
+  const total = bpe.toks.reduce((a, t, k) => a + t.length * CORPUS[k][1], 0);
+  const m = bpe.merges[bpe.merges.length - 1];
+  $('bpeinfo').innerHTML = (m ? `ادغامِ ${fa(bpe.merges.length)}: <span dir="ltr"><code>${m[0]} + ${m[1]}</code></span> (${fa(m[2])} بار)<br>` : 'شروع: هر حرف یک توکن.<br>') +
+    `اندازه‌ی فهرست: <b>${fa(bpe.vocab.size)}</b> · کلِ توکن‌های داده: <b>${fa(total)}</b>` + (bpe.merges.length >= 6 ? ' · (پایانِ این مثال)' : '');
+  $('bpestep').disabled = bpe.merges.length >= 6;
+};
+$('bpestep').onclick = bpeStep; $('bpereset').onclick = bpeReset; bpeReset();
+
+// ---------- temperature / top-k / top-p ----------
+const TOK = [' 2', ' 3', ' about', ' a', ' two', ' 24', ' Tuesday', ' banana'];
+const LOG = [3.2, 2.5, 2.0, 1.6, 1.0, 0.8, 0.5, -1.0];
+const softT = (z, T) => { const s = z.map(v => v / T), m = Math.max(...s), e = s.map(v => Math.exp(v - m)), S = e.reduce((a, b) => a + b, 0); return e.map(v => v / S); };
+const filt = (T, k, p) => {
+  const pr = softT(LOG, T);
+  const order = pr.map((v, i) => i).sort((a, b) => pr[b] - pr[a]);
+  const keep = new Array(pr.length).fill(false); order.slice(0, k).forEach(i => keep[i] = true);
+  let S = order.reduce((a, i) => a + (keep[i] ? pr[i] : 0), 0);
+  let q = pr.map((v, i) => keep[i] ? v / S : 0);
+  let c = 0; const keep2 = new Array(pr.length).fill(false);
+  for (const i of order) { if (!keep[i]) break; keep2[i] = true; c += q[i]; if (c >= p - 1e-9) break; }
+  S = q.reduce((a, v, i) => a + (keep2[i] ? v : 0), 0);
+  q = q.map((v, i) => keep2[i] ? v / S : 0);
+  return { pr, q, keep: keep2, n: keep2.filter(Boolean).length, cum: order.filter(i => keep2[i]).reduce((a, i) => a + pr[i], 0) };
+};
+let lastPick = -1;
+const distDraw = () => {
+  const T = +$('temp').value, k = +$('topk').value, p = +$('topp').value, r = filt(T, k, p);
+  $('tempv').textContent = T.toFixed(1); $('topkv').textContent = k; $('toppv').textContent = p.toFixed(2);
+  $('dist').innerHTML = TOK.map((t, i) => `<div class="pb${r.keep[i] ? '' : ' off'}${i === lastPick ? ' pick' : ''}"><span>"${t}"</span><div class="track"><i style="width:${(r.keep[i] ? r.q[i] : r.pr[i]) * 100}%"></i></div><b>${(r.keep[i] ? r.q[i] : r.pr[i]).toFixed(3)}</b></div>`).join('');
+  $('distinfo').innerHTML = `توکن‌های مجاز: <b>${fa(r.n)}</b> از ۸ · احتمالِ <span dir="ltr"><code>" 2"</code></span> بعد از دما (قبل از حذف): <b>${fa(r.pr[0], 3)}</b>`;
+};
+['temp', 'topk', 'topp'].forEach(id => $(id).oninput = () => { lastPick = -1; $('drawn').textContent = ''; distDraw(); });
+$('draw1').onclick = () => {
+  const r = filt(+$('temp').value, +$('topk').value, +$('topp').value);
+  let u = rnd(), c = 0; lastPick = r.q.length - 1;
+  for (let i = 0; i < r.q.length; i++) { c += r.q[i]; if (r.q[i] > 0 && u < c) { lastPick = i; break; } }
+  $('drawn').innerHTML = `انتخاب شد: <span dir="ltr"><code>"${TOK[lastPick]}"</code></span>`; distDraw();
+};
+distDraw();
+
+// ---------- greedy vs sampling ----------
+const BG = { your: [['order', .6], ['package', .4]], order: [['is', .55], ['will', .45]], package: [['is', .6], ['will', .4]], is: [['ready', .5], ['late', .3], ['here', .2]], ready: [['and', .6], ['.', .4]], and: [['your', .7], ['thanks', .3]], will: [['arrive', .7], ['ship', .3]], arrive: [['today', .55], ['soon', .45]], ship: [['today', .6], ['soon', .4]], late: [['.', 1]], here: [['.', 1]], today: [['.', 1]], soon: [['.', 1]], thanks: [['.', 1]] };
+const genText = greedy => { let w = 'your'; const o = ['your'];
+  for (let i = 0; i < 13; i++) { let nx;
+    if (greedy) nx = BG[w].reduce((a, b) => b[1] > a[1] ? b : a)[0];
+    else { const u = rnd(); let c = 0; nx = BG[w][BG[w].length - 1][0]; for (const [x, pp] of BG[w]) { c += pp; if (u < c) { nx = x; break; } } }
+    w = nx; o.push(w); if (w === '.') break; }
+  return o.join(' ') + (w === '.' ? '' : ' …'); };
+const samples = [];
+$('g-greedy').textContent = genText(true);
+const addSample = () => { samples.unshift(genText(false)); samples.length = Math.min(samples.length, 4);
+  $('g-samp').innerHTML = samples.map((s, i) => `<div class="gen${i ? ' old' : ''}">${s}</div>`).join(''); };
+$('g-btn').onclick = () => { $('g-greedy').textContent = genText(true); addSample(); };
+addSample();
+
+// ---------- LoRA rank ----------
+const loraDraw = () => {
+  const r = +$('rank').value, d = 4096, full = d * d, lo = 2 * d * r;
+  $('rankv').textContent = r;
+  const w = Math.max(3, r / 64 * 60), acc = css('accent'), mu = css('muted'), ln = css('line');
+  $('lorasvg').innerHTML = `
+  <rect x="10" y="10" width="100" height="100" fill="${ln}" stroke="${mu}"/><text x="60" y="64" text-anchor="middle" font-size="11">W (ثابت)</text>
+  <text x="60" y="124" text-anchor="middle" font-size="10" fill="${mu}">4096×4096</text>
+  <text x="125" y="64" text-anchor="middle" font-size="16">+</text>
+  <rect x="140" y="10" width="${w}" height="100" fill="${acc}" opacity=".8"/><text x="${140 + w / 2}" y="124" text-anchor="middle" font-size="10" fill="${mu}">B: 4096×${r}</text>
+  <text x="${150 + w}" y="64" text-anchor="middle" font-size="14">×</text>
+  <rect x="${160 + w}" y="10" width="100" height="${w}" fill="${acc}" opacity=".8"/><text x="${210 + w}" y="${w + 24}" text-anchor="middle" font-size="10" fill="${mu}">A: ${r}×4096</text>`;
+  $('lorainfo').innerHTML = `fine-tuning کامل: <b>${full.toLocaleString('fa-IR')}</b> پارامتر<br>LoRA با r = ${fa(r)}: <b>${lo.toLocaleString('fa-IR')}</b> پارامتر (${fa(lo / full * 100, 3)}٪)`;
+};
+$('rank').oninput = loraDraw; loraDraw();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

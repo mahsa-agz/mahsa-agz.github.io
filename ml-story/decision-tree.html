@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>درخت تصمیم</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.tree text { font-family: "Vazirmatn", Tahoma, sans-serif; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="logistic-regression.html">رگرسیون لجستیک</a> · <a href="random-forest.html">بعدی: جنگل تصادفی ←</a></p>
+<h1>درخت تصمیم <span class="en">(Decision Tree)</span></h1>
+<p class="sub">یک سری سؤالِ بله/نه، پشتِ سرِ هم. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>یک کارمندِ بانک برای وام دادن این‌طور فکر می‌کند:</p>
+<svg class="tree" viewBox="0 0 320 150" style="width:100%;max-width:520px;display:block;margin:8px auto">
+<g font-size="10" text-anchor="middle">
+<rect x="110" y="4" width="100" height="24" rx="6" fill="var(--soft)" stroke="var(--muted)"/><text x="160" y="20" fill="var(--ink)">درآمد بالای ۵۰؟</text>
+<line x1="135" y1="28" x2="80" y2="58" stroke="var(--muted)"/><line x1="185" y1="28" x2="240" y2="58" stroke="var(--muted)"/>
+<text x="100" y="44" fill="var(--muted)" font-size="9">نه</text><text x="220" y="44" fill="var(--muted)" font-size="9">بله</text>
+<rect x="20" y="58" width="120" height="24" rx="6" fill="var(--soft)" stroke="var(--muted)"/><text x="80" y="74" fill="var(--ink)">امتیاز اعتباری بالای ۷۰۰؟</text>
+<rect x="190" y="58" width="100" height="24" rx="6" fill="var(--soft)" stroke="var(--muted)"/><text x="240" y="74" fill="var(--ink)">قسطِ عقب‌افتاده دارد؟</text>
+<line x1="55" y1="82" x2="35" y2="112" stroke="var(--muted)"/><line x1="105" y1="82" x2="125" y2="112" stroke="var(--muted)"/>
+<line x1="215" y1="82" x2="200" y2="112" stroke="var(--muted)"/><line x1="265" y1="82" x2="280" y2="112" stroke="var(--muted)"/>
+<rect x="5" y="112" width="60" height="22" rx="6" fill="color-mix(in srgb, var(--red) 25%, var(--card))"/><text x="35" y="127" fill="var(--ink)">نده</text>
+<rect x="95" y="112" width="60" height="22" rx="6" fill="color-mix(in srgb, var(--blue) 25%, var(--card))"/><text x="125" y="127" fill="var(--ink)">بده</text>
+<rect x="170" y="112" width="60" height="22" rx="6" fill="color-mix(in srgb, var(--blue) 25%, var(--card))"/><text x="200" y="127" fill="var(--ink)">بده</text>
+<rect x="250" y="112" width="60" height="22" rx="6" fill="color-mix(in srgb, var(--red) 25%, var(--card))"/><text x="280" y="127" fill="var(--ink)">نده</text>
+<text x="200" y="146" fill="var(--muted)" font-size="8">(نه)</text><text x="280" y="146" fill="var(--muted)" font-size="8">(بله)</text>
+</g></svg>
+<p>این همان <b>درخت تصمیم</b> است. فرقش این است که این سؤال‌ها را <b>کامپیوتر از روی داده</b> پیدا می‌کند: کدام سؤال، با چه عددی، به چه ترتیبی.</p>
+<div class="kinds">
+<div><p><b>گره</b> <span class="en">(Node)</span></p><p class="ex">یک سؤال: «ویژگیِ فلان از فلان عدد بیشتر است؟»</p></div>
+<div><p><b>شاخه</b> <span class="en">(Branch)</span></p><p class="ex">جواب: بله یا نه.</p></div>
+<div><p><b>برگ</b> <span class="en">(Leaf)</span></p><p class="ex">جوابِ نهایی: دسته‌ی اکثریت (دسته‌بندی) یا میانگین (رگرسیون).</p></div>
+</div>
+<p style="margin-top:10px">چرا محبوب است: مثلِ فکرِ آدم است و می‌شود توضیحش داد؛ هم برای <b>دسته</b> کار می‌کند هم برای <b>عدد</b>؛ رابطه‌های غیرخطی را می‌گیرد؛ و پایه‌ی قوی‌ترین مدل‌های داده‌ی جدولی است: <b>جنگل تصادفی</b> و <b>Boosting</b>.</p>
+</section>
+
+<section>
+<h2>درخت در واقع صفحه را تکه‌تکه می‌کند</h2>
+<p>هر سؤال یک خطِ <b>صاف</b> (افقی یا عمودی) می‌کشد. چند سؤال پشتِ هم، صفحه را به <b>مستطیل</b>‌هایی تقسیم می‌کنند؛ هر مستطیل یک برگ است. دو مدل کنار هم، روی همان داده:</p>
+<div class="kinds">
+<div><p><b>رگرسیون لجستیک</b></p><canvas id="cmpL"></canvas><p class="ex">یک خطِ کج. فقط یک مرزِ صاف می‌تواند بکشد.</p></div>
+<div><p><b>درخت تصمیم (عمق ۳)</b></p><canvas id="cmpT"></canvas><p class="ex">پله‌پله، با خط‌های افقی و عمودی. شکل‌های پیچیده‌تر را می‌گیرد.</p></div>
+</div>
+<p class="ex">محورِ افقی درآمد، محورِ عمودی امتیازِ اعتباری. آبی = قسط‌ها را پرداخت کرد، قرمز = نکرد.</p>
+</section>
+
+<section>
+<h2>بهترین سؤال را چطور پیدا کنیم؟</h2>
+<p>هدف: سؤالی که داده را به گروه‌هایی تقسیم کند که هر کدام تا جای ممکن <b>یک‌دست</b> باشند (همه آبی یا همه قرمز).</p>
+<p><b>مثال با عدد:</b> ۱۰ متقاضی؛ ۶ نفر خوش‌حساب، ۴ نفر بدحساب. دو سؤالِ ممکن، کنار هم:</p>
+<div class="kinds">
+<div><p><b>سؤالِ الف: درآمد بالای ۵۰؟</b></p><p class="ex">نه: ۱ خوش‌حساب، ۳ بدحساب<br>بله: ۵ خوش‌حساب، ۱ بدحساب</p><p>گروه‌ها <b>خیلی یک‌دست‌تر</b> شدند. سؤالِ خوبی است.</p></div>
+<div><p><b>سؤالِ ب: سن بالای ۴۰؟</b></p><p class="ex">نه: ۳ خوش‌حساب، ۲ بدحساب<br>بله: ۳ خوش‌حساب، ۲ بدحساب</p><p>هر گروه دقیقاً مثلِ اول است. <b>هیچ</b> چیزی یاد نگرفتیم.</p></div>
+</div>
+<p style="margin-top:12px"><b>یک‌دستی را با یک عدد بسنجیم: ناخالصیِ جینی</b> <span class="en">(Gini Impurity)</span></p>
+<div class="f">\[ \text{Gini} = 1 - \sum_k p_k^2 \]</div>
+<p class="ex">\(p_k\) سهمِ دسته‌ی \(k\) در گروه است. اگر گروه کاملاً یک‌دست باشد، Gini = ۰. اگر نصف‌نصف باشد، Gini = ۰٫۵ (بدترین حالت برای دو دسته). معنیِ شهودی: اگر دو نفر را تصادفی از گروه برداریم، احتمال این‌که از دو دسته‌ی مختلف باشند.</p>
+<div dir="ltr"><table>
+<tr><th></th><th>group</th><th>Gini</th></tr>
+<tr><td>before split</td><td>6 good, 4 bad</td><td>1 − (0.6² + 0.4²) = <b>0.48</b></td></tr>
+<tr><td>A, "no"</td><td>1 good, 3 bad</td><td>1 − (0.25² + 0.75²) = 0.375</td></tr>
+<tr><td>A, "yes"</td><td>5 good, 1 bad</td><td>1 − (0.83² + 0.17²) = 0.278</td></tr>
+<tr><td>A, weighted</td><td></td><td>0.4 × 0.375 + 0.6 × 0.278 = <b>0.317</b></td></tr>
+<tr><td>B, both groups</td><td>3 good, 2 bad</td><td><b>0.48</b> (no change)</td></tr>
+</table></div>
+<p style="margin-top:8px">سؤالِ الف ناخالصی را از ۰٫۴۸ به ۰٫۳۲ رساند (کاهشِ <b>۰٫۱۶</b>)؛ سؤالِ ب هیچ. پس درخت سؤالِ الف را انتخاب می‌کند. <b>وزن‌دار</b> یعنی هر گروه به اندازه‌ی تعدادِ آدم‌هایش حساب می‌شود (۴ از ۱۰ و ۶ از ۱۰).</p>
+<details class="drop"><summary><b>راهِ دیگر: آنتروپی و Information Gain</b></summary>
+<div class="f">\[ H = -\sum_k p_k \log_2 p_k \]</div>
+<p>همان ایده با یک فرمولِ دیگر: یک‌دست = ۰، نصف‌نصف = ۱. کاهشِ آنتروپی بعد از سؤال را <b>Information Gain</b> می‌گویند. در همین مثال: قبل ۰٫۹۷۱، بعد از سؤالِ الف ۰٫۷۱۵، پس Information Gain = <b>۰٫۲۵۶</b>. در عمل Gini و آنتروپی تقریباً همیشه همان سؤال را انتخاب می‌کنند؛ Gini کمی سریع‌تر است (لگاریتم ندارد) و پیش‌فرضِ scikit-learn است.</p>
+</details>
+<p style="margin-top:12px"><b>خودتان امتحان کنید:</b> روی داده‌ی وام، سؤالِ «درآمد بالای t؟» را با tهای مختلف امتحان کنید. درخت <b>همه‌ی</b> tها را امتحان می‌کند و بهترین را برمی‌دارد:</p>
+<div class="box">
+<canvas id="split"></canvas>
+<label>t (مرزِ درآمد) <input id="st" type="range" min="0.2" max="9.8" step="0.1" value="5"><b id="stv"></b></label>
+<div class="err" id="sinfo"></div>
+<canvas id="gcurve"></canvas>
+<p class="ex" style="margin:0">پایین: Gini وزن‌دار برای هر t. کمترین نقطه، بهترین سؤال است.</p>
+</div>
+</section>
+
+<section>
+<h2>ساختن کلِ درخت</h2>
+<p>درخت همین کار را <b>تکرار</b> می‌کند:</p>
+<ol>
+<li>روی <b>همه‌ی</b> ویژگی‌ها و <b>همه‌ی</b> مرزهای ممکن، بهترین سؤال را پیدا کن.</li>
+<li>داده را با آن سؤال دو تکه کن.</li>
+<li>برای هر تکه، از قدمِ ۱ دوباره شروع کن.</li>
+<li>بایست وقتی گروه یک‌دست شد، یا به حدِ عمق رسیدی، یا نمونه‌ها خیلی کم شدند.</li>
+</ol>
+<p class="ex">این روش <b>حریصانه</b> <span class="en">(Greedy)</span> است: هر بار بهترین سؤالِ <b>همین لحظه</b> را انتخاب می‌کند و به عقب برنمی‌گردد. بهترین درختِ ممکن را تضمین نمی‌کند، ولی سریع است. اسمِ این الگوریتم <b>CART</b> است.</p>
+</section>
+
+<section>
+<h2>عمقِ درخت و بیش‌برازش</h2>
+<p>اگر بگذاریم درخت تا آخر رشد کند، آن‌قدر سؤال می‌پرسد که هر برگ فقط یک آدم داشته باشد؛ یعنی داده را <b>حفظ</b> می‌کند. عمق را تغییر بدهید:</p>
+<div class="box">
+<canvas id="deep"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>خوش‌حساب</span><span><i style="background:var(--red)"></i>بدحساب</span><span>دایره‌ی توخالی = چند نمونه از داده‌ی آزمون (جدید)</span></div>
+<label>حداکثرِ عمق <input id="dd" type="range" min="1" max="10" step="1" value="1"><b id="ddv"></b></label>
+<div class="err" id="dinfo"></div>
+</div>
+<p>دقتِ آموزش با هر طبقه بالاتر می‌رود تا ۱۰۰٪. ولی دقت روی داده‌ی جدید بعد از یک جایی <b>پایین</b> می‌آید: مستطیل‌های ریز دورِ نقطه‌های عجیب کشیده شده‌اند.</p>
+<p><b>درمان‌ها، کنار هم:</b></p>
+<div class="kinds">
+<div><p><b>هرس پیش از رشد</b> <span class="en">(Pre-pruning)</span></p><p class="ex">از اول جلوی رشد را بگیر: <code>max_depth</code> (حداکثر عمق)، <code>min_samples_leaf</code> (حداقل نمونه در هر برگ)، <code>min_samples_split</code>.</p></div>
+<div><p><b>هرس بعد از رشد</b> <span class="en">(Post-pruning)</span></p><p class="ex">درخت را کامل رشد بده، بعد شاخه‌هایی را که روی داده‌ی سنجش کمکی نمی‌کنند ببُر. در scikit-learn: <code>ccp_alpha</code> (Cost-Complexity Pruning).</p></div>
+<div><p><b>چند درخت</b></p><p class="ex">به‌جای یک درختِ دقیق، صدها درختِ کمی متفاوت بساز و میانگین بگیر: <a href="random-forest.html"><b>جنگل تصادفی</b></a>. موضوعِ صفحه‌ی بعد.</p></div>
+</div>
+</section>
+
+<section>
+<h2>درخت برای عدد: درختِ رگرسیون</h2>
+<p>برای پیش‌بینیِ عدد (مثلاً قیمت خانه) همان کار، با دو فرق:</p>
+<div class="kinds">
+<div><p><b>جوابِ برگ</b></p><p class="ex">میانگینِ yهای آن برگ (به‌جای دسته‌ی اکثریت).</p></div>
+<div><p><b>بهترین سؤال</b></p><p class="ex">سؤالی که بیشترین کاهش را در <b>MSE</b> (یا واریانس) بدهد (به‌جای Gini).</p></div>
+</div>
+<canvas id="regt" style="margin-top:8px"></canvas>
+<p class="ex">نتیجه یک تابعِ <b>پله‌ای</b> است: در هر تکه یک عددِ ثابت. هر چه عمق بیشتر، پله‌ها ریزتر. یک نکته: درختِ رگرسیون <b>بیرون از محدوده‌ی داده</b> نمی‌تواند پیش‌بینی کند؛ برای خانه‌ای بزرگ‌تر از همه، همان قیمتِ آخرین پله را می‌گوید.</p>
+</section>
+
+<section>
+<h2>کدام ویژگی مهم‌تر است؟</h2>
+<p>هر بار که درخت با یک ویژگی سؤال می‌پرسد، ناخالصی کم می‌شود. جمعِ این کاهش‌ها برای هر ویژگی (وزن‌دار با تعدادِ نمونه‌ها) می‌شود <b>اهمیتِ ویژگی</b> <span class="en">(Feature Importance)</span>.</p>
+<p class="ex"><b>دام:</b> این روش به ویژگی‌هایی که مقدارهای متفاوتِ زیادی دارند (مثلاً شماره‌ی مشتری) بیش از حد اهمیت می‌دهد، چون جای زیادی برای بُرش دارند. روشِ قابل‌اعتمادتر <b>Permutation Importance</b> است: مقدارهای یک ویژگی را روی داده‌ی آزمون به هم بریز و ببین دقت چقدر پایین می‌آید.</p>
+</section>
+
+<section>
+<h2>خوبی‌ها و بدی‌ها</h2>
+<div class="kinds">
+<div><p><b>خوبی‌ها</b></p><ul class="ex">
+<li>قابل فهم؛ می‌شود کشید و توضیح داد.</li>
+<li>هم‌مقیاس کردنِ ویژگی‌ها <b>لازم نیست</b> (فقط ترتیب مهم است).</li>
+<li>رابطه‌های غیرخطی و ترکیبِ ویژگی‌ها را خودش می‌گیرد.</li>
+<li>با دسته‌ها و عددها هر دو کار می‌کند.</li></ul></div>
+<div><p><b>بدی‌ها</b></p><ul class="ex">
+<li><b>ناپایدار</b> (واریانسِ زیاد): با تغییرِ کمی در داده، درختِ کاملاً متفاوتی ساخته می‌شود.</li>
+<li>زود بیش‌برازش می‌کند.</li>
+<li>مرزها فقط افقی و عمودی‌اند؛ یک مرزِ کج را با پله‌های زیاد تقریب می‌زند.</li>
+<li>بیرون از محدوده‌ی داده پیش‌بینی نمی‌کند.</li></ul></div>
+</div>
+<div class="key">ناپایداری بزرگ‌ترین ضعفِ درخت است، و دقیقاً همان چیزی است که <b>جنگل تصادفی</b> با میانگین‌گیری از صدها درخت درست می‌کند.</div>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>بهترین سؤال، از صفر با NumPy</b> (هسته‌ی الگوریتم):</p>
+<pre>import numpy as np
+
+def gini(y):
+    _, counts = np.unique(y, return_counts=True)
+    p = counts / len(y)
+    return 1 - np.sum(p ** 2)
+
+def best_split(X, y):
+    best = (None, None, gini(y))                 # (feature, threshold, impurity)
+    for j in range(X.shape[1]):
+        values = np.unique(X[:, j])
+        for t in (values[:-1] + values[1:]) / 2:  # midpoints
+            left = X[:, j] <= t
+            g = (left.sum() * gini(y[left]) + (~left).sum() * gini(y[~left])) / len(y)
+            if g < best[2]:
+                best = (j, t, g)
+    return best    # recurse on the two sides to build the full tree</pre>
+<p><b>با scikit-learn:</b></p>
+<pre>from sklearn.tree import DecisionTreeClassifier, export_text
+
+tree = DecisionTreeClassifier(max_depth=4, min_samples_leaf=5, random_state=0)
+tree.fit(X_train, y_train)
+print(tree.score(X_test, y_test))
+print(export_text(tree, feature_names=["income", "credit_score"]))
+print(tree.feature_importances_)</pre>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>How does a decision tree work?</summary>
+<p>It asks a sequence of yes/no questions of the form "is feature \(j \le t\)?". Each question splits the data in two; each final group (leaf) predicts the majority class (classification) or the mean target (regression). Geometrically it cuts the feature space into axis-aligned rectangles. The questions are learned greedily: at every node, try every feature and threshold and keep the split that makes the children purest.</p></details>
+
+<details><summary>How does the tree choose a split? Gini vs entropy?</summary>
+<div class="f">\[ \text{Gini} = 1 - \sum_k p_k^2 \qquad\qquad H = -\sum_k p_k \log_2 p_k \]</div>
+<p>For every candidate split, compute the weighted impurity of the two children and pick the split with the largest decrease. Example: 6 good / 4 bad (Gini 0.48); splitting into (1 good, 3 bad) and (5 good, 1 bad) gives \(0.4 \times 0.375 + 0.6 \times 0.278 = 0.317\), a decrease of 0.16. With entropy the same split has information gain \(0.971 - 0.715 = 0.256\).</p>
+<p>Both are 0 for a pure node and maximal for a 50/50 node; they almost always choose the same split. Gini is slightly cheaper (no log) and is scikit-learn's default; entropy has the information-theory interpretation.</p>
+<p class="src">Analytics Vidhya; TechPrep</p></details>
+
+<details><summary>Why do decision trees overfit, and how do you prevent it?</summary>
+<p>An unconstrained tree keeps splitting until every leaf is pure, so it memorises noise: 100% training accuracy, worse test accuracy (see the depth slider above).</p>
+<p><b>Pre-pruning:</b> limit growth with <code>max_depth</code>, <code>min_samples_leaf</code>, <code>min_samples_split</code>, <code>max_leaf_nodes</code>. <b>Post-pruning:</b> grow fully, then remove branches by cost-complexity pruning, minimising \(R(T) + \alpha |T|\) (error plus a penalty per leaf), with \(\alpha\) chosen by cross-validation. <b>Ensembles:</b> random forests and boosting.</p>
+<p class="src">Analytics Vidhya; GoPenAI (CART, Gini, overfitting)</p></details>
+
+<details><summary>Why are decision trees called high-variance models?</summary>
+<p>Because small changes in the training data can change the top split, and every split below depends on it, so the whole tree changes. Two trees trained on slightly different samples can give very different predictions. Averaging many trees trained on different bootstrap samples (bagging, random forest) cancels much of this variance.</p></details>
+
+<details><summary>Do decision trees need feature scaling? How do they handle categorical features and missing values?</summary>
+<p><b>Scaling:</b> no. A split only uses the order of values (\(x \le t\)), so any monotonic rescaling gives the same tree.</p>
+<p><b>Categorical:</b> some implementations split on categories directly; scikit-learn needs them encoded (one-hot or ordinal). One-hot with many categories can make trees deep and weak; target or ordinal encoding often works better for trees.</p>
+<p><b>Missing values:</b> classic CART uses surrogate splits; XGBoost and LightGBM learn a default direction for missing values; recent scikit-learn versions also support missing values in trees.</p></details>
+
+<details><summary>How is a regression tree different from a classification tree?</summary>
+<p>Leaves predict the <b>mean</b> of the targets in them, and splits are chosen to minimise the weighted <b>MSE</b> (variance) of the children instead of Gini. The prediction is a step function, and it cannot extrapolate beyond the range of the training targets.</p></details>
+
+<details><summary>How is feature importance computed in a tree? What is the pitfall?</summary>
+<p>Impurity-based importance (mean decrease in impurity): for each feature, sum the impurity decrease of every split that uses it, weighted by the fraction of samples reaching that node, then normalise. Pitfall: it is biased toward features with many unique values (IDs, continuous noise) and is computed on training data. Permutation importance on a validation set is more reliable: shuffle one feature and measure how much the score drops.</p></details>
+
+<details><summary>What is the time complexity of training and prediction?</summary>
+<p>Training: at each level, for each of \(d\) features the samples are sorted or scanned, roughly \(O(d \cdot n \log n)\) per level, so about \(O(d \cdot n \log n \cdot \text{depth})\). Prediction: one path from root to leaf, \(O(\text{depth})\), which is very fast.</p></details>
+
+<details><summary>Decision tree vs logistic regression: when would you use each?</summary>
+<p>Logistic regression: linear boundary, well-calibrated probabilities, needs scaling and feature engineering for non-linearity, stable, good with many sparse features (text). Decision tree: non-linear, axis-aligned boundaries, captures interactions automatically, no scaling, very interpretable when shallow, but unstable and prone to overfitting. In practice for tabular data, tree <i>ensembles</i> (random forest, gradient boosting) usually beat both.</p></details>
+
+<details><summary>Implement the best-split search from scratch.</summary>
+<p>See the NumPy code above: for each feature, try the midpoints between sorted unique values, compute the weighted Gini of the two sides, keep the lowest. Then recurse on each side until a stopping rule (max depth, min samples, pure node). Mention the optimisation interviewers like: sort each feature once and update class counts incrementally, which makes each feature's scan \(O(n)\) after sorting instead of \(O(n^2)\).</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://www.techprep.app/blog/decision-trees-interview-questions">TechPrep</a> · <a href="https://www.analyticsvidhya.com/blog/2021/05/25-questions-to-test-your-skills-on-decision-trees/">Analytics Vidhya</a> · <a href="https://www.analyticsvidhya.com/blog/2023/02/top-10-must-read-interview-questions-on-decision-trees/">Analytics Vidhya (top 10)</a> · <a href="https://blog.gopenai.com/decision-trees-explained-cart-gini-impurity-overfitting-and-production-ml-design-d9def8af0459">GoPenAI</a> · <a href="https://datajourney24.substack.com/p/mastering-ml-interviews-decision">Data Journey</a> · <a href="https://towardsdatascience.com/ace-your-machine-learning-interview-part-6-5f0d84e435a1">Towards Data Science</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+
+// data: income (x, 0..10) and credit score (y, 0..10); 1 = repaid
+let seed = 33; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const label = (x, y) => (x > 4 && y > 4) || (x > 7.5 && y > 2) ? 1 : 0;
+const gen = n => Array.from({ length: n }, () => { const x = rnd() * 10, y = rnd() * 10; let l = label(x, y); if (rnd() < 0.12) l = 1 - l; return [x, y, l]; });
+const TR = gen(90), TE = gen(200);
+
+// CART with Gini
+const giniOf = (pts) => { if (!pts.length) return 0; const p = pts.filter(q => q[2]).length / pts.length; return 1 - p * p - (1 - p) * (1 - p); };
+const build = (pts, depth, maxD) => {
+  const ones = pts.filter(q => q[2]).length, node = { leaf: true, cls: ones * 2 >= pts.length ? 1 : 0 };
+  if (depth >= maxD || ones === 0 || ones === pts.length || pts.length < 2) return node;
+  let best = null, g0 = giniOf(pts);
+  for (const f of [0, 1]) { const vs = [...new Set(pts.map(q => q[f]))].sort((a, b) => a - b);
+    for (let i = 0; i < vs.length - 1; i++) { const t = (vs[i] + vs[i + 1]) / 2, L = pts.filter(q => q[f] <= t), R = pts.filter(q => q[f] > t);
+      const g = (L.length * giniOf(L) + R.length * giniOf(R)) / pts.length; if (!best || g < best.g) best = { f, t, g, L, R }; } }
+  if (!best || best.g >= g0 - 1e-12) return node;
+  return { leaf: false, f: best.f, t: best.t, l: build(best.L, depth + 1, maxD), r: build(best.R, depth + 1, maxD) };
+};
+const predict = (n, x, y) => n.leaf ? n.cls : (([x, y][n.f] <= n.t) ? predict(n.l, x, y) : predict(n.r, x, y));
+const drawRegions = (c, n, X, Y, box) => { if (n.leaf) { c.fillStyle = css(n.cls ? 'blue' : 'red'); c.globalAlpha = 0.16; c.fillRect(X(box[0]), Y(box[3]), X(box[1]) - X(box[0]), Y(box[2]) - Y(box[3])); c.globalAlpha = 1; return; }
+  const [x0, x1, y0, y1] = box;
+  if (n.f === 0) { drawRegions(c, n.l, X, Y, [x0, n.t, y0, y1]); drawRegions(c, n.r, X, Y, [n.t, x1, y0, y1]); c.strokeStyle = css('ink'); c.lineWidth = 1; c.beginPath(); c.moveTo(X(n.t), Y(y0)); c.lineTo(X(n.t), Y(y1)); c.stroke(); }
+  else { drawRegions(c, n.l, X, Y, [x0, x1, y0, n.t]); drawRegions(c, n.r, X, Y, [x0, x1, n.t, y1]); c.strokeStyle = css('ink'); c.lineWidth = 1; c.beginPath(); c.moveTo(X(x0), Y(n.t)); c.lineTo(X(x1), Y(n.t)); c.stroke(); } };
+const scatter = (cv, ratio, maxw, extra) => { const [c, W, Ht] = mk(cv, ratio, maxw), X = x => 14 + x / 10 * (W - 22), Y = y => Ht - 14 - y / 10 * (Ht - 22);
+  if (extra) extra(c, X, Y, W, Ht);
+  TR.forEach(([x, y, l]) => { c.fillStyle = css(l ? 'blue' : 'red'); c.beginPath(); c.arc(X(x), Y(y), 3.8, 0, 7); c.fill(); });
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; c.fillText('درآمد', W / 2, Ht - 1);
+  c.save(); c.translate(8, Ht / 2); c.rotate(-Math.PI / 2); c.fillText('امتیاز اعتباری', 0, 0); c.restore();
+  return [c, X, Y]; };
+const acc = (n, D) => D.filter(([x, y, l]) => predict(n, x, y) === l).length / D.length;
+
+// 1) logistic vs tree, side by side
+const sig = z => 1 / (1 + Math.exp(-z));
+const logi = (() => { let w = [0, 0], b = 0; for (let k = 0; k < 3000; k++) { let g = [0, 0], gb = 0; TR.forEach(([x, y, l]) => { const e = sig(w[0] * (x - 5) + w[1] * (y - 5) + b) - l; g[0] += e * (x - 5); g[1] += e * (y - 5); gb += e; });
+  w = w.map((v, i) => v - 0.05 * g[i] / TR.length); b -= 0.3 * gb / TR.length; } return { w, b }; })();
+const cmp = () => {
+  scatter(document.getElementById('cmpL'), 0.8, 320, (c, X, Y) => { const cell = 6; for (let px = X(0); px < X(10); px += cell) for (let py = Y(10); py < Y(0); py += cell) {
+      const x = (px - X(0)) / (X(10) - X(0)) * 10, y = (Y(0) - py) / (Y(0) - Y(10)) * 10, p = sig(logi.w[0] * (x - 5) + logi.w[1] * (y - 5) + logi.b);
+      c.fillStyle = css(p >= 0.5 ? 'blue' : 'red'); c.globalAlpha = 0.16; c.fillRect(px, py, cell, cell); } c.globalAlpha = 1; });
+  const t3 = build(TR, 0, 3); scatter(document.getElementById('cmpT'), 0.8, 320, (c, X, Y) => drawRegions(c, t3, X, Y, [0, 10, 0, 10])); };
+
+// 2) one split on income: Gini for every threshold
+const st = document.getElementById('st');
+const wg = t => { const L = TR.filter(q => q[0] <= t), R = TR.filter(q => q[0] > t); return [(L.length * giniOf(L) + R.length * giniOf(R)) / TR.length, L, R]; };
+const splitDraw = () => { const t = +st.value, [g, L, R] = wg(t);
+  scatter(document.getElementById('split'), 0.6, 532, (c, X, Y) => { c.fillStyle = css('soft'); c.fillRect(X(0), Y(10), X(t) - X(0), Y(0) - Y(10));
+    c.strokeStyle = css('orange'); c.lineWidth = 2.5; c.beginPath(); c.moveTo(X(t), Y(0)); c.lineTo(X(t), Y(10)); c.stroke(); });
+  const cnt = P => `${fa(P.filter(q => q[2]).length)} آبی، ${fa(P.filter(q => !q[2]).length)} قرمز (Gini ${fa(giniOf(P), 3)})`;
+  document.getElementById('stv').textContent = fa(t, 1);
+  document.getElementById('sinfo').innerHTML = `چپِ خط: ${cnt(L)}<br>راستِ خط: ${cnt(R)}<br>Gini وزن‌دار: <b>${fa(g, 3)}</b> (قبل از سؤال: ${fa(giniOf(TR), 3)})`;
+  const [c, W, Ht] = mk(document.getElementById('gcurve'), 0.3, 532), X = x => 14 + x / 10 * (W - 22), gs = []; for (let x = 0.2; x <= 9.8; x += 0.1) gs.push([x, wg(x)[0]]);
+  const lo = Math.min(...gs.map(q => q[1])), hi = Math.max(...gs.map(q => q[1])), Y = v => Ht - 8 - (v - lo) / (hi - lo + 1e-9) * (Ht - 16);
+  c.strokeStyle = css('accent'); c.lineWidth = 2; c.beginPath(); gs.forEach(([x, v], k) => k ? c.lineTo(X(x), Y(v)) : c.moveTo(X(x), Y(v))); c.stroke();
+  const best = gs.reduce((a, q) => q[1] < a[1] ? q : a); c.fillStyle = css('blue'); c.beginPath(); c.arc(X(best[0]), Y(best[1]), 4, 0, 7); c.fill();
+  c.fillStyle = css('orange'); c.beginPath(); c.arc(X(t), Y(g), 5, 0, 7); c.fill(); };
+st.oninput = splitDraw;
+
+// 3) depth slider
+const dd = document.getElementById('dd');
+const deepDraw = () => { const d = +dd.value, tr = build(TR, 0, d);
+  const [c, X, Y] = scatter(document.getElementById('deep'), 0.65, 532, (c, X, Y) => drawRegions(c, tr, X, Y, [0, 10, 0, 10]));
+  TE.slice(0, 60).forEach(([x, y, l]) => { c.strokeStyle = css(l ? 'blue' : 'red'); c.lineWidth = 1.6; c.beginPath(); c.arc(X(x), Y(y), 4, 0, 7); c.stroke(); });
+  document.getElementById('ddv').textContent = fa(d);
+  document.getElementById('dinfo').innerHTML = `دقت روی آموزش: <b>${fa(acc(tr, TR) * 100)}٪</b> · روی داده‌ی جدید: <b>${fa(acc(tr, TE) * 100)}٪</b>`; };
+dd.oninput = deepDraw;
+
+// 4) regression tree: step function
+const regDraw = () => { const [c, W, Ht] = mk(document.getElementById('regt'), 0.45, 420), X = x => 10 + x / 10 * (W - 20), Y = y => Ht - 10 - y / 10 * (Ht - 20);
+  let s2 = 5; const r2 = () => (s2 = (s2 * 16807) % 2147483647) / 2147483647;
+  const P = Array.from({ length: 30 }, (_, k) => { const x = k / 3; return [x, 2 + 6 * (1 - Math.exp(-x / 3)) + (r2() - .5) * 1.4]; });
+  const cuts = [1.6, 3.4, 5.6, 8]; const seg = [0, ...cuts, 10];
+  c.fillStyle = css('blue'); P.forEach(([x, y]) => { c.beginPath(); c.arc(X(x), Y(y), 3, 0, 7); c.fill(); });
+  c.strokeStyle = css('accent'); c.lineWidth = 2.5; c.beginPath();
+  for (let i = 0; i < seg.length - 1; i++) { const ins = P.filter(([x]) => x >= seg[i] && x < seg[i + 1] + (i === seg.length - 2 ? 1 : 0)), m = ins.reduce((a, q) => a + q[1], 0) / ins.length;
+    c.moveTo(X(seg[i]), Y(m)); c.lineTo(X(seg[i + 1]), Y(m)); } c.stroke(); };
+
+const all = () => { cmp(); splitDraw(); deepDraw(); regDraw(); };
+addEventListener('resize', all); all();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

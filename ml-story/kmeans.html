@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>خوشه‌بندی K-Means</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.ctl button { margin-top: 0; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.chk { display: flex; align-items: center; gap: 8px; font-size: 15px; margin-top: 8px; }
+.chk input { flex: none; accent-color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="knn.html">نزدیک‌ترین همسایه‌ها</a> · <a href="pca.html">بعدی: PCA: کم کردن ابعاد ←</a></p>
+<h1>خوشه‌بندی K-Means <span class="en">(K-Means Clustering)</span></h1>
+<p class="sub">داده‌ای که برچسب ندارد را به K گروه تقسیم کن. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>تا اینجا مدل‌ها همیشه یک <b>جوابِ درست</b> داشتند: قیمتِ خانه، وام را پس داد یا نه. به این می‌گویند <b>یادگیریِ بانظارت</b> <span class="en">(Supervised)</span>.</p>
+<p>ولی خیلی وقت‌ها جوابِ درستی در کار نیست. فقط داده داریم و می‌خواهیم <b>ساختارش</b> را پیدا کنیم. به این می‌گویند <b>یادگیریِ بی‌نظارت</b> <span class="en">(Unsupervised)</span>.</p>
+<div class="kinds">
+<div><p><b>بانظارت</b></p><p class="ex">ورودی: مشتری + برچسب («ترک کرد» یا «ماند»).<br>هدف: برچسبِ مشتریِ جدید را حدس بزن.</p></div>
+<div><p><b>بی‌نظارت</b></p><p class="ex">ورودی: فقط مشتری‌ها، بدون هیچ برچسبی.<br>هدف: گروه‌های مشتری‌های شبیه به هم را پیدا کن.</p></div>
+</div>
+<p style="margin-top:12px"><b>مثالِ این صفحه: دسته‌بندیِ مشتری‌ها</b> <span class="en">(Customer Segmentation)</span>. یک فروشگاه برای هر مشتری دو عدد دارد:</p>
+<ul>
+<li>خریدِ ماهانه (میلیون تومان)</li>
+<li>تعدادِ مراجعه در ماه</li>
+</ul>
+<p>فروشگاه نمی‌داند مشتری‌ها چند نوع‌اند. K-Means نقطه‌ها را به K گروه (<b>خوشه</b>، <span class="en">Cluster</span>) تقسیم می‌کند. بعد آدم‌ها به هر خوشه اسم می‌دهند و برایش برنامه می‌ریزند:</p>
+<ul>
+<li>خریدِ کم، مراجعه‌ی کم: کد تخفیف برای برگرداندنشان.</li>
+<li>خریدِ کم، مراجعه‌ی زیاد: پیشنهادِ بسته‌های بزرگ‌تر.</li>
+<li>خریدِ زیاد: باشگاهِ مشتریانِ ویژه.</li>
+</ul>
+<canvas id="hero"></canvas>
+<p class="ex">۷۵ مشتری. محورِ افقی خریدِ ماهانه، محورِ عمودی تعدادِ مراجعه. چشم سه گروه می‌بیند؛ K-Means باید همین را بدونِ برچسب پیدا کند.</p>
+<p>کاربردهای دیگر در صنعت:</p>
+<ul>
+<li>گروه‌بندیِ کاربرها یا ویدیوها برای پیشنهاد دادن.</li>
+<li>فشرده‌سازیِ رنگ در تصویر (هر پیکسل جایش را به نزدیک‌ترین رنگِ مرکزی می‌دهد).</li>
+<li>ساختنِ «واژه‌نامه» از بردارها، مثلاً در جست‌وجوی سریعِ بردارها (Vector Quantization).</li>
+</ul>
+<div class="key">K-Means هر خوشه را با یک نقطه‌ی مرکزی <span class="en">(Centroid)</span> نشان می‌دهد، و هر نقطه مالِ نزدیک‌ترین مرکز است.</div>
+</section>
+
+<section>
+<h2>الگوریتم در دو قدم</h2>
+<p>K را خودمان انتخاب می‌کنیم. بعد:</p>
+<ol class="flow">
+<li><span class="n">۰</span><div><p><b>شروع:</b> K مرکز را یک جایی بگذار (مثلاً K نقطه‌ی تصادفی از داده).</p></div></li>
+<li><span class="n">۱</span><div><p><b>تخصیص</b> <span class="en">(Assign)</span>: هر نقطه را به <b>نزدیک‌ترین</b> مرکز بده.</p></div></li>
+<li><span class="n">۲</span><div><p><b>به‌روزرسانی</b> <span class="en">(Update)</span>: هر مرکز را به <b>میانگینِ</b> نقطه‌های خودش ببر.</p></div></li>
+<li><span class="n">۳</span><div><p>قدمِ ۱ و ۲ را تکرار کن تا هیچ نقطه‌ای گروهش را عوض نکند.</p></div></li>
+</ol>
+<p><b>مثال با عدد:</b> ۶ مشتری، K = ۲. هر مشتری (خرید، مراجعه):</p>
+<div dir="ltr"><table>
+<tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th></tr>
+<tr><td>(1, 2)</td><td>(2, 1)</td><td>(2, 3)</td><td>(8, 7)</td><td>(9, 8)</td><td>(7, 9)</td></tr>
+</table></div>
+<p style="margin-top:8px">شروعِ بد: دو مرکز را روی A و B می‌گذاریم (هر دو در گروهِ پایین).</p>
+<p><b>دورِ ۱، تخصیص.</b> فاصله را به توانِ ۲ حساب می‌کنیم (جذر لازم نیست، چون ترتیب عوض نمی‌شود). مثلاً برای D: \( (8-1)^2 + (7-2)^2 = 74 \).</p>
+<div dir="ltr"><table>
+<tr><th>point</th><th>d² to c₁ = (1, 2)</th><th>d² to c₂ = (2, 1)</th><th>goes to</th></tr>
+<tr><td>A</td><td>0</td><td>2</td><td>c₁</td></tr>
+<tr><td>B</td><td>2</td><td>0</td><td>c₂</td></tr>
+<tr><td>C</td><td>2</td><td>4</td><td>c₁</td></tr>
+<tr><td>D</td><td>74</td><td>72</td><td>c₂</td></tr>
+<tr><td>E</td><td>100</td><td>98</td><td>c₂</td></tr>
+<tr><td>F</td><td>85</td><td>89</td><td>c₁</td></tr>
+</table></div>
+<p style="margin-top:8px">گروه‌ها: c₁ = {A, C, F} و c₂ = {B, D, E}. خیلی بد؛ هر گروه قاطی است. جمعِ فاصله‌های به توانِ ۲: \(0+2+2+72+98+85 = 257\).</p>
+<p><b>دورِ ۱، به‌روزرسانی.</b> هر مرکز می‌رود به میانگینِ گروهش:</p>
+<div class="f">\[ c_1 = \tfrac{(1,2)+(2,3)+(7,9)}{3} = (3.33,\ 4.67) \qquad c_2 = \tfrac{(2,1)+(8,7)+(9,8)}{3} = (6.33,\ 5.33) \]</div>
+<p><b>دورِ ۲، تخصیص.</b> با مرکزهای جدید:</p>
+<div dir="ltr"><table>
+<tr><th>point</th><th>d² to c₁ = (3.33, 4.67)</th><th>d² to c₂ = (6.33, 5.33)</th><th>goes to</th></tr>
+<tr><td>A</td><td>12.56</td><td>39.56</td><td>c₁</td></tr>
+<tr><td>B</td><td>15.22</td><td>37.56</td><td>c₁</td></tr>
+<tr><td>C</td><td>4.56</td><td>24.22</td><td>c₁</td></tr>
+<tr><td>D</td><td>27.22</td><td>5.56</td><td>c₂</td></tr>
+<tr><td>E</td><td>43.22</td><td>14.22</td><td>c₂</td></tr>
+<tr><td>F</td><td>32.22</td><td>13.89</td><td>c₂</td></tr>
+</table></div>
+<p style="margin-top:8px">حالا گروه‌ها درست‌اند: {A, B, C} و {D, E, F}. <b>دورِ ۲، به‌روزرسانی:</b> \(c_1 = (1.67,\ 2)\) و \(c_2 = (8,\ 8)\). <b>دورِ ۳:</b> هیچ‌کس گروهش را عوض نمی‌کند، پس تمام.</p>
+<div dir="ltr"><table>
+<tr><th>after</th><th>sum of squared distances</th></tr>
+<tr><td>start (assign)</td><td>257</td></tr>
+<tr><td>round 1, update</td><td>106.67</td></tr>
+<tr><td>round 2, assign</td><td>66</td></tr>
+<tr><td>round 2, update</td><td>6.67</td></tr>
+<tr><td>round 3, assign</td><td>6.67 (no change, stop)</td></tr>
+</table></div>
+<p class="ex" style="margin-top:8px">این عدد در هر قدم یا کم شد یا ثابت ماند. این تصادفی نیست؛ پایین‌تر ثابتش می‌کنیم.</p>
+</section>
+
+<section>
+<h2>خودتان قدم‌به‌قدم ببینید</h2>
+<p>روی ۷۵ مشتری، با K = ۳. سه مرکز عمداً وسطِ صفحه، جای بدی شروع می‌کنند. هر بار دکمه را بزنید، یک قدم (تخصیص یا به‌روزرسانی) جلو می‌رود:</p>
+<div class="box">
+<canvas id="step"></canvas>
+<div class="legend"><span>× = مرکز</span><span>خطِ نازک = مسیرِ حرکتِ مرکز</span><span>خاکستری = هنوز به گروهی داده نشده</span></div>
+<div class="ctl"><button id="sOne">یک قدم</button><button id="sReset">از اول</button><button id="sRand">شروعِ تصادفی</button></div>
+<div class="err" id="sInfo"></div>
+</div>
+<p style="margin-top:12px">با شروعِ اول، عدد از <b>۵۴۲٫۵</b> به <b>۸۸٫۲</b> می‌رسد. مرکزها ۳ بار جابه‌جا می‌شوند؛ در تخصیصِ بعدی هیچ مشتری گروهش را عوض نمی‌کند و الگوریتم می‌ایستد. اول هر سه مرکز وسط‌اند؛ یکی به گروهِ پایین‌چپ می‌رود، یکی به راست، یکی به بالا.</p>
+<p class="ex">«شروعِ تصادفی» سه مشتریِ تصادفی را مرکزِ اول می‌کند. چند بار امتحان کنید: بیشترِ وقت‌ها به همان ۸۸٫۲ می‌رسد، ولی گاهی در جوابِ بدتری گیر می‌کند (در ۲۰ بارِ اول، بارِ سیزدهم به ۳۸۲٫۱ می‌رسد). این مشکل را پایین‌تر می‌بینیم.</p>
+</section>
+
+<section>
+<h2>هدف: کم کردنِ پراکندگیِ درونِ خوشه‌ها</h2>
+<p>K-Means در واقع یک عدد را کم می‌کند: <b>جمعِ فاصله‌ی به توانِ ۲ی هر نقطه تا مرکزِ خوشه‌اش</b>. اسمش <b>Inertia</b> یا <b>WCSS</b> <span class="en">(Within-Cluster Sum of Squares)</span> است.</p>
+<div class="f">\[ J = \sum_{k=1}^{K} \sum_{x_i \in C_k} \lVert x_i - \mu_k \rVert^2 \]</div>
+<ul class="sym">
+<li>\(J\): Inertia؛ هر چه کمتر، خوشه‌ها جمع‌وجورتر</li>
+<li>\(K\): تعدادِ خوشه‌ها</li>
+<li>\(C_k\): نقطه‌های خوشه‌ی \(k\)</li>
+<li>\(x_i\): یک نقطه (یک مشتری)</li>
+<li>\(\mu_k\): مرکزِ خوشه‌ی \(k\)</li>
+<li>\(\lVert \cdot \rVert^2\): فاصله‌ی اقلیدسی به توانِ ۲</li>
+</ul>
+<p><b>چرا هیچ قدمی J را زیاد نمی‌کند؟</b> هر قدم یکی از دو چیز را بهتر می‌کند و آن یکی را دست نمی‌زند:</p>
+<div class="kinds">
+<div><p><b>قدمِ تخصیص</b></p><p class="ex">مرکزها ثابت‌اند. هر نقطه نزدیک‌ترین مرکز را برمی‌دارد، پس سهمش در J یا کم می‌شود یا ثابت می‌ماند.<br>مثال: نقطه‌ی F در دورِ ۲ از c₁ (فاصله‌ی ۳۲٫۲۲) به c₂ (فاصله‌ی ۱۳٫۸۹) رفت؛ سهمش ۱۸٫۳۳ کم شد.</p></div>
+<div><p><b>قدمِ به‌روزرسانی</b></p><p class="ex">گروه‌ها ثابت‌اند. برای یک گروه، <b>میانگین</b> نقطه‌ای است که جمعِ فاصله‌های به توانِ ۲ را کمینه می‌کند. پس جابه‌جایی به میانگین J را زیاد نمی‌کند.</p></div>
+</div>
+<p style="margin-top:12px"><b>چرا میانگین بهترین جاست؟</b> برای هر نقطه‌ی دلخواهِ \(c\):</p>
+<div class="f">\[ \sum_{i=1}^{n} \lVert x_i - c \rVert^2 = \sum_{i=1}^{n} \lVert x_i - \mu \rVert^2 + n \, \lVert \mu - c \rVert^2 \]</div>
+<p class="ex">\(\mu\) میانگینِ گروه است و \(n\) تعدادِ نقطه‌ها. جمله‌ی دوم هیچ‌وقت منفی نیست و فقط وقتی صفر است که \(c = \mu\).</p>
+<p><b>مثال با عدد (یک‌بعدی):</b> سه مشتری با خریدِ ۱، ۲ و ۶. میانگین ۳ است.</p>
+<ul>
+<li>مرکز روی ۳: \(4 + 1 + 9 = 14\)</li>
+<li>مرکز روی ۴: \(9 + 4 + 4 = 17 = 14 + 3 \times 1^2\)</li>
+</ul>
+<p>چون J هرگز زیاد نمی‌شود و تعدادِ راه‌های گروه‌بندی محدود است، الگوریتم <b>حتماً</b> به جایی می‌رسد که دیگر تکان نمی‌خورد.</p>
+<div class="key">K-Means همیشه همگرا می‌شود، ولی فقط به یک <b>کمینه‌ی محلی</b>. پیدا کردنِ بهترین جوابِ ممکن (کمینه‌ی سراسری) مسئله‌ی NP-hard است.</div>
+<p class="ex">هزینه: هر دور برای n نقطه، K مرکز و d ویژگی حدودِ \(O(n \cdot K \cdot d)\) محاسبه دارد. برای همین روی داده‌ی بزرگ هم سریع است.</p>
+</section>
+
+<section>
+<h2>K را چطور انتخاب کنیم؟</h2>
+<p>K را الگوریتم پیدا نمی‌کند؛ ما می‌دهیم. ولی نمی‌شود K را فقط با کمترین Inertia انتخاب کرد: هر چه K بیشتر، Inertia کمتر. اگر K = تعدادِ نقطه‌ها، Inertia صفر می‌شود و هیچ چیزی یاد نگرفته‌ایم.</p>
+<p><b>روشِ آرنج</b> <span class="en">(Elbow Method)</span>: Inertia را برای K = ۱، ۲، ۳، … بکش. جایی که کاهش ناگهان کُند می‌شود (شبیهِ آرنج)، K خوبی است.</p>
+<div class="box">
+<canvas id="elbowPts"></canvas>
+<label>K <input id="ek" type="range" min="1" max="8" step="1" value="3"><b id="ekv"></b></label>
+<div class="err" id="eInfo"></div>
+<canvas id="elbowCurve"></canvas>
+<div class="legend"><span><i style="background:var(--accent)"></i>Inertia</span><span><i style="background:var(--orange)"></i>Silhouette (محورِ راست)</span></div>
+</div>
+<p style="margin-top:12px">روی داده‌ی مشتری‌ها (برای هر K بهترینِ ۱۰ اجرا):</p>
+<ul>
+<li>از K = ۲ به ۳، Inertia از ۳۷۴٫۱ به ۸۸٫۲ می‌رسد (کاهشِ ۲۸۶).</li>
+<li>از K = ۳ به ۴، فقط به ۶۸٫۲ (کاهشِ ۲۰).</li>
+</ul>
+<p>پس آرنج روی K = ۳ است. در داده‌ی واقعی آرنج معمولاً به این تیزی نیست؛ برای همین یک معیارِ دوم هم لازم است.</p>
+<p style="margin-top:12px"><b>امتیازِ Silhouette</b> <span class="en">(Silhouette Score)</span>: برای هر نقطه می‌پرسد «به گروهِ خودم نزدیک‌ترم یا به نزدیک‌ترین گروهِ دیگر؟»</p>
+<div class="f">\[ s(i) = \frac{b(i) - a(i)}{\max\big(a(i),\ b(i)\big)} \]</div>
+<ul class="sym">
+<li>\(a(i)\): میانگینِ فاصله تا بقیه‌ی هم‌گروهی‌ها</li>
+<li>\(b(i)\): میانگینِ فاصله تا نقطه‌های نزدیک‌ترین گروهِ دیگر</li>
+<li>\(s(i)\): بینِ ۱- و ۱؛ نزدیکِ ۱ یعنی خوب</li>
+</ul>
+<p><b>مثال با عدد:</b> در مثالِ ۶ مشتری، نقطه‌ی C = (2, 3):</p>
+<ul>
+<li>\(a\) = میانگینِ فاصله تا A و B = \((1.414 + 2)/2 = 1.707\)</li>
+<li>\(b\) = میانگینِ فاصله تا D، E، F = \((7.211 + 8.602 + 7.810)/3 = 7.875\)</li>
+<li>\(s = (7.875 - 1.707) / 7.875 = 0.78\)</li>
+</ul>
+<p>امتیازِ کلِ داده میانگینِ \(s(i)\) روی همه‌ی نقطه‌هاست (برای این ۶ مشتری: ۰٫۸۰). روی ۷۵ مشتری، بیشترین Silhouette مالِ K = ۳ است: <b>۰٫۷۱</b> (K = ۲: ۰٫۵۱، K = ۴: ۰٫۶۲).</p>
+<div class="kinds">
+<div><p><b>آرنج</b></p><p class="ex">ارزان (Inertia را خودِ الگوریتم می‌دهد). ولی «آرنج» را با چشم می‌خوانیم و گاهی مبهم است.</p></div>
+<div><p><b>Silhouette</b></p><p class="ex">یک عدد که بیشینه‌اش را برمی‌داریم. ولی گران است: فاصله‌ی همه‌ی جفت‌ها، یعنی \(O(n^2)\).</p></div>
+<div><p><b>نیازِ کسب‌وکار</b></p><p class="ex">گاهی K از بیرون معلوم است: تیمِ بازاریابی فقط برای ۴ گروه برنامه دارد.</p></div>
+</div>
+</section>
+
+<section>
+<h2>مشکلِ شروع و <bdi>K-Means++</bdi></h2>
+<p>K-Means فقط کمینه‌ی محلی پیدا می‌کند، پس جای شروع مهم است. اگر دو مرکز در یک گروه شروع کنند، معمولاً همان‌جا می‌مانند و یک مرکزِ دیگر مجبور می‌شود دو گروه را با هم بگیرد.</p>
+<p><b><bdi>K-Means++</bdi></b> مرکزها را <b>پخش</b> انتخاب می‌کند:</p>
+<ol>
+<li>مرکزِ اول: یک نقطه‌ی تصادفی.</li>
+<li>برای هر نقطه، \(D(x)\) = فاصله تا نزدیک‌ترین مرکزی که تا حالا انتخاب شده.</li>
+<li>مرکزِ بعدی را تصادفی بردار، با احتمالِ متناسب با \(D(x)^2\). نقطه‌های دور شانسِ بیشتری دارند.</li>
+<li>تا K مرکز تکرار کن، بعد K-Means معمولی را اجرا کن.</li>
+</ol>
+<div class="f">\[ P(x) = \frac{D(x)^2}{\sum_{x'} D(x')^2} \]</div>
+<p><b>مثال با عدد:</b> همان ۶ مشتری. مرکزِ اول تصادفی شد A. فاصله‌های به توانِ ۲ تا A:</p>
+<div dir="ltr"><table>
+<tr><th></th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>sum</th></tr>
+<tr><td>D(x)²</td><td>2</td><td>2</td><td>74</td><td>100</td><td>85</td><td>263</td></tr>
+<tr><td>P(x)</td><td>0.8%</td><td>0.8%</td><td>28.1%</td><td>38.0%</td><td>32.3%</td><td>100%</td></tr>
+</table></div>
+<p style="margin-top:8px">احتمالِ این‌که مرکزِ دوم در گروهِ بالا بیفتد: \(259/263 = 98.5\%\). با انتخابِ کاملاً تصادفی از ۵ نقطه‌ی باقی‌مانده فقط \(3/5 = 60\%\) بود.</p>
+<p style="margin-top:12px"><b>کنار هم:</b> داده‌ای با ۵ گروه و K = ۵. هر دو طرف با <b>همان</b> عددِ تصادفی شروع می‌کنند:</p>
+<div class="kinds">
+<div><p><b>شروعِ تصادفی</b></p><canvas id="initR"></canvas><p class="err" id="initRi"></p></div>
+<div><p><b><bdi>K-Means++</bdi></b></p><canvas id="initP"></canvas><p class="err" id="initPi"></p></div>
+</div>
+<div class="ctl"><button id="iNext">شروعِ دیگر</button><button id="iMany">۵۰۰ بار اجرا</button><span id="iSeed" class="ex"></span></div>
+<div class="err" id="iStats"></div>
+<p style="margin-top:12px">در شروعِ اول، تصادفی در Inertia = <b>۲۴۴٫۰</b> گیر کرده: یک گروه دو مرکز گرفته و یک مرکز دو گروه را با هم دارد. <bdi>K-Means++</bdi> به <b>۸۳٫۲</b> رسیده، که بهترین جواب است.</p>
+<p>روی ۵۰۰ اجرا (هر کدام فقط یک شروع)، تصادفی در <b>۴۳٫۴٪</b> مواقع گیر می‌کند و <bdi>K-Means++</bdi> در <b>۱۰٫۴٪</b>. («گیر کردن» یعنی Inertia بیش از ۵٪ بدتر از بهترین جواب.)</p>
+<div class="key">راهِ دوم: چند بار با شروع‌های مختلف اجرا کن و کمترین Inertia را نگه دار. روی همین داده، با ۱۰ شروع در هر بار، در ۳۰۰ آزمایش هیچ‌کدام از دو روش گیر نکرد.</div>
+<p class="ex">در scikit-learn: <code>init="k-means++"</code> پیش‌فرض است و <code>n_init</code> تعدادِ شروع‌هاست. با <code>n_init="auto"</code>، برای <bdi>K-Means++</bdi> یک بار و برای شروعِ تصادفی ۱۰ بار اجرا می‌شود.</p>
+</section>
+
+<section>
+<h2>محدودیت‌ها، با تصویر</h2>
+<p>K-Means هر نقطه را به نزدیک‌ترین مرکز می‌دهد. پس مرزِ بینِ دو خوشه همیشه یک خطِ <b>صاف</b> است (عمودِ وسطِ دو مرکز). یعنی ضمناً فرض می‌کند خوشه‌ها <b>گرد</b>، <b>هم‌اندازه</b> و <b>هم‌پراکندگی</b>‌اند. هر جا این فرض غلط باشد، خراب می‌شود. رنگ‌ها جوابِ K-Means است:</p>
+<div class="kinds">
+<div><p><b>خوشه‌ی غیرِ گرد</b></p><canvas id="limMoon"></canvas><p class="ex">دو هلالِ تو در تو، K = ۲. K-Means با یک خطِ صاف وسطشان را می‌بُرد؛ فقط <b>۷۵٪</b> نقطه‌ها با گروهِ واقعی‌شان یکی‌اند.</p></div>
+<div><p><b>اندازه و تراکمِ متفاوت</b></p><canvas id="limSize"></canvas><p class="ex">یک گروهِ بزرگ و پخش (۱۲۰ نقطه) و یک گروهِ کوچک و فشرده (۱۵ نقطه). مرز وسطِ دو مرکز است، پس <b>۱۲</b> نقطه از گروهِ بزرگ به گروهِ کوچک داده شده‌اند.</p></div>
+<div><p><b>داده‌ی پرت</b></p><canvas id="limOut"></canvas><p class="ex">دو گروهِ ۳۰تایی و ۳ نقطه‌ی پرت در گوشه، K = ۲. K-Means یک خوشه را خرجِ همان ۳ نقطه می‌کند (۶۰ و ۳)، و دو گروهِ واقعی را یکی می‌کند. بدونِ پرت‌ها، ۹۷٪ درست جدا می‌شوند.</p></div>
+</div>
+<p style="margin-top:14px"><b>هم‌مقیاس کردن لازم است.</b> K-Means با فاصله کار می‌کند. اگر خرید را به <b>هزار تومان</b> بنویسیم (۱۰۰۰ تا ۸۵۰۰) و مراجعه را به <b>بار در ماه</b> (۱ تا ۹)، اختلافِ خرید همه‌چیز را تعیین می‌کند.</p>
+<p><b>مثال:</b> مشتریِ P = (2000, 2).</p>
+<ul>
+<li>مشتریِ Q = (2500, 8): خیلی بیشتر می‌آید، فاصله \(\sqrt{500^2 + 6^2} = 500.04\)</li>
+<li>مشتریِ R = (3000, 2): دقیقاً همان‌قدر می‌آید، فاصله \(1000\)</li>
+</ul>
+<p>یعنی ۶ بار مراجعه‌ی بیشتر تقریباً هیچ اثری ندارد. تیک را بزنید:</p>
+<div class="box">
+<canvas id="scaleCv"></canvas>
+<label class="chk"><input type="checkbox" id="scaleChk"> هم‌مقیاس کردن (z-score: منهای میانگین، تقسیم بر انحراف معیار)</label>
+<div class="err" id="scaleInfo"></div>
+</div>
+<p class="ex" style="margin-top:8px">نمودار همیشه با واحدهای خوانا کشیده شده؛ فقط چیزی که K-Means می‌بیند عوض می‌شود. بدونِ هم‌مقیاس کردن، خوشه‌ها نوارهای عمودی‌اند (فقط بر اساسِ خرید) و <b>۷۶٪</b> با گروهِ واقعی می‌خوانند. با هم‌مقیاس کردن، <b>۱۰۰٪</b>.</p>
+<div class="kinds" style="margin-top:12px">
+<div><p><b>خوبی‌ها</b></p><ul class="ex">
+<li>ساده؛ در چند خط پیاده می‌شود.</li>
+<li>سریع: هر دور \(O(nKd)\)؛ روی میلیون‌ها نقطه کار می‌کند (Mini-Batch K-Means).</li>
+<li>جوابش قابلِ توضیح است: هر خوشه یک «مشتریِ میانگین» دارد.</li>
+<li>همیشه همگرا می‌شود.</li></ul></div>
+<div><p><b>بدی‌ها</b></p><ul class="ex">
+<li>K را باید از قبل داد.</li>
+<li>به جای شروع حساس است (کمینه‌ی محلی).</li>
+<li>فقط خوشه‌های گرد و هم‌اندازه را خوب می‌گیرد.</li>
+<li>به داده‌ی پرت و مقیاسِ ویژگی‌ها حساس است.</li>
+<li>هر نقطه را حتماً به یک خوشه می‌دهد (حتی نقطه‌ی پرت).</li></ul></div>
+</div>
+</section>
+
+<section>
+<h2>K-Means و k-NN: دو چیزِ کاملاً متفاوت</h2>
+<p>هر دو یک «k» دارند و هر دو با فاصله کار می‌کنند، برای همین در مصاحبه زیاد قاطی می‌شوند. ولی کارشان فرق دارد:</p>
+<div class="kinds">
+<div><p><b>K-Means</b></p><ul class="ex">
+<li><b>بی‌نظارت</b>: برچسب لازم ندارد.</li>
+<li>کار: <b>خوشه‌بندی</b>؛ گروه‌ها را پیدا می‌کند.</li>
+<li>K = تعدادِ <b>خوشه‌ها</b>.</li>
+<li>آموزش دارد: مرکزها را تکرار به تکرار جابه‌جا می‌کند.</li>
+<li>پیش‌بینی: نزدیک‌ترین <b>مرکز</b> (K مقایسه).</li>
+<li>مثال: «این ۷۵ مشتری چند نوع‌اند؟»</li></ul></div>
+<div><p><b>k-NN</b></p><ul class="ex">
+<li><b>بانظارت</b>: برچسب لازم دارد.</li>
+<li>کار: <b>دسته‌بندی یا رگرسیون</b>.</li>
+<li>k = تعدادِ <b>همسایه‌ها</b> که رأی می‌دهند.</li>
+<li>آموزش ندارد: فقط داده را نگه می‌دارد (Lazy).</li>
+<li>پیش‌بینی: k نزدیک‌ترین <b>نقطه‌ی داده</b> (مقایسه با همه‌ی n نقطه).</li>
+<li>مثال: «این مشتریِ جدید ترک می‌کند یا نه؟» با دیدنِ ۵ مشتریِ شبیه‌اش.</li></ul></div>
+</div>
+<p class="ex" style="margin-top:8px">شباهت‌ها: هر دو به مقیاسِ ویژگی‌ها حساس‌اند و هر دو در ابعادِ خیلی زیاد ضعیف می‌شوند (فاصله‌ها شبیهِ هم می‌شوند).</p>
+</section>
+
+<section>
+<h2>جایگزین‌ها</h2>
+<p>هر کدام یکی از ضعف‌های K-Means را درست می‌کند:</p>
+<div class="kinds">
+<div><p><b>DBSCAN</b></p><p class="ex">خوشه = ناحیه‌ای که نقطه‌ها <b>متراکم</b>‌اند. K لازم ندارد؛ به‌جایش دو عدد می‌گیرد: شعاعِ <code>eps</code> و حداقلِ همسایه‌ها <code>min_samples</code>. شکل‌های دلخواه (مثلِ دو هلال) را می‌گیرد و نقطه‌ی پرت را «نویز» اعلام می‌کند. ضعف: وقتی تراکمِ خوشه‌ها خیلی فرق کند، یک eps برای همه جواب نمی‌دهد.</p></div>
+<div><p><b>مخلوطِ گاوسی</b> <span class="en">(GMM)</span></p><p class="ex">هر خوشه یک توزیعِ نرمال با <b>کوواریانسِ خودش</b>: بیضیِ کج، اندازه‌ی متفاوت. به هر نقطه <b>احتمال</b> می‌دهد («۷۰٪ خوشه‌ی ۱، ۳۰٪ خوشه‌ی ۲»). با الگوریتمِ EM آموزش می‌بیند. K-Means حالتِ خاصِ آن است: کوواریانسِ گرد و یکسان، تخصیصِ قطعی.</p></div>
+<div><p><b>خوشه‌بندیِ سلسله‌مراتبی</b> <span class="en">(Hierarchical)</span></p><p class="ex">از هر نقطه یک خوشه شروع کن و هر بار دو خوشه‌ی نزدیک را یکی کن. نتیجه یک درخت (Dendrogram) است؛ K را بعداً با بریدنِ درخت انتخاب می‌کنی. ضعف: حداقل \(O(n^2)\) حافظه، برای داده‌ی بزرگ کُند.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">نسخه‌های نزدیک: <b>K-Medoids</b> (مرکز باید یکی از خودِ نقطه‌ها باشد؛ در برابرِ پرت مقاوم‌تر)، <b>K-Modes</b> (برای ویژگی‌های دسته‌ای)، <b>Mini-Batch K-Means</b> (هر دور فقط روی یک تکه‌ی کوچک از داده؛ برای داده‌ی خیلی بزرگ).</p>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>از صفر با NumPy:</b></p>
+<pre>import numpy as np
+
+def kmeans_pp_init(X, K, rng):
+    centers = [X[rng.integers(len(X))]]
+    for _ in range(K - 1):
+        d2 = np.min(((X[:, None, :] - np.array(centers)[None]) ** 2).sum(-1), axis=1)
+        centers.append(X[rng.choice(len(X), p=d2 / d2.sum())])   # P(x) ~ D(x)^2
+    return np.array(centers)
+
+def kmeans(X, K, n_iter=100, seed=0):
+    rng = np.random.default_rng(seed)
+    C = kmeans_pp_init(X, K, rng)
+    for _ in range(n_iter):
+        d2 = ((X[:, None, :] - C[None, :, :]) ** 2).sum(-1)    # (n, K) squared distances
+        labels = d2.argmin(axis=1)                              # assign step
+        newC = np.array([X[labels == k].mean(0) if np.any(labels == k) else C[k]
+                         for k in range(K)])                    # update step (keep empty centers)
+        if np.allclose(newC, C):
+            break
+        C = newC
+    inertia = ((X - C[labels]) ** 2).sum()
+    return C, labels, inertia</pre>
+<p><b>با scikit-learn</b> (با هم‌مقیاس کردن، آرنج و Silhouette):</p>
+<pre>from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+
+scaler = StandardScaler()
+Xs = scaler.fit_transform(X)            # X: columns = [spend, visits]
+
+for k in range(2, 9):
+    km = KMeans(n_clusters=k, init="k-means++", n_init=10, random_state=0).fit(Xs)
+    print(k, km.inertia_, silhouette_score(Xs, km.labels_))
+
+km = KMeans(n_clusters=3, n_init=10, random_state=0).fit(Xs)
+segments = km.labels_                   # cluster of each customer
+new_segment = km.predict(scaler.transform(X_new))   # nearest centroid for new customers</pre>
+<p class="ex">برای داده‌ی خیلی بزرگ: <code>MiniBatchKMeans</code>. برای شکل‌های دلخواه: <code>DBSCAN</code>. برای خوشه‌های بیضی و احتمال: <code>GaussianMixture</code>.</p>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>Explain how k-means works.</summary>
+<p>Choose K. Initialise K centroids (k-means++ by default). Then repeat two steps until no point changes cluster: <b>assign</b> every point to its nearest centroid (Euclidean distance), and <b>update</b> every centroid to the mean of the points assigned to it.</p>
+<p>Example: customers A(1,2), B(2,1), C(2,3), D(8,7), E(9,8), F(7,9), K = 2, starting centroids at A and B. Round 1 gives the mixed groups {A,C,F} and {B,D,E}; their means are (3.33, 4.67) and (6.33, 5.33). Round 2 reassigns to {A,B,C} and {D,E,F} with means (1.67, 2) and (8, 8). Round 3 changes nothing, so it stops. The sum of squared distances went 257 → 106.67 → 66 → 6.67.</p>
+<p>Each iteration costs \(O(nKd)\) for n points, K clusters and d features.</p>
+<p class="src">VitalFlux; Medium (Data Scientists' Interview Guide: k-Means)</p></details>
+
+<details><summary>What objective does k-means minimise, and is it guaranteed to converge? To the global optimum?</summary>
+<div class="f">\[ J = \sum_{k=1}^{K} \sum_{x_i \in C_k} \lVert x_i - \mu_k \rVert^2 \]</div>
+<p>The within-cluster sum of squares (inertia). The assign step cannot increase J (each point takes the closest centroid), and the update step cannot increase J because the mean minimises the sum of squared distances: \(\sum \lVert x_i - c\rVert^2 = \sum \lVert x_i - \mu\rVert^2 + n\lVert \mu - c\rVert^2\). For points 1, 2, 6 the mean 3 gives 14, while c = 4 gives 17 = 14 + 3·1².</p>
+<p>J is non-increasing and there are finitely many partitions, so it converges in a finite number of steps. But only to a <b>local</b> minimum; finding the global optimum is NP-hard. In practice: use k-means++ and several restarts (<code>n_init</code>) and keep the lowest inertia.</p>
+<p class="src">Prepfully (asked at Adyen, Datadog and others); scikit-learn user guide</p></details>
+
+<details><summary>How do you choose K?</summary>
+<p><b>Elbow method:</b> plot inertia against K and pick the point where the decrease slows sharply. Inertia always decreases with K (it is 0 when K = n), so you cannot simply minimise it. On the customer data above: K = 2 → 374.1, K = 3 → 88.2, K = 4 → 68.2, so the elbow is at 3.</p>
+<p><b>Silhouette score:</b> \(s(i) = (b - a)/\max(a, b)\), where a is the mean distance to points in the same cluster and b the mean distance to the nearest other cluster. Average over points; pick the K with the highest value (here 0.71 at K = 3, vs 0.51 at K = 2 and 0.62 at K = 4).</p>
+<p>Others: gap statistic, Davies–Bouldin index, information criteria with a GMM, and very often the business constraint (how many segments the team can act on).</p>
+<p class="src">Towards AI (Top 20 k-means questions); VitalFlux</p></details>
+
+<details><summary>What is k-means++ and why is it better than random initialisation?</summary>
+<p>It spreads the initial centroids. The first is a random data point; each next one is sampled with probability proportional to \(D(x)^2\), the squared distance to the nearest centroid chosen so far. Far points are much more likely to be picked.</p>
+<p>Example: with A chosen first, squared distances to B, C, D, E, F are 2, 2, 74, 100, 85 (sum 263), so the second centroid lands in the other group with probability 259/263 = 98.5%, versus 3/5 = 60% for a uniform choice.</p>
+<p>On the 5-blob demo above, a single random start got stuck in a bad local minimum 43.4% of the time and a single k-means++ start 10.4% of the time. Arthur and Vassilvitskii (2007) prove the expected inertia right after k-means++ seeding is within \(O(\log K)\) of the optimum. It costs K extra passes over the data, usually repaid by faster convergence.</p>
+<p class="src">Arthur &amp; Vassilvitskii, k-means++ (SODA 2007); Towards AI</p></details>
+
+<details><summary>What assumptions does k-means make? When does it fail?</summary>
+<p>Because each point goes to the nearest centroid, boundaries are straight lines halfway between centroids (a Voronoi partition). So k-means implicitly assumes clusters that are roughly spherical, of similar size and similar spread, in a space where Euclidean distance is meaningful.</p>
+<p>It fails on: non-convex shapes (two moons: only 75% agreement in the demo), clusters of very different size or density (the boundary cuts into the large cluster: 12 of its 120 points were given to the small one), outliers (3 outliers took a whole cluster and two real clusters were merged), and unscaled features. Alternatives: DBSCAN for arbitrary shapes and noise, GMM for elliptical and unequal clusters, spectral clustering for manifold-shaped data.</p>
+<p class="src">Medium (How to ace the k-means interview questions); Data Journey</p></details>
+
+<details><summary>Do you need to scale features for k-means?</summary>
+<p>Yes. The distance is dominated by the feature with the largest range. Example: spend in thousands (1000–8500) and visits per month (1–9). Customer (2000, 2) is at distance 500.04 from (2500, 8) but 1000 from (3000, 2), so six extra visits barely matter. In the demo, unscaled k-means matched the true segments for 76% of customers, after z-scoring 100%.</p>
+<p>Standardise (z-score) or min–max scale before clustering, and apply the same scaler to new points before <code>predict</code>. Also think about whether some features deserve more weight; scaling is a modelling choice.</p></details>
+
+<details><summary>What is the difference between k-means and k-NN?</summary>
+<p><b>k-means</b> is unsupervised clustering: no labels, K is the number of clusters, it has a training loop that moves centroids, and prediction compares a point with K centroids.</p>
+<p><b>k-NN</b> is supervised classification or regression: it needs labels, k is the number of neighbours that vote, there is no training (it stores the data), and prediction compares a point with all n training points.</p>
+<p>They share only the use of a distance metric and sensitivity to feature scale. Example: k-means answers "what kinds of customers do we have?"; k-NN answers "will this customer churn?" by looking at the 5 most similar labelled customers.</p>
+<p class="src">Prepfully (k-means vs KNN)</p></details>
+
+<details><summary>How do outliers affect k-means, and how would you handle them?</summary>
+<p>The mean is pulled by extreme values and squared distances amplify them, so outliers drag centroids or even get a cluster of their own. In the demo with K = 2, three far-away points formed their own cluster (sizes 60 and 3) and the two real groups were merged; removing them gave 97% agreement.</p>
+<p>Options: remove or cap outliers first (e.g. by z-score or IQR), use K-medoids or K-medians (L1, the median is robust), use DBSCAN which labels them as noise, or use a larger K and drop tiny clusters.</p></details>
+
+<details><summary>How do you evaluate a clustering when there are no labels?</summary>
+<p><b>Internal metrics:</b> inertia (lower is tighter, but always falls with K), silhouette score (−1 to 1, higher is better), Davies–Bouldin index (lower is better), Calinski–Harabasz (higher is better).</p>
+<p><b>Stability:</b> rerun on bootstrap samples or with different seeds; good clusters should stay similar.</p>
+<p><b>If some labels exist:</b> Adjusted Rand Index or normalised mutual information.</p>
+<p><b>Business validation:</b> are the segments different in ways that matter (spend, churn, response to a campaign)? In industry this is usually the deciding test.</p>
+<p class="src">Towards AI; Data Journey</p></details>
+
+<details><summary>Implement k-means in NumPy. What edge cases do you handle?</summary>
+<p>See the NumPy code above. Key points interviewers check: vectorised distance computation with broadcasting (an (n, K) matrix), <code>argmin</code> for assignment, mean per cluster for update, a convergence test (centroids stop moving or assignments stop changing) plus a max-iteration cap.</p>
+<p>Edge cases: an <b>empty cluster</b> (keep the old centroid, or re-seed it at the point farthest from its centroid), K larger than the number of distinct points, ties in distance, and non-determinism (fix the random seed). Mention k-means++ seeding and multiple restarts.</p>
+<p class="src">Prepfully (implement k-means for an N×D matrix); Snapchat MLE mock interview</p></details>
+
+<details><summary>How would you run k-means on a very large dataset or with categorical features?</summary>
+<p><b>Large data:</b> Mini-Batch K-Means updates centroids from small random batches (e.g. 1,024 points) with a per-centroid learning rate; it is much faster, with slightly higher inertia. Other tricks: reduce dimension with PCA first, use Elkan's algorithm (triangle inequality skips distance computations), or distributed implementations (Spark MLlib).</p>
+<p><b>Categorical data:</b> the mean of categories is meaningless. Use K-modes (Hamming distance, mode as centre), K-prototypes for mixed data, or embed categories into numeric vectors first. One-hot plus k-means is possible but distances become crude.</p>
+<p class="src">scikit-learn user guide; VitalFlux</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://vitalflux.com/k-means-clustering-interview-questions-set-1/">VitalFlux</a> · <a href="https://prepfully.com/answers/kmeans-knn-difference">Prepfully (k-means vs KNN)</a> · <a href="https://prepfully.com/answers/kmeans-clustering-implementation">Prepfully (implementation)</a> · <a href="https://medium.com/codex/data-scientists-interview-guide-k-means-56135e9e47b9">Medium: Data Scientists' Interview Guide: k-Means</a> · <a href="https://medium.com/analytics-and-data/how-to-ace-the-k-means-algorithm-interview-questions-afe346f8fc09">Medium: How to ace the k-means interview questions</a> · <a href="https://pub.towardsai.net/top-20-k-means-clustering-interview-questions-and-answer-part-1-of-2-74b070ac5dc5">Towards AI (Top 20, part 1)</a> · <a href="https://datajourney24.substack.com/p/mldl-interview-series-unsupervised">Data Journey (unsupervised)</a> · <a href="https://chaindesk.ai/tools/youtube-summarizer/ml-ai-coding-question-implement-k-means-full-mock-interview-with-snapchat-mle-gl96uVKroDM">Snapchat MLE mock interview (summary)</a> · <a href="https://scikit-learn.org/stable/modules/clustering.html#k-means">scikit-learn user guide</a> · <a href="https://theory.stanford.edu/~sergei/papers/kMeansPP-soda.pdf">Arthur &amp; Vassilvitskii 2007</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+
+// LIB START
+const mkRnd = s => () => (s = (s * 16807) % 2147483647) / 2147483647;
+const gauss = r => { const u = Math.max(r(), 1e-9), v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+const blobs = (seed, spec) => { const r = mkRnd(seed), P = []; spec.forEach(([cx, cy, sx, sy, n], g) => { for (let i = 0; i < n; i++) P.push([cx + sx * gauss(r), cy + sy * gauss(r), g]); }); return P; };
+const d2 = (a, b) => (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2;
+const assign = (P, C) => P.map(p => { let b = 0; for (let k = 1; k < C.length; k++) if (d2(p, C[k]) < d2(p, C[b])) b = k; return b; });
+const update = (P, A, C) => C.map((c, k) => { const m = P.filter((_, i) => A[i] === k); return m.length ? [m.reduce((s, p) => s + p[0], 0) / m.length, m.reduce((s, p) => s + p[1], 0) / m.length] : c; });
+const inertia = (P, A, C) => P.reduce((s, p, i) => s + d2(p, C[A[i]]), 0);
+const lloyd = (P, C0, maxIt = 100) => { let C = C0.map(c => [c[0], c[1]]), A = assign(P, C), it = 0;
+  for (; it < maxIt; it++) { const C2 = update(P, A, C), A2 = assign(P, C2); C = C2; if (A2.every((a, i) => a === A[i])) { A = A2; break; } A = A2; }
+  return { C, A, J: inertia(P, A, C), it: it + 1, C0 }; };
+const initRandom = (P, K, r) => { const idx = []; while (idx.length < K) { const i = Math.floor(r() * P.length); if (!idx.includes(i)) idx.push(i); } return idx.map(i => [P[i][0], P[i][1]]); };
+const initPP = (P, K, r) => { const C = [P[Math.floor(r() * P.length)].slice(0, 2)];
+  while (C.length < K) { const D = P.map(p => Math.min(...C.map(c => d2(p, c)))), S = D.reduce((a, b) => a + b, 0); let u = r() * S, i = 0; while (u > D[i] && i < P.length - 1) { u -= D[i]; i++; } C.push(P[i].slice(0, 2)); } return C; };
+const bestOf = (P, K, n, seed) => { const r = mkRnd(seed); let best = null; for (let t = 0; t < n; t++) { const s = lloyd(P, initPP(P, K, r)); if (!best || s.J < best.J) best = s; } return best; };
+const silhouette = (P, A) => { const K = Math.max(...A) + 1; let tot = 0;
+  P.forEach((p, i) => { const sums = Array(K).fill(0), cnt = Array(K).fill(0); P.forEach((q, j) => { if (i !== j) { sums[A[j]] += Math.sqrt(d2(p, q)); cnt[A[j]]++; } });
+    if (cnt[A[i]] === 0) return; const a = sums[A[i]] / cnt[A[i]]; let b = Infinity; for (let k = 0; k < K; k++) if (k !== A[i] && cnt[k]) b = Math.min(b, sums[k] / cnt[k]); tot += (b - a) / Math.max(a, b); });
+  return tot / P.length; };
+const perms = K => K === 2 ? [[0, 1], [1, 0]] : [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
+const agree = (P, A, K) => Math.max(...perms(K).map(pm => P.filter((p, i) => pm[A[i]] === p[2]).length)) / P.length;
+const moons = (seed, n) => { const r = mkRnd(seed), P = []; for (let i = 0; i < n; i++) { const t = Math.PI * r(), g = i % 2;
+  const x = g ? 1 - Math.cos(t) : Math.cos(t), y = g ? 0.5 - Math.sin(t) : Math.sin(t); P.push([5 + 2.6 * (x - 0.5) + 0.25 * gauss(r), 5 + 2.6 * (y - 0.25) + 0.25 * gauss(r), g]); } return P; };
+
+// data
+const CUST = blobs(9, [[2.4, 2.4, 0.7, 0.7, 25], [3.0, 7.4, 0.8, 0.8, 25], [7.4, 4.8, 0.8, 0.9, 25]]);   // spend, visits
+const STEP_INIT = [[4, 4], [5, 4], [4.5, 5]];
+const FIVE = blobs(3, [[2, 2, .6, .6, 20], [2, 8, .6, .6, 20], [8, 2, .6, .6, 20], [8, 8, .6, .6, 20], [5, 5, .6, .6, 20]]);
+const MOON = moons(4, 120);
+const SIZES = blobs(6, [[3.2, 5, 1.3, 1.3, 120], [7.8, 5, 0.35, 0.35, 15]]);
+const OUT = blobs(8, [[2.5, 3, 0.6, 0.6, 30], [5.5, 3, 0.6, 0.6, 30], [9.3, 9.3, 0.25, 0.25, 3]]);
+const RAW = CUST.map(p => [p[0] * 1000, p[1], p[2]]);          // spend in thousand toman
+const zs = (P) => { const m = j => P.reduce((s, p) => s + p[j], 0) / P.length, sd = j => Math.sqrt(P.reduce((s, p) => s + (p[j] - m(j)) ** 2, 0) / P.length);
+  const m0 = m(0), m1 = m(1), s0 = sd(0), s1 = sd(1); return P.map(p => [(p[0] - m0) / s0, (p[1] - m1) / s1, p[2]]); };
+const ELBOW = Array.from({ length: 8 }, (_, i) => { const b = bestOf(CUST, i + 1, 10, 7); return { K: i + 1, J: b.J, A: b.A, C: b.C, sil: i ? silhouette(CUST, b.A) : null }; });
+const LIM = { moon: bestOf(MOON, 2, 10, 3), size: bestOf(SIZES, 2, 10, 3), out: bestOf(OUT, 2, 10, 3), raw: bestOf(RAW, 3, 10, 3), std: bestOf(zs(RAW), 3, 10, 3) };
+const stuckRate = (P, K, n, seed, init) => { const best = bestOf(P, K, 20, 1).J, r = mkRnd(seed); let s = 0; for (let t = 0; t < n; t++) if (lloyd(P, init(P, K, r)).J > best * 1.05) s++; return s / n; };
+// LIB END
+
+// ---------- drawing ----------
+const PAL = () => [css('blue'), css('red'), css('orange'), css('accent'), '#9b5de5', '#c2185b', '#7a8b00', css('muted')];
+const plot = (cv, P, colorOf, o = {}) => { const lo = o.lo ?? 0, hi = o.hi ?? 10, [c, W, Ht] = mk(cv, o.ratio ?? 0.75, o.maxw ?? 520);
+  const X = x => 16 + (x - lo) / (hi - lo) * (W - 26), Y = y => Ht - 16 - (y - lo) / (hi - lo) * (Ht - 26);
+  c.strokeStyle = css('line'); c.lineWidth = 1; c.beginPath(); c.moveTo(X(lo), Y(hi)); c.lineTo(X(lo), Y(lo)); c.lineTo(X(hi), Y(lo)); c.stroke();
+  P.forEach((p, i) => { c.fillStyle = colorOf(i); c.beginPath(); c.arc(X(p[0]), Y(p[1]), o.r ?? 3.6, 0, 7); c.fill(); });
+  if (o.axes !== false) { c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; c.fillText(o.xl ?? 'خریدِ ماهانه', W / 2, Ht - 2);
+    c.save(); c.translate(9, Ht / 2); c.rotate(-Math.PI / 2); c.fillText(o.yl ?? 'تعدادِ مراجعه', 0, 0); c.restore(); }
+  return [c, X, Y, W, Ht]; };
+const cross = (c, x, y, col, s = 7) => { c.lineCap = 'round'; c.strokeStyle = css('card'); c.lineWidth = 6; c.beginPath(); c.moveTo(x - s, y - s); c.lineTo(x + s, y + s); c.moveTo(x + s, y - s); c.lineTo(x - s, y + s); c.stroke();
+  c.strokeStyle = col; c.lineWidth = 3; c.stroke(); };
+const drawCenters = (c, X, Y, C) => { const pal = PAL(); C.forEach((p, k) => cross(c, X(p[0]), Y(p[1]), pal[k])); };
+
+// hero: raw customers, no labels
+const hero = () => plot(document.getElementById('hero'), CUST, () => css('muted'), { ratio: 0.55, maxw: 520 });
+
+// ---------- step-by-step ----------
+let ST;
+const stReset = C0 => { ST = { C: C0.map(c => c.slice()), A: null, phase: 'init', hist: [C0.map(c => c.slice())], Js: [], done: false, changed: null }; stDraw(); };
+let randSeed = 1;
+const stStep = () => { if (ST.done) return;
+  if (ST.phase === 'init' || ST.phase === 'update') { const A2 = assign(CUST, ST.C), ch = ST.A ? A2.filter((a, i) => a !== ST.A[i]).length : null;
+    ST.changed = ch; ST.A = A2; ST.phase = 'assign'; ST.Js.push(inertia(CUST, ST.A, ST.C)); if (ch === 0) ST.done = true; }
+  else { ST.C = update(CUST, ST.A, ST.C); ST.hist.push(ST.C.map(c => c.slice())); ST.phase = 'update'; ST.Js.push(inertia(CUST, ST.A, ST.C)); }
+  stDraw(); };
+const stDraw = () => { const pal = PAL(); const [c, X, Y] = plot(document.getElementById('step'), CUST, i => ST.A ? pal[ST.A[i]] : css('muted'), { ratio: 0.72, maxw: 532 });
+  for (let k = 0; k < ST.C.length; k++) { c.strokeStyle = pal[k]; c.lineWidth = 1.2; c.setLineDash([4, 3]); c.beginPath(); ST.hist.forEach((h, t) => t ? c.lineTo(X(h[k][0]), Y(h[k][1])) : c.moveTo(X(h[k][0]), Y(h[k][1]))); c.stroke(); c.setLineDash([]); }
+  drawCenters(c, X, Y, ST.C);
+  const name = { init: 'شروع: فقط مرکزها', assign: 'قدمِ تخصیص: هر مشتری به نزدیک‌ترین مرکز', update: 'قدمِ به‌روزرسانی: هر مرکز به میانگینِ گروهش' }[ST.phase];
+  document.getElementById('sInfo').innerHTML = `${name}${ST.changed !== null && ST.phase === 'assign' ? ` (${fa(ST.changed)} مشتری گروهش را عوض کرد)` : ''}<br>Inertia: <span dir="ltr">${ST.Js.length ? ST.Js.map(j => j.toFixed(1)).join(' → ') : '—'}</span>${ST.done ? '<br><b>همگرا شد.</b> دیگر هیچ تغییری نمی‌کند.' : ''}`;
+  document.getElementById('sOne').disabled = ST.done; };
+document.getElementById('sOne').onclick = stStep;
+document.getElementById('sReset').onclick = () => stReset(STEP_INIT);
+document.getElementById('sRand').onclick = () => stReset(initRandom(CUST, 3, mkRnd(randSeed++)));
+
+// ---------- elbow ----------
+const ek = document.getElementById('ek');
+const elbowDraw = () => { const K = +ek.value, e = ELBOW[K - 1], pal = PAL();
+  const [c, X, Y] = plot(document.getElementById('elbowPts'), CUST, i => pal[e.A[i]], { ratio: 0.6, maxw: 532 }); drawCenters(c, X, Y, e.C);
+  document.getElementById('ekv').textContent = fa(K);
+  document.getElementById('eInfo').innerHTML = `Inertia: <b>${fa(e.J, 1)}</b>${e.sil !== null ? ` · Silhouette: <b>${fa(e.sil, 2)}</b>` : ' · Silhouette برای K = ۱ تعریف نمی‌شود'}`;
+  const [g, W, Ht] = mk(document.getElementById('elbowCurve'), 0.42, 532), gx = k => 30 + (k - 1) / 7 * (W - 62), maxJ = ELBOW[0].J, gy = j => Ht - 22 - j / maxJ * (Ht - 34), sy = s => Ht - 22 - s * (Ht - 34);
+  g.strokeStyle = css('line'); g.lineWidth = 1; g.beginPath(); g.moveTo(gx(1), Ht - 22); g.lineTo(gx(8), Ht - 22); g.stroke();
+  g.fillStyle = css('muted'); g.font = '11px Vazirmatn'; g.textAlign = 'center'; ELBOW.forEach(q => g.fillText(fa(q.K), gx(q.K), Ht - 6));
+  g.fillStyle = css('soft'); g.fillRect(gx(K) - 10, 6, 20, Ht - 28);
+  g.strokeStyle = css('accent'); g.lineWidth = 2; g.beginPath(); ELBOW.forEach((q, i) => i ? g.lineTo(gx(q.K), gy(q.J)) : g.moveTo(gx(q.K), gy(q.J))); g.stroke();
+  ELBOW.forEach(q => { g.fillStyle = css('accent'); g.beginPath(); g.arc(gx(q.K), gy(q.J), q.K === K ? 5 : 3, 0, 7); g.fill(); });
+  g.strokeStyle = css('orange'); g.lineWidth = 2; g.setLineDash([5, 3]); g.beginPath(); ELBOW.slice(1).forEach((q, i) => i ? g.lineTo(gx(q.K), sy(q.sil)) : g.moveTo(gx(q.K), sy(q.sil))); g.stroke(); g.setLineDash([]);
+  ELBOW.slice(1).forEach(q => { g.fillStyle = css('orange'); g.beginPath(); g.arc(gx(q.K), sy(q.sil), q.K === K ? 5 : 3, 0, 7); g.fill(); });
+  g.fillStyle = css('muted'); g.textAlign = 'left'; g.fillText('1', W - 28, sy(1) + 4); g.fillText('0', W - 28, sy(0) + 4); };
+ek.oninput = elbowDraw;
+
+// ---------- init: random vs k-means++ ----------
+let iSeed = 3;
+const initDraw = () => { const pal = PAL(), R = lloyd(FIVE, initRandom(FIVE, 5, mkRnd(iSeed))), Q = lloyd(FIVE, initPP(FIVE, 5, mkRnd(iSeed)));
+  [[R, 'initR'], [Q, 'initP']].forEach(([s, id]) => { const [c, X, Y] = plot(document.getElementById(id), FIVE, i => pal[s.A[i]], { ratio: 0.9, maxw: 300, lo: -0.6, hi: 10.6, r: 3, axes: false });
+    s.C0.forEach(p => { c.strokeStyle = css('ink'); c.lineWidth = 1.5; c.beginPath(); c.arc(X(p[0]), Y(p[1]), 6, 0, 7); c.stroke(); }); drawCenters(c, X, Y, s.C);
+    document.getElementById(id + 'i').innerHTML = `Inertia: <b>${fa(s.J, 1)}</b> · ${fa(s.it)} دور` + (s.J > 83.2 * 1.05 ? ' · <b>گیر کرده</b>' : ' · بهترین جواب'); });
+  document.getElementById('iSeed').textContent = `دایره‌ی توخالی = مرکزِ شروع، × = مرکزِ آخر. شماره‌ی شروع: ${fa(iSeed)}`; };
+document.getElementById('iNext').onclick = () => { iSeed++; initDraw(); };
+document.getElementById('iMany').onclick = () => { const a = stuckRate(FIVE, 5, 500, 99, initRandom), b = stuckRate(FIVE, 5, 500, 99, initPP);
+  document.getElementById('iStats').innerHTML = `در ۵۰۰ اجرا گیر کرد: شروعِ تصادفی <b>${fa(a * 100, 1)}٪</b> · <bdi>K-Means++</bdi> <b>${fa(b * 100, 1)}٪</b>`; };
+
+// ---------- limitations ----------
+const limDraw = () => { const pal = PAL();
+  const m = plot(document.getElementById('limMoon'), MOON, i => pal[LIM.moon.A[i]], { ratio: 0.9, maxw: 300, r: 3, axes: false }); drawCenters(m[0], m[1], m[2], LIM.moon.C);
+  const s = plot(document.getElementById('limSize'), SIZES, i => pal[LIM.size.A[i]], { ratio: 0.9, maxw: 300, r: 3, axes: false }); drawCenters(s[0], s[1], s[2], LIM.size.C);
+  const o = plot(document.getElementById('limOut'), OUT, i => pal[LIM.out.A[i]], { ratio: 0.9, maxw: 300, r: 3, axes: false }); drawCenters(o[0], o[1], o[2], LIM.out.C); };
+const scaleChk = document.getElementById('scaleChk');
+const scaleDraw = () => { const pal = PAL(), on = scaleChk.checked, s = on ? LIM.std : LIM.raw;
+  plot(document.getElementById('scaleCv'), CUST, i => pal[s.A[i]], { ratio: 0.6, maxw: 532 });
+  document.getElementById('scaleInfo').innerHTML = (on ? 'با هم‌مقیاس کردن' : 'بدونِ هم‌مقیاس کردن (خرید به هزار تومان)') + `: <b>${fa(agree(CUST, s.A, 3) * 100)}٪</b> مشتری‌ها در گروهِ واقعی‌شان`; };
+scaleChk.onchange = scaleDraw;
+
+const all = () => { hero(); stDraw(); elbowDraw(); initDraw(); limDraw(); scaleDraw(); };
+stReset(STEP_INIT);
+addEventListener('resize', all); all();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

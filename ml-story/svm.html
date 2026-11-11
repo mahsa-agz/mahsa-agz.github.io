@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ماشین بردار پشتیبان</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.ctl button { margin-top: 0; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+#sv { touch-action: none; cursor: grab; }
+.kinds canvas { max-width: 100%; }
+.pic { width: 100%; max-width: 320px; display: block; margin: 4px auto; }
+.pic .ax { stroke: var(--muted); stroke-width: 1; }
+.pic .b { fill: var(--blue); } .pic .o { fill: var(--orange); }
+.pic .cut { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 4; }
+.pic .par { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; }
+.pic .lab { font-size: 11px; fill: var(--muted); }
+.pic .lnk { stroke: var(--red); stroke-width: 1.5; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="naive-bayes.html">بیز ساده</a> · <a href="neural-network.html">بعدی: شبکه‌ی عصبی ←</a></p>
+<h1>ماشین بردار پشتیبان <span class="en">(Support Vector Machine, SVM)</span></h1>
+<p class="sub">بینِ دو دسته، پهن‌ترین خیابانِ ممکن را می‌کشیم. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>دو دسته داده داریم و می‌خواهیم با یک خط جدایشان کنیم. معمولاً <b>خط‌های زیادی</b> این کار را می‌کنند. کدام بهتر است؟</p>
+<p>جوابِ SVM:</p>
+<ol>
+<li>خطی را انتخاب کن که از <b>هر دو دسته تا جای ممکن دور</b> باشد.</li>
+<li>دو طرفِ خط یک «خیابان» خالی می‌ماند. SVM پهن‌ترین خیابان را پیدا می‌کند.</li>
+<li>فقط نقطه‌هایی که <b>لبه‌ی خیابان</b> هستند مهم‌اند. به آن‌ها <b>بردار پشتیبان</b> <span class="en">(Support Vector)</span> می‌گویند.</li>
+</ol>
+<div class="key">SVM خطی را می‌خواهد که <b>بیشترین فاصله</b> <span class="en">(Margin)</span> را تا نزدیک‌ترین نقطه‌های هر دسته داشته باشد. خیابانِ پهن‌تر یعنی مدل روی داده‌ی جدید کمتر اشتباه می‌کند.</div>
+<p>چرا مهم است:</p>
+<ul>
+<li>قبل از یادگیریِ عمیق، روی خیلی از مسئله‌ها بهترین مدل بود.</li>
+<li>هنوز روی داده‌ی <b>کوچک و متوسط</b> و داده‌ی <b>پرُبُعد</b> (مثلاً متن) خیلی خوب کار می‌کند.</li>
+<li>در مصاحبه زیاد پرسیده می‌شود: حاشیه، بردار پشتیبان، پارامتر C، Hinge Loss، ترفند کرنل.</li>
+</ul>
+<p>مثالِ این صفحه: <b>فیلترِ اسپم</b> با دو ویژگی:</p>
+<ul>
+<li>\(x_1\): تعدادِ لینک‌های ایمیل</li>
+<li>\(x_2\): تعدادِ کلمه‌های تبلیغاتی (مثل «رایگان»، «جایزه»)</li>
+</ul>
+<p>۱۴ ایمیل داریم: ۷ ایمیلِ عادی (<b>ham</b>، برچسب \(-1\)، آبی) و ۷ اسپم (برچسب \(+1\)، نارنجی).</p>
+</section>
+
+<section>
+<h2>پهن‌ترین خیابان</h2>
+<p>هر چهار خطِ زیر <b>همه‌ی</b> ۱۴ ایمیل را درست جدا می‌کنند. ولی فاصله‌شان تا نزدیک‌ترین ایمیل خیلی فرق دارد:</p>
+<div class="kinds">
+<div><p><b>سه خطِ دلخواه</b></p><canvas id="cmpA"></canvas>
+<ul class="ex">
+<li>خطِ ۱ (\(x_1 = 4.5\)): نزدیک‌ترین ایمیل در فاصله‌ی <b>۰٫۵۰</b></li>
+<li>خطِ ۲ (\(x_1 + x_2 = 10.5\)): فاصله‌ی <b>۰٫۳۵</b></li>
+<li>خطِ ۳ (\(x_1 + 0.3x_2 = 5.2\)): فاصله‌ی <b>۰٫۸۶</b></li>
+</ul></div>
+<div><p><b>خطِ SVM</b></p><canvas id="cmpB"></canvas>
+<ul class="ex">
+<li>فاصله تا نزدیک‌ترین ایمیل: <b>۲٫۰۳</b></li>
+<li>پهنای کلِ خیابان: <b>۴٫۰۶</b></li>
+<li>سه ایمیلِ حلقه‌دار روی لبه‌ی خیابان‌اند: بردارهای پشتیبان.</li>
+</ul></div>
+</div>
+<div class="legend"><span><i style="background:var(--blue)"></i>ham</span><span><i style="background:var(--orange)"></i>اسپم</span><span><i style="background:var(--accent)"></i>خطِ SVM و لبه‌های خیابان</span></div>
+<p>چرا خیابانِ پهن بهتر است؟ ایمیل‌های جدید دقیقاً روی ایمیل‌های قدیمی نمی‌افتند؛ کمی این‌طرف و آن‌طرف‌اند. خطِ ۲ فقط ۰٫۳۵ با یک اسپم فاصله دارد. یک اسپمِ جدید که کمی شبیهِ ham باشد، از خط رد می‌شود و اشتباه دسته‌بندی می‌شود. خطِ SVM تا ۲٫۰۳ واحد جا برای این لرزش دارد.</p>
+</section>
+
+<section>
+<h2>بردارهای پشتیبان: فقط نزدیک‌ترین نقطه‌ها مهم‌اند</h2>
+<p>خطِ SVM را فقط نقطه‌های لبه‌ی خیابان می‌سازند. بقیه‌ی نقطه‌ها هر جا باشند (به شرطی که وارد خیابان نشوند)، خط عوض نمی‌شود. خودتان امتحان کنید: نقطه‌ها را با ماوس یا انگشت بکشید.</p>
+<div class="box">
+<canvas id="sv"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>ham</span><span><i style="background:var(--orange)"></i>اسپم</span><span><i style="background:var(--accent)"></i>خط و لبه‌های خیابان؛ حلقه = بردار پشتیبان</span></div>
+<div class="ctl"><button id="bFar">یک نقطه‌ی دور را جابه‌جا کن</button><button id="bSV">یک بردار پشتیبان را جابه‌جا کن</button><button id="bReset">برگرداندن</button></div>
+<div class="err" id="svinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>جابه‌جا کردنِ یک نقطه‌ی دور</b></p><p class="ex">اسپمِ (۹، ۸) را به (۹٫۵، ۶) می‌بریم. خط و پهنای خیابان (۴٫۰۶) <b>هیچ تغییری نمی‌کنند</b>. این نقطه در ساختنِ خط نقشی ندارد.</p></div>
+<div><p><b>جابه‌جا کردنِ یک بردار پشتیبان</b></p><p class="ex">اسپمِ (۶، ۵) را به (۵٫۵، ۴٫۵) می‌بریم، کمی به سمتِ hamها. خط می‌چرخد و خیابان از ۴٫۰۶ به <b>۳٫۳۶</b> باریک می‌شود.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">اگر نقطه‌ای را به آن طرفِ دسته‌ی دیگر بکشید، دیگر هیچ خطی همه را جدا نمی‌کند و «حاشیه‌ی سخت» جواب ندارد. راهِ حلش «حاشیه‌ی نرم» است که پایین‌تر می‌آید.</p>
+<p>نتیجه‌ی مهم: مدلِ آموزش‌دیده فقط بردارهای پشتیبان را لازم دارد. این‌جا از ۱۴ نقطه فقط <b>۳</b> تا.</p>
+</section>
+
+<section>
+<h2>ریاضیِ خیابان</h2>
+<p>خط را با یک بردارِ وزن \(w\) و یک عددِ \(b\) می‌نویسیم:</p>
+<div class="f">\[ f(x) = w \cdot x + b = w_1 x_1 + w_2 x_2 + b \qquad \hat{y} = \operatorname{sign}\big(f(x)\big) \]</div>
+<ul class="sym">
+<li>\(x\): ویژگی‌های یک نمونه</li>
+<li>\(w\): بردارِ وزن (عمود بر خط)</li>
+<li>\(b\): عرض از مبدأ <span class="en">(bias)</span></li>
+<li>\(f(x) = 0\): خودِ خط</li>
+<li>\(f(x) = \pm 1\): دو لبه‌ی خیابان</li>
+<li>\(\hat{y}\): پیش‌بینی، \(+1\) یا \(-1\)</li>
+</ul>
+<p>فاصله‌ی هر نقطه تا خط برابرِ \(|f(x)| / \lVert w \rVert\) است. لبه‌ها جایی‌اند که \(f = \pm 1\)، پس:</p>
+<div class="f">\[ \text{margin width} = \frac{2}{\lVert w \rVert} \]</div>
+<p>خیابانِ پهن‌تر یعنی \(\lVert w \rVert\) کوچک‌تر. پس SVM این مسئله را حل می‌کند (<b>حاشیه‌ی سخت</b>):</p>
+<div class="f">\[ \min_{w,\,b} \ \tfrac{1}{2}\lVert w \rVert^2 \quad \text{subject to} \quad y_i\,(w \cdot x_i + b) \ge 1 \ \ \text{for every } i \]</div>
+<ul class="sym">
+<li>\(y_i\): برچسبِ نمونه‌ی \(i\)، \(+1\) یا \(-1\)</li>
+<li>\(y_i f(x_i) \ge 1\): هر نقطه درست است و بیرونِ خیابان</li>
+<li>\(\tfrac12\lVert w\rVert^2\): کوچکش کن تا خیابان پهن شود</li>
+</ul>
+<p><b>با عدد</b>، برای ۱۴ ایمیلِ ما جواب این است:</p>
+<div class="f">\[ w = \left(\tfrac{5}{13},\ \tfrac{4}{13}\right) \approx (0.385,\ 0.308), \qquad b = -\tfrac{37}{13} \approx -2.846 \]</div>
+<ul class="ex">
+<li>\(\lVert w \rVert = \sqrt{41}/13 \approx 0.493\)، پس پهنای خیابان \(= 2 / 0.493 \approx 4.06\).</li>
+<li>بردار پشتیبانِ اسپمِ (۶، ۵): \(f = 0.385 \cdot 6 + 0.308 \cdot 5 - 2.846 = 1.00\). دقیقاً روی لبه.</li>
+<li>ham‌های (۲، ۳٫۵) و (۴، ۱): \(f = -1.00\). روی لبه‌ی دیگر.</li>
+<li>ایمیلِ جدیدِ (۷، ۳): \(f = 0.769\). مثبت، پس <b>اسپم</b>؛ ولی کمتر از ۱، یعنی داخلِ خیابان و نزدیکِ مرز.</li>
+<li>ایمیلِ جدیدِ (۲، ۲): \(f = -1.462\). منفی، پس <b>ham</b>، و دور از مرز.</li>
+</ul>
+<details class="drop"><summary><b>فرمِ دوگان: چرا فقط بردارهای پشتیبان مهم‌اند؟</b></summary>
+<p>با ضریب‌های لاگرانژ، جوابِ SVM را می‌شود این‌طور نوشت:</p>
+<div class="f">\[ w = \sum_i \alpha_i\, y_i\, x_i, \qquad f(x) = \sum_i \alpha_i\, y_i\, (x_i \cdot x) + b, \qquad 0 \le \alpha_i \le C \]</div>
+<p>برای نقطه‌هایی که بیرونِ خیابان‌اند، \(\alpha_i = 0\). فقط بردارهای پشتیبان \(\alpha_i > 0\) دارند. پس جابه‌جا کردنِ یک نقطه‌ی دور، هیچ جمله‌ای از این جمع را عوض نمی‌کند.</p>
+<p>نکته‌ی دوم: در این فرم داده فقط به شکلِ <b>ضربِ داخلیِ</b> \(x_i \cdot x\) آمده. همین در بخشِ کرنل مهم می‌شود.</p>
+<p class="ex">الگوریتمِ معمولِ حلِ این فرم SMO است (در libsvm و <code>SVC</code>). شکل‌های این صفحه هم با همین روش در مرورگر حل می‌شوند، و جواب‌ها با scikit-learn یکی است.</p>
+</details>
+</section>
+
+<section>
+<h2>حاشیه‌ی سخت و نرم، و پارامتر C</h2>
+<p>داده‌ی واقعی تمیز نیست. دو ایمیلِ عجیب به مثال اضافه می‌کنیم:</p>
+<ul>
+<li>یک اسپم با لینک و کلمه‌ی تبلیغاتیِ کم: (۴٫۶، ۲٫۶)</li>
+<li>یک ham با کلمه‌های تبلیغاتیِ زیاد: (۳٫۸، ۵٫۶)</li>
+</ul>
+<p>هنوز می‌شود همه را با یک خط جدا کرد، ولی خیابان فقط <b>۰٫۶۷</b> پهنا دارد. شاید بهتر باشد این دو را «اشتباه» قبول کنیم و خیابانِ پهن‌تری داشته باشیم.</p>
+<div class="kinds">
+<div><p><b>حاشیه‌ی سخت</b> <span class="en">(Hard Margin)</span></p><p class="ex">هیچ نقطه‌ای حق ندارد داخلِ خیابان یا آن طرفِ خط باشد. اگر داده جداشدنی نباشد، اصلاً جواب ندارد. یک نقطه‌ی پرت می‌تواند خط را خیلی جابه‌جا کند.</p></div>
+<div><p><b>حاشیه‌ی نرم</b> <span class="en">(Soft Margin)</span></p><p class="ex">نقطه‌ها می‌توانند وارد خیابان شوند یا حتی اشتباه شوند، ولی برای هر کدام <b>جریمه</b> می‌دهیم. C تعیین می‌کند این جریمه چقدر سنگین است.</p></div>
+</div>
+<div class="f">\[ \min_{w,\,b,\,\xi} \ \tfrac{1}{2}\lVert w \rVert^2 + C \sum_i \xi_i \quad \text{subject to} \quad y_i\,(w \cdot x_i + b) \ge 1 - \xi_i,\ \ \xi_i \ge 0 \]</div>
+<ul class="sym">
+<li>\(\xi_i\): مقدارِ تخلفِ نقطه‌ی \(i\) <span class="en">(slack)</span></li>
+<li>\(\xi_i = 0\): بیرونِ خیابان، درست</li>
+<li>\(0 &lt; \xi_i \le 1\): داخلِ خیابان، هنوز درست</li>
+<li>\(\xi_i &gt; 1\): آن طرفِ خط، اشتباه</li>
+<li>\(C\): وزنِ جریمه‌ی تخلف‌ها</li>
+</ul>
+<p>C را تغییر دهید:</p>
+<div class="box">
+<canvas id="cc"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>ham</span><span><i style="background:var(--orange)"></i>اسپم</span><span><i style="background:var(--accent)"></i>بردار پشتیبان (حلقه)</span><span><i style="background:var(--red)"></i>اشتباه (حلقه‌ی قرمز)</span></div>
+<label>log₁₀ C <input id="logc" type="range" min="-2" max="2" step="0.25" value="-2"><b id="cv"></b></label>
+<div class="err" id="cinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>C کوچک (۰٫۰۱)</b></p><p class="ex">تخلف ارزان است. خیابان پهن می‌شود (<b>۷٫۷۵</b>) و <b>۲</b> ایمیل اشتباه دسته‌بندی می‌شوند. ۱۲ نقطه از ۱۶ داخلِ خیابان یا اشتباه‌اند و ۱۴ بردار پشتیبان داریم. مدل ساده و محتاط است؛ ممکن است کم‌برازش کند.</p></div>
+<div><p><b>C بزرگ (۱۰۰)</b></p><p class="ex">تخلف خیلی گران است. مدل همه را درست می‌کند (<b>۰</b> اشتباه)، ولی خیابان فقط <b>۰٫۶۷</b> است و خط به‌خاطرِ دو ایمیلِ عجیب کج شده. فقط ۳ بردار پشتیبان. ممکن است بیش‌برازش کند.</p></div>
+</div>
+<div class="key">C معکوسِ قدرتِ منظم‌سازی است: C کوچک ← منظم‌سازیِ قوی، خیابانِ پهن. C بزرگ ← منظم‌سازیِ ضعیف، خیابانِ باریک. بهترین C را با اعتبارسنجیِ متقابل پیدا کنید (مثلاً بین ۰٫۰۱ تا ۱۰۰ با ضریبِ ۱۰).</div>
+</section>
+
+<section>
+<h2>Hinge Loss: تابعِ خطای SVM</h2>
+<p>قیدِ \(\xi_i \ge 1 - y_i f(x_i)\) و \(\xi_i \ge 0\) یعنی کوچک‌ترین \(\xi_i\) همین است:</p>
+<div class="f">\[ \xi_i = \max\big(0,\ 1 - y_i f(x_i)\big) \]</div>
+<p>پس SVM یعنی کمینه کردنِ این تابع، بدونِ هیچ قیدی:</p>
+<div class="f">\[ J(w, b) = \tfrac{1}{2}\lVert w \rVert^2 + C \sum_i \max\big(0,\ 1 - y_i (w \cdot x_i + b)\big) \]</div>
+<ul class="sym">
+<li>\(y_i f(x_i)\): «امتیازِ درستی»؛ مثبت یعنی درست</li>
+<li>\(\max(0, \cdot)\): Hinge Loss</li>
+<li>\(\tfrac12\lVert w\rVert^2\): جریمه‌ی L2 روی وزن‌ها</li>
+</ul>
+<p><b>با عدد</b>، با خطِ SVM بالا (\(m = y \cdot f(x)\)):</p>
+<div dir="ltr"><table>
+<tr><th>email</th><th>label y</th><th>f(x)</th><th>m = y·f</th><th>hinge = max(0, 1−m)</th><th>meaning</th></tr>
+<tr><td>(9, 8)</td><td>+1</td><td>3.077</td><td>3.077</td><td>0</td><td>correct, far from the line</td></tr>
+<tr><td>(6, 5)</td><td>+1</td><td>1.000</td><td>1.000</td><td>0</td><td>exactly on the edge</td></tr>
+<tr><td>(7, 3)</td><td>+1</td><td>0.769</td><td>0.769</td><td>0.231</td><td>correct, but inside the street</td></tr>
+<tr><td>(4.6, 2.6)</td><td>+1</td><td>−0.277</td><td>−0.277</td><td>1.277</td><td>wrong side</td></tr>
+<tr><td>(3.8, 5.6)</td><td>−1</td><td>0.338</td><td>−0.338</td><td>1.338</td><td>wrong side</td></tr>
+</table></div>
+<p style="margin-top:8px">کنارِ هم با Log Loss (تابعِ خطای رگرسیون لجستیک) برای همان \(m\):</p>
+<div class="f">\[ \text{hinge}(m) = \max(0,\ 1 - m) \qquad\qquad \text{log loss}(m) = \ln\big(1 + e^{-m}\big) \]</div>
+<div class="box">
+<canvas id="hl"></canvas>
+<div class="legend"><span><i style="background:var(--accent)"></i>Hinge</span><span><i style="background:var(--blue)"></i>Log Loss</span></div>
+<label>m = y·f(x) <input id="mm" type="range" min="-2" max="3" step="0.1" value="0.5"><b id="mv"></b></label>
+<div class="err" id="hinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>Hinge</b></p><ul class="ex">
+<li>\(m = -1\): ۲</li><li>\(m = 0.5\): ۰٫۵</li><li>\(m = 1\): <b>صفر</b></li><li>\(m = 2\): <b>صفر</b></li></ul>
+<p class="ex">بعد از \(m = 1\) دقیقاً صفر است. نقطه‌ای که به‌اندازه‌ی کافی درست است، دیگر هیچ اثری ندارد. برای همین جواب فقط به بردارهای پشتیبان بستگی دارد.</p></div>
+<div><p><b>Log Loss</b></p><ul class="ex">
+<li>\(m = -1\): ۱٫۳۱۳</li><li>\(m = 0.5\): ۰٫۴۷۴</li><li>\(m = 1\): ۰٫۳۱۳</li><li>\(m = 2\): ۰٫۱۲۷</li></ul>
+<p class="ex">هیچ‌وقت صفر نمی‌شود. همه‌ی نقطه‌ها، حتی نقطه‌های خیلی دور، کمی روی جواب اثر دارند. در عوض خروجی را می‌شود به <b>احتمال</b> تبدیل کرد.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">هر دو برای \(m\)‌های خیلی منفی تقریباً خطی‌اند، پس هیچ‌کدام مثلِ مربعِ خطا نقطه‌ی پرت را به‌شدت جریمه نمی‌کنند.</p>
+</section>
+
+<section>
+<h2>ترفند کرنل: وقتی یک خط کافی نیست</h2>
+<p>گاهی داده با هیچ خطی جدا نمی‌شود. مثالِ یک‌بعدی: نقطه‌های آبی در وسط (−۱ تا ۱)، نقطه‌های نارنجی در دو طرف (±۲٫۵ و ±۳). روی خطِ اعداد، هیچ نقطه‌ی برشی این دو را جدا نمی‌کند.</p>
+<p>راه حل: یک ویژگیِ جدید بساز، \(x^2\). حالا هر نقطه دو عدد دارد: \((x, x^2)\). آبی‌ها \(x^2 \le 1\) دارند و نارنجی‌ها \(x^2 \ge 6.25\). یک خطِ افقی (مثلاً \(x^2 = 3.6\)) جدایشان می‌کند.</p>
+<div class="kinds">
+<div><p><b>قبل: یک بُعد، جدا نمی‌شود</b></p>
+<svg class="pic" viewBox="0 0 300 170">
+<line class="ax" x1="20" y1="80" x2="280" y2="80"/>
+<text class="lab" x="150" y="105" text-anchor="middle">0</text><text class="lab" x="39" y="105" text-anchor="middle">−3</text><text class="lab" x="261" y="105" text-anchor="middle">3</text>
+<circle class="o" cx="39" cy="80" r="6"/><circle class="o" cx="57.5" cy="80" r="6"/><circle class="b" cx="113" cy="80" r="6"/><circle class="b" cx="131.5" cy="80" r="6"/><circle class="b" cx="150" cy="80" r="6"/><circle class="b" cx="168.5" cy="80" r="6"/><circle class="b" cx="187" cy="80" r="6"/><circle class="o" cx="242.5" cy="80" r="6"/><circle class="o" cx="261" cy="80" r="6"/>
+<text class="lab" x="150" y="140" text-anchor="middle">هر نقطه‌ی برش، یک طرف هر دو رنگ را دارد</text>
+</svg></div>
+<div><p><b>بعد: با \(x^2\)، یک خط جدا می‌کند</b></p>
+<svg class="pic" viewBox="0 0 300 170">
+<line class="ax" x1="20" y1="150" x2="280" y2="150"/><line class="ax" x1="150" y1="5" x2="150" y2="155"/>
+<polyline class="par" points="31.6,6.6 39.0,24.0 46.4,40.2 53.8,55.4 61.2,69.4 68.6,82.2 76.0,94.0 83.4,104.6 90.8,114.2 98.2,122.6 105.6,129.8 113.0,136.0 120.4,141.0 127.8,145.0 135.2,147.8 142.6,149.4 150.0,150.0 157.4,149.4 164.8,147.8 172.2,145.0 179.6,141.0 187.0,136.0 194.4,129.8 201.8,122.6 209.2,114.2 216.6,104.6 224.0,94.0 231.4,82.2 238.8,69.4 246.2,55.4 253.6,40.2 261.0,24.0 268.4,6.6"/>
+<line class="cut" x1="20" y1="99.25" x2="280" y2="99.25"/>
+<text class="lab" x="276" y="94" text-anchor="end">x² = 3.6</text><text class="lab" x="155" y="14">x²</text><text class="lab" x="276" y="165" text-anchor="end">x</text>
+<circle class="o" cx="39" cy="24" r="6"/><circle class="o" cx="57.5" cy="62.5" r="6"/><circle class="b" cx="113" cy="136" r="6"/><circle class="b" cx="131.5" cy="146.5" r="6"/><circle class="b" cx="150" cy="150" r="6"/><circle class="b" cx="168.5" cy="146.5" r="6"/><circle class="b" cx="187" cy="136" r="6"/><circle class="o" cx="242.5" cy="62.5" r="6"/><circle class="o" cx="261" cy="24" r="6"/>
+</svg></div>
+</div>
+<p>خطِ صاف در فضای \((x, x^2)\)، در فضای اصلی یعنی دو نقطه‌ی برش: \(x = \pm\sqrt{3.6} \approx \pm 1.9\). یک مرزِ <b>غیرخطی</b> با یک مدلِ خطی ساختیم.</p>
+<p><b>ترفند کجاست؟</b> SVM (در فرمِ دوگان) فقط ضربِ داخلیِ نقطه‌ها را لازم دارد. یک <b>کرنل</b> \(K(x, z)\) همین ضربِ داخلی را در فضای جدید مستقیم حساب می‌کند، بدونِ این‌که نقطه‌ها را واقعاً به آن‌جا ببریم:</p>
+<div class="f">\[ K(x, z) = \phi(x) \cdot \phi(z) \]</div>
+<p><b>با عدد</b> (کرنلِ چندجمله‌ای درجه‌ی ۲)، \(x = (1, 2)\) و \(z = (3, 4)\):</p>
+<div class="kinds">
+<div><p><b>راهِ طولانی: اول \(\phi\)، بعد ضرب</b></p><p class="ex">\(\phi(v) = (v_1^2,\ \sqrt{2}\,v_1 v_2,\ v_2^2)\)<br>\(\phi(x) = (1,\ 2.83,\ 4)\)<br>\(\phi(z) = (9,\ 16.97,\ 16)\)<br>ضرب: \(9 + 48 + 64 = 121\)</p></div>
+<div><p><b>راهِ کوتاه: کرنل</b></p><p class="ex">\(K(x, z) = (x \cdot z)^2\)<br>\(x \cdot z = 1 \cdot 3 + 2 \cdot 4 = 11\)<br>\(11^2 = 121\)<br>همان جواب، بدونِ ساختنِ \(\phi\).</p></div>
+</div>
+<p style="margin-top:8px">با ۱۰۰۰ ویژگی، \(\phi\) درجه‌ی ۲ حدودِ نیم میلیون ستون دارد؛ ولی کرنل هنوز یک ضربِ داخلیِ ۱۰۰۰تایی و یک توان است.</p>
+</section>
+
+<section>
+<h2>کرنلِ RBF و پارامتر γ</h2>
+<p>پرکاربردترین کرنل، <b>RBF</b> (گاوسی) است. «شباهتِ» دو نقطه را از روی فاصله‌شان می‌دهد:</p>
+<div class="f">\[ K(x, z) = \exp\big(-\gamma\, \lVert x - z \rVert^2\big) \]</div>
+<ul class="sym">
+<li>\(\lVert x - z \rVert^2\): مربعِ فاصله</li>
+<li>\(\gamma\): شعاعِ اثرِ هر نقطه را تعیین می‌کند</li>
+<li>\(K = 1\): دو نقطه یکی‌اند؛ \(K \to 0\): خیلی دور</li>
+</ul>
+<p><b>با عدد</b>، \(x = (1, 2)\):</p>
+<div dir="ltr"><table>
+<tr><th>γ</th><th>K with (1.5, 2), distance 0.5</th><th>K with (3, 4), distance 2.83</th></tr>
+<tr><td>0.1</td><td>0.975</td><td>0.449</td></tr>
+<tr><td>1</td><td>0.779</td><td>0.000335</td></tr>
+<tr><td>10</td><td>0.082</td><td>≈ 0</td></tr>
+</table></div>
+<p style="margin-top:8px">γ بزرگ یعنی هر نقطه فقط همسایه‌های خیلی نزدیکش را «می‌بیند». مرز دورِ تک‌تکِ نقطه‌ها می‌پیچد. γ کوچک یعنی هر نقطه روی جای دور هم اثر دارد و مرز صاف می‌شود.</p>
+<p>داده‌ی زیر حلقه‌ای است: یک دسته در وسط، دسته‌ی دیگر دورش، با هم‌پوشانی. ۸۰ نقطه‌ی آموزش و ۴۰۰ نقطه‌ی آزمون، C = ۱. γ را عوض کنید:</p>
+<div class="box">
+<canvas id="gm"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>دسته‌ی بیرونی</span><span><i style="background:var(--orange)"></i>دسته‌ی وسط</span><span>رنگِ پس‌زمینه = پیش‌بینیِ مدل</span></div>
+<label>γ <input id="gi" type="range" min="0" max="4" step="1" value="2"><b id="gv"></b></label>
+<div class="err" id="ginfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>γ = ۰٫۰۱ (خیلی کوچک)</b></p><p class="ex">اثرِ هر نقطه تا دوردست می‌رسد و مدل عملاً خطی می‌شود؛ حلقه را نمی‌بیند و تقریباً همه‌جا یک دسته را می‌گوید. دقتِ آموزش ۵۶٫۳٪ و آزمون ۵۳٫۵٪؛ کم‌برازش.</p></div>
+<div><p><b>γ = ۱ (متوسط)</b></p><p class="ex">مرز نرم است و دورِ دسته‌ی وسط را می‌گیرد. آموزش ۹۲٫۵٪، آزمون ۸۶٫۸٪، با ۴۱ بردار پشتیبان.</p></div>
+<div><p><b>γ = ۱۰۰ (خیلی بزرگ)</b></p><p class="ex">دورِ تک‌تکِ نقطه‌ها جزیره می‌سازد. آموزش ۹۸٫۸٪ ولی آزمون فقط ۶۳٪، و هر ۸۰ نقطه بردار پشتیبان‌اند؛ بیش‌برازش.</p></div>
+</div>
+<div class="key">C و γ را با هم تنظیم کنید (مثلاً جست‌وجوی شبکه‌ای روی ۰٫۰۱ تا ۱۰۰ برای هر دو). γ بزرگ و C بزرگ هر دو مرز را پیچیده‌تر می‌کنند.</div>
+<details class="drop"><summary><b>کرنل‌های دیگر</b></summary>
+<ul>
+<li><b>خطی</b>: \(K = x \cdot z\). برای متن و داده‌ی خیلی پرُبُعد معمولاً کافی و خیلی سریع است.</li>
+<li><b>چندجمله‌ای</b>: \(K = (\gamma\, x \cdot z + r)^d\). تعامل‌های تا درجه‌ی \(d\) بینِ ویژگی‌ها.</li>
+<li><b>سیگموید</b>: \(K = \tanh(\gamma\, x \cdot z + r)\). کم‌کاربرد.</li>
+</ul>
+<p>هر تابعی کرنل نیست. ماتریسِ کرنل روی هر مجموعه نقطه باید مثبت نیمه‌معین باشد (شرطِ Mercer)، تا واقعاً ضربِ داخلی در یک فضا باشد.</p>
+</details>
+</section>
+
+<section>
+<h2>کی SVM، کی نه؟</h2>
+<div class="kinds">
+<div><p><b>SVM خوب است وقتی…</b></p><ul class="ex">
+<li>داده <b>کوچک یا متوسط</b> است (تا چند ده هزار نمونه برای کرنل). مثلاً ۵۰۰۰ تصویرِ پزشکیِ برچسب‌خورده با ویژگی‌های دست‌ساز.</li>
+<li>تعدادِ ویژگی‌ها زیاد است، حتی بیشتر از نمونه‌ها. مثلاً دسته‌بندیِ متن با TF-IDF و ۱۰۰ هزار کلمه: <code>LinearSVC</code> سریع و دقیق است.</li>
+<li>مرزِ غیرخطی ولی صاف لازم است و نمی‌خواهید شبکه‌ی عصبی بسازید: SVM با RBF.</li>
+</ul></div>
+<div><p><b>SVM خوب نیست وقتی…</b></p><ul class="ex">
+<li>داده <b>خیلی بزرگ</b> است. زمانِ آموزشِ <code>SVC</code> بینِ \(O(n^2)\) و \(O(n^3)\) رشد می‌کند. مثلاً ۱۰ میلیون کلیک: گرادیان بوستینگ یا رگرسیون لجستیک بهتر است.</li>
+<li><b>احتمالِ</b> خوش‌کالیبره لازم دارید. مثلاً «احتمالِ کلیک = ۰٫۰۳» برای قیمت‌گذاریِ تبلیغ. SVM فقط امتیاز می‌دهد.</li>
+<li>داده‌ی خام مثلِ تصویر، صدا یا متنِ طولانی است. شبکه‌های عصبی خودشان ویژگی یاد می‌گیرند.</li>
+<li>داده‌ی جدولیِ پر از ویژگیِ دسته‌ای و مقیاس‌های مختلف: درخت‌ها راحت‌ترند.</li>
+</ul></div>
+</div>
+</section>
+
+<section>
+<h2>SVM در برابر رگرسیون لجستیک</h2>
+<p>هر دو یک خط \(w \cdot x + b\) یاد می‌گیرند. فرقشان در <b>تابعِ خطا</b> است:</p>
+<div class="kinds">
+<div><p><b>SVM (خطی)</b></p><ul class="ex">
+<li>خطا: Hinge. نقطه‌های با \(m \ge 1\) اثر ندارند.</li>
+<li>خط را فقط بردارهای پشتیبان می‌سازند.</li>
+<li>خروجی: یک امتیاز، مثلاً \(f = 0.769\) برای ایمیلِ (۷، ۳). احتمال نیست.</li>
+<li>هدف: بیشترین حاشیه.</li>
+<li>با کرنل به‌راحتی غیرخطی می‌شود.</li></ul></div>
+<div><p><b>رگرسیون لجستیک</b></p><ul class="ex">
+<li>خطا: Log Loss. همه‌ی نقطه‌ها کمی اثر دارند.</li>
+<li>خط را همه‌ی نقطه‌ها می‌سازند.</li>
+<li>خروجی: احتمال، \(\sigma(0.769) = 0.68\).</li>
+<li>هدف: بیشترین درست‌نمایی.</li>
+<li>برای غیرخطی شدن باید ویژگی‌ها را دستی بسازید.</li></ul></div>
+</div>
+<p class="ex" style="margin-top:8px">در عمل، روی داده‌ی جداشدنیِ خطی دقتِ این دو معمولاً خیلی نزدیک است. اگر احتمال لازم دارید، لجستیک. اگر حاشیه‌ی پهن و مقاومت در برابر نقطه‌های دور می‌خواهید، یا کرنل لازم دارید، SVM.</p>
+<details class="drop"><summary><b>اگر از SVM احتمال بخواهیم؟</b></summary>
+<p><code>SVC(probability=True)</code> یک رگرسیون لجستیکِ کوچک روی امتیازهای SVM آموزش می‌دهد (Platt Scaling) با اعتبارسنجیِ متقابلِ داخلی. کند است، و گاهی <code>predict</code> با بیشترین <code>predict_proba</code> یکی نیست. اگر فقط رتبه‌بندی لازم است، <code>decision_function</code> را استفاده کنید.</p>
+</details>
+</section>
+
+<section>
+<h2>مقیاس‌بندی لازم است</h2>
+<p>SVM با <b>فاصله</b> کار می‌کند (پهنای خیابان، و در RBF مستقیماً \(\lVert x - z\rVert\)). اگر یک ویژگی عددهای بزرگ‌تری داشته باشد، همه‌چیز را او تعیین می‌کند.</p>
+<p><b>با عدد</b>: ویژگی‌ها = (تعدادِ لینک، طولِ ایمیل به کاراکتر):</p>
+<ul class="ex">
+<li>ایمیلِ A: (۳، ۱۲۰۰)</li>
+<li>ایمیلِ B: (۸، ۱۲۵۰). لینک‌ها خیلی فرق دارند.</li>
+<li>ایمیلِ C: (۳، ۱۷۰۰). فقط کمی بلندتر.</li>
+</ul>
+<div class="kinds">
+<div><p><b>بدونِ مقیاس‌بندی</b></p>
+<svg class="pic" viewBox="0 0 300 150">
+<line class="ax" x1="30" y1="135" x2="290" y2="135"/><line class="ax" x1="30" y1="10" x2="30" y2="135"/>
+<line class="lnk" x1="60" y1="117" x2="60.3" y2="109"/><line class="lnk" x1="60" y1="117" x2="60" y2="27" stroke-dasharray="3 3"/>
+<circle class="b" cx="60" cy="117" r="5"/><circle class="o" cx="60.3" cy="109" r="5"/><circle class="o" cx="60" cy="27" r="5"/>
+<text class="lab" x="70" y="121">A</text><text class="lab" x="70" y="108">B: 50.2</text><text class="lab" x="70" y="31">C: 500</text>
+<text class="lab" x="160" y="148" text-anchor="middle">لینک (همان مقیاس)</text>
+</svg>
+<p class="ex">فاصله‌ی A تا B: ۵۰٫۲، تا C: ۵۰۰. اختلافِ لینک فقط ۱٪ از مربعِ فاصله‌ی A تا B است (۲۵ از ۲۵۲۵). مدل لینک‌ها را عملاً نمی‌بیند.</p></div>
+<div><p><b>بعد از استانداردسازی</b></p>
+<svg class="pic" viewBox="0 0 300 150">
+<line class="ax" x1="30" y1="135" x2="290" y2="135"/><line class="ax" x1="30" y1="10" x2="30" y2="135"/>
+<line class="lnk" x1="90" y1="110" x2="190" y2="104"/><line class="lnk" x1="90" y1="110" x2="90" y2="47.5" stroke-dasharray="3 3"/>
+<circle class="b" cx="90" cy="110" r="5"/><circle class="o" cx="190" cy="104" r="5"/><circle class="o" cx="90" cy="47.5" r="5"/>
+<text class="lab" x="80" y="124" text-anchor="end">A</text><text class="lab" x="200" y="100">B: 2.00</text><text class="lab" x="100" y="44">C: 1.25</text>
+</svg>
+<p class="ex">با تقسیم بر انحرافِ معیار (لینک ÷ ۲٫۵، طول ÷ ۴۰۰): فاصله‌ی A تا B: ۲٫۰۰، تا C: ۱٫۲۵. حالا اختلافِ لینک دیده می‌شود.</p></div>
+</div>
+<div class="key">همیشه قبل از SVM ویژگی‌ها را مقیاس‌بندی کنید (مثلاً <code>StandardScaler</code>)، و همان تبدیل را روی داده‌ی آزمون اعمال کنید. ساده‌ترین راه: یک <code>Pipeline</code>.</div>
+</section>
+
+<section>
+<h2>خوبی‌ها و بدی‌ها</h2>
+<div class="kinds">
+<div><p><b>خوبی‌ها</b></p><ul class="ex">
+<li>در فضای پرُبُعد خوب کار می‌کند.</li>
+<li>بعد از آموزش فقط بردارهای پشتیبان لازم‌اند.</li>
+<li>مسئله‌ی بهینه‌سازی محدب است: یک جوابِ بهینه‌ی سراسری، بدونِ گیر کردن در کمینه‌ی محلی.</li>
+<li>با کرنل، مرزهای غیرخطی بدونِ ساختنِ دستیِ ویژگی.</li>
+<li>نقطه‌های دور و درست روی جواب اثر ندارند.</li></ul></div>
+<div><p><b>بدی‌ها</b></p><ul class="ex">
+<li>روی داده‌ی بزرگ کند است (کرنل).</li>
+<li>احتمال نمی‌دهد.</li>
+<li>به مقیاسِ ویژگی‌ها حساس است.</li>
+<li>C و γ باید با دقت تنظیم شوند.</li>
+<li>تفسیرِ مدلِ کرنلی سخت است؛ وزنِ هر ویژگی معنیِ روشنی ندارد.</li>
+<li>برای چند دسته باید چند مدلِ دودویی بسازد (یکی در برابرِ یکی، یا یکی در برابرِ بقیه).</li></ul></div>
+</div>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>SVM خطی از صفر با NumPy</b> (گرادیان‌کاهشی روی Hinge Loss):</p>
+<pre>import numpy as np
+
+def fit_linear_svm(X, y, C=1.0, epochs=5000, lr=0.01):
+    """y must be -1 / +1. Minimises 0.5*||w||^2 + C * sum(hinge)."""
+    n, d = X.shape
+    w, b = np.zeros(d), 0.0
+    best = (np.inf, w, b)
+    for t in range(1, epochs + 1):
+        viol = y * (X @ w + b) &lt; 1            # points with hinge &gt; 0
+        grad_w = w - C * (y[viol, None] * X[viol]).sum(axis=0)
+        grad_b = -C * y[viol].sum()
+        step = lr / np.sqrt(t)                 # shrinking step
+        w = w - step * grad_w
+        b = b - step * grad_b
+        J = 0.5 * w @ w + C * np.maximum(0, 1 - y * (X @ w + b)).sum()
+        if J &lt; best[0]:                        # hinge is not smooth:
+            best = (J, w, b)                   # keep the best point seen
+    return best[1], best[2]
+
+X = np.array([[1,2],[2,1],[2,3.5],[3,2],[1,4.5],[4,1],[0.5,0.5],
+              [6,5],[7,7],[5,7],[8,4.5],[6.5,8.5],[9,8],[8.5,2.5]], float)
+y = np.array([-1]*7 + [1]*7)
+w, b = fit_linear_svm(X, y)
+print(w, b, 2 / np.linalg.norm(w))   # ≈ [0.385 0.308] -2.85  4.06</pre>
+<p class="ex">گرادیانِ Hinge برای نقطه‌هایی که \(y f &lt; 1\) دارند \(-y\,x\) است و برای بقیه صفر. چون Hinge در \(m = 1\) شکسته است، این «زیرگرادیان» است و بهترین نقطه‌ی دیده‌شده را نگه می‌داریم.</p>
+<p><b>با scikit-learn: کرنلِ RBF، با مقیاس‌بندی و جست‌وجوی C و γ</b></p>
+<pre>from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
+
+pipe = make_pipeline(StandardScaler(), SVC(kernel="rbf"))
+grid = {"svc__C": [0.01, 0.1, 1, 10, 100],
+        "svc__gamma": [0.001, 0.01, 0.1, 1, 10]}
+search = GridSearchCV(pipe, grid, cv=5).fit(X_train, y_train)
+print(search.best_params_, search.score(X_test, y_test))
+model = search.best_estimator_
+print(model[-1].n_support_)              # support vectors per class
+print(model.decision_function(X_test[:3]))  # scores, not probabilities</pre>
+<p><b>متن با <code>LinearSVC</code></b> (خطی، خیلی سریع روی داده‌ی بزرگ و پراکنده):</p>
+<pre>from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.svm import LinearSVC
+
+text_clf = make_pipeline(TfidfVectorizer(), LinearSVC(C=1.0))
+text_clf.fit(train_texts, train_labels)
+print(text_clf.predict(["free prize, click this link now"]))</pre>
+<p class="ex"><code>SVC</code> (libsvm) هر کرنلی را می‌گیرد ولی زمانش بینِ \(O(n^2)\) و \(O(n^3)\) است. <code>LinearSVC</code> (liblinear) فقط خطی است، تقریباً خطی با \(n\) رشد می‌کند، و به‌طور پیش‌فرض squared hinge را کمینه می‌کند.</p>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>What is an SVM and what does it optimize?</summary>
+<p>A linear SVM finds the hyperplane \(w\cdot x + b = 0\) that separates the two classes with the largest margin. Points on the margin satisfy \(|w\cdot x + b| = 1\), so the margin width is \(2/\lVert w\rVert\). Maximising it is the same as solving \(\min \tfrac12\lVert w\rVert^2\) subject to \(y_i(w\cdot x_i + b)\ge 1\). Example: for 14 emails described by (links, ad words), the solution is \(w \approx (0.385, 0.308)\), \(b \approx -2.846\), \(\lVert w\rVert \approx 0.493\), so the street is \(2/0.493 \approx 4.06\) wide. Other lines that also separate all 14 points leave only 0.35 to 0.86 to the nearest point instead of 2.03. A wide margin leaves room for new points that are slightly off, which usually means better generalisation.</p></details>
+
+<details><summary>What are support vectors, and why does the model depend only on them?</summary>
+<p>Support vectors are the training points on the margin or inside it (or misclassified): the points with \(y_i f(x_i) \le 1\). In the dual solution \(w = \sum_i \alpha_i y_i x_i\), and \(\alpha_i = 0\) for every point strictly outside the margin, so only support vectors appear in \(f(x)\). Equivalently, the hinge loss is exactly zero for \(y f \ge 1\), so those points contribute no gradient. Example: in the demo, moving the spam email (9, 8) to (9.5, 6) leaves the line and the 4.06 width unchanged; moving the support vector (6, 5) to (5.5, 4.5) rotates the line and the width drops to 3.36. Only 3 of 14 points are needed for prediction.</p>
+<p class="src">Analytics Vidhya (support vectors)</p></details>
+
+<details><summary>What is the difference between hard margin and soft margin? What are slack variables?</summary>
+<p>Hard margin requires every point to be correctly classified and outside the margin; it has no solution if the data is not linearly separable, and a single outlier can drag the boundary. Soft margin adds a slack \(\xi_i \ge 0\) per point: \(y_i(w\cdot x_i+b) \ge 1-\xi_i\), and pays \(C\sum\xi_i\) in the objective. \(\xi_i = 0\): outside the margin; \(0<\xi_i\le 1\): inside the margin but correct; \(\xi_i>1\): misclassified. At the optimum \(\xi_i = \max(0, 1 - y_i f(x_i))\), which is the hinge loss.</p>
+<p class="src">Analytics Vidhya (hard and soft margin, slack variables)</p></details>
+
+<details><summary>What does the C parameter do?</summary>
+<p>C weights the total slack against the margin term \(\tfrac12\lVert w\rVert^2\); it is an inverse regularisation strength. Small C: violations are cheap, the margin is wide, some training points are misclassified, the model is simpler (higher bias, lower variance). Large C: violations are expensive, the model tries to classify every training point, the margin gets narrow (lower bias, higher variance). Example from the demo (16 emails including two unusual ones): C = 0.01 gives a 7.75-wide street with 2 errors and 14 support vectors; C = 100 gives 0 errors but a street only 0.67 wide with 3 support vectors. Tune C by cross-validation on a log scale.</p>
+<p class="src">scikit-learn user guide (parameters C and gamma)</p></details>
+
+<details><summary>What is the hinge loss? How does it compare with log loss?</summary>
+<p>With margin score \(m = y\,f(x)\): hinge \(= \max(0, 1-m)\); log loss \(= \ln(1+e^{-m})\). Numbers: at \(m=-1\) hinge 2 vs log 1.313; at \(m=0.5\): 0.5 vs 0.474; at \(m=1\): 0 vs 0.313; at \(m=2\): 0 vs 0.127. Hinge is exactly zero once a point is correct with margin 1, so far-away correct points have no influence (sparse solution, support vectors). Log loss never reaches zero, so every point matters a little, and its output maps to a probability through the sigmoid. Both grow linearly for very wrong points, so both are less sensitive to outliers than squared loss. The full linear SVM objective is \(\tfrac12\lVert w\rVert^2 + C\sum_i \max(0, 1-y_i(w\cdot x_i+b))\).</p></details>
+
+<details><summary>Explain the kernel trick.</summary>
+<p>In the dual problem and in the decision function, data appears only through inner products \(x_i\cdot x_j\). If we map data to a feature space \(\phi(x)\) where it is linearly separable, we only need \(\phi(x)\cdot\phi(z)\), and a kernel \(K(x,z)\) computes that directly without building \(\phi\). Example: 1-D points \(-1..1\) (class A) and \(\pm2.5, \pm3\) (class B) are not separable on a line; adding \(x^2\) makes them separable by \(x^2 = 3.6\). Numeric check for the degree-2 polynomial kernel with \(x=(1,2)\), \(z=(3,4)\): \(\phi(v) = (v_1^2, \sqrt2 v_1v_2, v_2^2)\) gives \(9+48+64 = 121\), and \(K = (x\cdot z)^2 = 11^2 = 121\). A valid kernel must give a positive semi-definite Gram matrix (Mercer's condition).</p>
+<p class="src">PracHub (SVM kernels and complexity)</p></details>
+
+<details><summary>What is the RBF kernel and what does gamma control?</summary>
+<p>\(K(x,z) = \exp(-\gamma\lVert x-z\rVert^2)\): similarity that decays with distance. Gamma sets how far one training point's influence reaches. For two points 0.5 apart, \(K = 0.975\) at \(\gamma = 0.1\) but \(0.082\) at \(\gamma = 10\). Large gamma: tiny radius, boundary wraps around individual points, overfitting; in the ring demo, \(\gamma = 100\) gives 98.8% train but 63% test accuracy with every point a support vector. Small gamma: very smooth, nearly linear boundary, underfitting; \(\gamma = 0.01\) gives about 54% test. \(\gamma = 1\) gives 86.8% test. Tune C and gamma together with a log-spaced grid search.</p>
+<p class="src">scikit-learn user guide (parameters C and gamma)</p></details>
+
+<details><summary>Why must you scale features before training an SVM?</summary>
+<p>The margin and the RBF kernel are based on Euclidean distance, so a feature with a large range dominates. Example: emails as (links, characters): A = (3, 1200), B = (8, 1250), C = (3, 1700). Unscaled, A–B distance is 50.2 and A–C is 500; the 5-link difference is only 25 of the 2525 squared distance (1%). After dividing by the standard deviations (2.5 links, 400 characters), A–B is 2.00 and A–C is 1.25, so links matter again. Fit the scaler on training data only and apply the same transform to test data (a Pipeline does this).</p>
+<p class="src">scikit-learn user guide (tips on practical use)</p></details>
+
+<details><summary>SVM vs logistic regression: when would you use which?</summary>
+<p>Both learn a linear score \(w\cdot x+b\); the difference is the loss. SVM uses hinge loss (sparse, only support vectors matter, maximises the margin) and outputs a score, not a probability. Logistic regression uses log loss (every point contributes) and outputs calibrated-ish probabilities: a score of 0.769 becomes \(\sigma(0.769) = 0.68\). Choose logistic regression when you need probabilities (ranking ads by click probability, risk thresholds) or very large data; choose SVM when you want a non-linear kernel on small or medium data, or a robust margin in high dimensions (e.g. text with a linear SVM). On linearly separable problems their accuracy is often very similar.</p></details>
+
+<details><summary>How does SVM training scale? When is it a bad choice?</summary>
+<p>Kernel SVC (libsvm) costs between \(O(d\,n^2)\) and \(O(d\,n^3)\) time and needs the kernel matrix entries, so it becomes impractical beyond tens or hundreds of thousands of samples. LinearSVC (liblinear) scales almost linearly in the number of samples and features, so it is fine for millions of sparse text documents. Prediction cost of a kernel SVM grows with the number of support vectors. Bad choices: very large datasets with a kernel, problems that need probabilities, raw images/audio where deep networks learn better features, and messy tabular data where gradient-boosted trees usually win.</p>
+<p class="src">scikit-learn user guide (complexity); PracHub (SVM kernels and complexity)</p></details>
+
+<details><summary>Can an SVM output probabilities?</summary>
+<p>Not directly: it outputs the signed distance \(f(x)\). Scikit-learn's <code>SVC(probability=True)</code> uses Platt scaling: it fits a logistic regression \(p = \sigma(A f(x) + B)\) on the SVM scores using an internal 5-fold cross-validation. This is slow on large data, and the probabilities can be inconsistent with <code>predict</code> (the predicted class can have probability below 0.5). If you only need a ranking, use <code>decision_function</code>; for calibration of any model, <code>CalibratedClassifierCV</code>.</p>
+<p class="src">scikit-learn user guide (scores and probabilities)</p></details>
+
+<details><summary>How does SVM handle more than two classes?</summary>
+<p>SVM is a binary classifier, so multi-class problems are split into binary ones. One-vs-rest: K classifiers, each class against all others; predict the class with the highest score (LinearSVC does this). One-vs-one: K(K−1)/2 classifiers, one per pair, and a vote (SVC does this internally; with 10 classes that is 45 classifiers, each trained on only two classes' data, which is cheap for a kernel SVM whose cost grows faster than linearly in n). For imbalanced classes, use <code>class_weight="balanced"</code>, which scales C per class.</p>
+<p class="src">scikit-learn user guide (multi-class classification)</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://scikit-learn.org/stable/modules/svm.html">scikit-learn: Support Vector Machines</a> · <a href="https://www.analyticsvidhya.com/blog/2023/02/interview-questions-on-support-vector-machines-svm/">Analytics Vidhya: Interview Questions on SVM</a> · <a href="https://prachub.com/interview-questions/explain-svm-kernels-and-complexity">PracHub: Explain SVM kernels and complexity</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+
+// ---------- data: 14 emails [links, ad words, label]; ham = -1, spam = +1 ----------
+const P0 = [[1, 2, -1], [2, 1, -1], [2, 3.5, -1], [3, 2, -1], [1, 4.5, -1], [4, 1, -1], [0.5, 0.5, -1],
+            [6, 5, 1], [7, 7, 1], [5, 7, 1], [8, 4.5, 1], [6.5, 8.5, 1], [9, 8, 1], [8.5, 2.5, 1]];
+const PB = P0.concat([[4.6, 2.6, 1], [3.8, 5.6, -1]]);
+
+// exact hard-margin SVM in 2-D: search the direction u that maximises (min spam u.x - max ham u.x) / 2
+const hard = P => {
+  const mg = t => { const c = Math.cos(t), s = Math.sin(t); let mp = 1e9, mn = -1e9;
+    for (const [x, y, l] of P) { const v = c * x + s * y; if (l > 0) mp = Math.min(mp, v); else mn = Math.max(mn, v); } return [(mp - mn) / 2, mp, mn]; };
+  let bt = 0, bm = -1e9; for (let i = 0; i < 3600; i++) { const t = i / 3600 * 2 * Math.PI, m = mg(t)[0]; if (m > bm) { bm = m; bt = t; } }
+  let lo = bt - 0.002, hi = bt + 0.002; for (let k = 0; k < 100; k++) { const a = lo + (hi - lo) / 3, b = hi - (hi - lo) / 3; if (mg(a)[0] < mg(b)[0]) lo = a; else hi = b; }
+  const t = (lo + hi) / 2, [m, mp, mn] = mg(t); if (m <= 1e-9) return null;
+  const w = [Math.cos(t) / m, Math.sin(t) / m], b = -(mp + mn) / 2 / m;
+  const sv = P.map((p, i) => [i, p[2] * (w[0] * p[0] + w[1] * p[1] + b)]).filter(a => a[1] < 1 + 1e-4).map(a => a[0]);
+  return { w, b, width: 2 * m, sv }; };
+
+// soft-margin SVM (dual) with SMO, maximal-violating-pair selection (as in libsvm)
+const smo = (X, Y, C, K, eps = 1e-6, maxIt = 200000) => { const n = X.length, a = new Float64Array(n), G = new Float64Array(n).fill(-1);
+  const Km = X.map(p => X.map(q => K(p, q)));
+  const up = t => (a[t] < C && Y[t] > 0) || (a[t] > 0 && Y[t] < 0), low = t => (a[t] < C && Y[t] < 0) || (a[t] > 0 && Y[t] > 0);
+  let m = 0, M = 0;
+  for (let it = 0; it < maxIt; it++) { let i = -1, j = -1; m = -Infinity; M = Infinity;
+    for (let t = 0; t < n; t++) { const v = -Y[t] * G[t]; if (up(t) && v > m) { m = v; i = t; } if (low(t) && v < M) { M = v; j = t; } }
+    if (i < 0 || j < 0 || m - M < eps) break;
+    let eta = Km[i][i] + Km[j][j] - 2 * Km[i][j]; if (eta <= 1e-12) eta = 1e-12;
+    const Ei = Y[i] * G[i], Ej = Y[j] * G[j], ai = a[i], aj = a[j];
+    let L, H; if (Y[i] !== Y[j]) { L = Math.max(0, aj - ai); H = Math.min(C, C + aj - ai); } else { L = Math.max(0, ai + aj - C); H = Math.min(C, ai + aj); }
+    let nj = aj + Y[j] * (Ei - Ej) / eta; nj = Math.min(H, Math.max(L, nj)); let ni = ai + Y[i] * Y[j] * (aj - nj);
+    const sn = v => v < 1e-10 * C ? 0 : v > C * (1 - 1e-10) ? C : v; nj = sn(nj); ni = sn(ni);
+    const di = ni - ai, dj = nj - aj; a[i] = ni; a[j] = nj;
+    for (let t = 0; t < n; t++) G[t] += Y[t] * (Y[i] * Km[t][i] * di + Y[j] * Km[t][j] * dj); }
+  let s = 0, c = 0; for (let t = 0; t < n; t++) if (a[t] > 1e-9 && a[t] < C - 1e-9) { s += -Y[t] * G[t]; c++; }
+  const b = c ? s / c : (m + M) / 2;
+  const S = []; for (let t = 0; t < n; t++) if (a[t] > 1e-9) S.push([a[t] * Y[t], X[t]]);
+  const f = x => S.reduce((v, [ay, p]) => v + ay * K(p, x), b);
+  return { a, b, f, nsv: S.length }; };
+const lin = (p, q) => p[0] * q[0] + p[1] * q[1];
+const rbf = g => (p, q) => Math.exp(-g * ((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2));
+
+// ---------- drawing helpers (domain lo..hi on both axes) ----------
+const frame = (c, W, H, lo, hi, pad = 22) => {
+  const T = { X: x => pad + (x - lo) / (hi - lo) * (W - 2 * pad), Y: y => H - pad - (y - lo) / (hi - lo) * (H - 2 * pad), lo, hi, pad, W, H };
+  c.strokeStyle = css('line'); c.lineWidth = 1; c.strokeRect(pad, pad, W - 2 * pad, H - 2 * pad); return T; };
+const axisNames = (c, T, a, b) => { c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; c.fillText(a, T.W / 2, T.H - 5);
+  c.save(); c.translate(11, T.H / 2); c.rotate(-Math.PI / 2); c.fillText(b, 0, 0); c.restore(); };
+const clip = (c, T) => { c.save(); c.beginPath(); c.rect(T.pad, T.pad, T.W - 2 * T.pad, T.H - 2 * T.pad); c.clip(); };
+const wline = (c, T, w, b, v, col, dash = [], lw = 2) => { // draws w.x + b = v
+  let p, q; const lo = T.lo - 5, hi = T.hi + 5;
+  if (Math.abs(w[1]) >= Math.abs(w[0])) { p = [lo, (v - b - w[0] * lo) / w[1]]; q = [hi, (v - b - w[0] * hi) / w[1]]; }
+  else { p = [(v - b - w[1] * lo) / w[0], lo]; q = [(v - b - w[1] * hi) / w[0], hi]; }
+  clip(c, T); c.strokeStyle = col; c.lineWidth = lw; c.setLineDash(dash); c.beginPath(); c.moveTo(T.X(p[0]), T.Y(p[1])); c.lineTo(T.X(q[0]), T.Y(q[1])); c.stroke(); c.setLineDash([]); c.restore(); };
+const street = (c, T, w, b) => { wline(c, T, w, b, 1, css('accent'), [5, 4], 1.5); wline(c, T, w, b, -1, css('accent'), [5, 4], 1.5); wline(c, T, w, b, 0, css('accent'), [], 2.5); };
+const dots = (c, T, P, r = 5) => P.forEach(([x, y, l]) => { c.fillStyle = css(l > 0 ? 'orange' : 'blue'); c.beginPath(); c.arc(T.X(x), T.Y(y), r, 0, 7); c.fill(); });
+const ring = (c, T, p, col, r = 9) => { c.strokeStyle = col; c.lineWidth = 2; c.beginPath(); c.arc(T.X(p[0]), T.Y(p[1]), r, 0, 7); c.stroke(); };
+
+// ---------- figure 1: several lines vs the SVM line ----------
+const SV0 = hard(P0);
+const drawCmp = () => {
+  let [c, W, H] = mk(document.getElementById('cmpA'), 1, 360), T = frame(c, W, H, 0, 10);
+  const L = [[[1, 0], -4.5, 'ink', '۱'], [[1, 1], -10.5, 'red', '۲'], [[1, 0.3], -5.2, 'muted', '۳']];
+  L.forEach(([w, b, col, name]) => { wline(c, T, w, b, 0, css(col), col === 'muted' ? [6, 3] : [], 2);
+    const yy = 9.4, xx = (-b - w[1] * yy) / w[0]; c.fillStyle = css(col); c.font = '700 13px Vazirmatn'; c.textAlign = 'center'; c.fillText(name, T.X(xx) + 9, T.Y(yy)); });
+  dots(c, T, P0); axisNames(c, T, 'تعداد لینک →', 'کلمه‌های تبلیغاتی →');
+  [c, W, H] = mk(document.getElementById('cmpB'), 1, 360); T = frame(c, W, H, 0, 10);
+  street(c, T, SV0.w, SV0.b); dots(c, T, P0); SV0.sv.forEach(i => ring(c, T, P0[i], css('accent')));
+  axisNames(c, T, 'تعداد لینک →', 'کلمه‌های تبلیغاتی →'); };
+
+// ---------- figure 2: drag points, support vectors ----------
+let PS = P0.map(p => p.slice()), drag = -1, Tsv = null;
+const svCv = document.getElementById('sv');
+const drawSV = () => { const [c, W, H] = mk(svCv, 1, 420); const T = Tsv = frame(c, W, H, 0, 10); const r = hard(PS);
+  if (r) { street(c, T, r.w, r.b); }
+  dots(c, T, PS, 6); if (r) r.sv.forEach(i => ring(c, T, PS[i], css('accent'), 10));
+  axisNames(c, T, 'تعداد لینک →', 'کلمه‌های تبلیغاتی →');
+  const el = document.getElementById('svinfo');
+  if (!r) { el.innerHTML = 'دیگر هیچ خطی همه را جدا نمی‌کند: <b>حاشیه‌ی سخت جواب ندارد</b>.'; return; }
+  el.innerHTML = `پهنای خیابان: <b>${fa(r.width, 2)}</b> · بردارهای پشتیبان: ${r.sv.map(i => '(' + fa(PS[i][0], 1) + '، ' + fa(PS[i][1], 1) + ')').join(' ')}<br><span class="ex">w = (${fa(r.w[0], 3)}، ${fa(r.w[1], 3)}) · b = ${fa(r.b, 3)}</span>`; };
+const toData = e => { const R = svCv.getBoundingClientRect(), px = e.clientX - R.left, py = e.clientY - R.top, T = Tsv;
+  return [T.lo + (px - T.pad) / (T.W - 2 * T.pad) * (T.hi - T.lo), T.lo + (T.H - T.pad - py) / (T.H - 2 * T.pad) * (T.hi - T.lo), px, py]; };
+svCv.addEventListener('pointerdown', e => { const [, , px, py] = toData(e); let best = -1, bd = 16;
+  PS.forEach((p, i) => { const d = Math.hypot(Tsv.X(p[0]) - px, Tsv.Y(p[1]) - py); if (d < bd) { bd = d; best = i; } });
+  if (best >= 0) { drag = best; svCv.setPointerCapture(e.pointerId); e.preventDefault(); } });
+svCv.addEventListener('pointermove', e => { if (drag < 0) return; const [x, y] = toData(e);
+  PS[drag][0] = Math.min(10, Math.max(0, Math.round(x * 10) / 10)); PS[drag][1] = Math.min(10, Math.max(0, Math.round(y * 10) / 10)); drawSV(); });
+const stop = () => { drag = -1; }; svCv.addEventListener('pointerup', stop); svCv.addEventListener('pointercancel', stop);
+document.getElementById('bFar').onclick = () => { PS = P0.map(p => p.slice()); PS[12][0] = 9.5; PS[12][1] = 6; drawSV(); };
+document.getElementById('bSV').onclick = () => { PS = P0.map(p => p.slice()); PS[7][0] = 5.5; PS[7][1] = 4.5; drawSV(); };
+document.getElementById('bReset').onclick = () => { PS = P0.map(p => p.slice()); drawSV(); };
+
+// ---------- figure 3: soft margin and C ----------
+const XB = PB.map(p => [p[0], p[1]]), YB = PB.map(p => p[2]);
+const cModels = {};
+const cModel = lc => { if (cModels[lc]) return cModels[lc]; const C = 10 ** lc, r = smo(XB, YB, C, lin);
+  const w = [0, 0]; r.a.forEach((v, t) => { w[0] += v * YB[t] * XB[t][0]; w[1] += v * YB[t] * XB[t][1]; });
+  const m = PB.map(p => p[2] * (w[0] * p[0] + w[1] * p[1] + r.b));
+  return cModels[lc] = { C, w, b: r.b, width: 2 / Math.hypot(w[0], w[1]), err: m.filter(v => v < 0).length, inside: m.filter(v => v < 1 - 1e-6).length, sv: [...r.a].map((v, i) => v > 1e-9 ? i : -1).filter(i => i >= 0), m }; };
+const lcIn = document.getElementById('logc');
+const drawC = () => { const lc = +lcIn.value, md = cModel(lc); const [c, W, H] = mk(document.getElementById('cc'), 1, 420), T = frame(c, W, H, 0, 10);
+  street(c, T, md.w, md.b); dots(c, T, PB, 6);
+  md.sv.forEach(i => ring(c, T, PB[i], css('accent'), 10)); md.m.forEach((v, i) => { if (v < 0) ring(c, T, PB[i], css('red'), 14); });
+  axisNames(c, T, 'تعداد لینک →', 'کلمه‌های تبلیغاتی →');
+  document.getElementById('cv').textContent = 'C = ' + +md.C.toPrecision(2);
+  document.getElementById('cinfo').innerHTML = `پهنای خیابان: <b>${fa(md.width, 2)}</b> · اشتباه: <b>${fa(md.err)}</b> · داخلِ خیابان یا اشتباه: ${fa(md.inside)} از ${fa(PB.length)} · بردارهای پشتیبان: ${fa(md.sv.length)}`; };
+lcIn.oninput = drawC;
+
+// ---------- figure 4: hinge vs log loss ----------
+const hinge = m => Math.max(0, 1 - m), logl = m => Math.log(1 + Math.exp(-m));
+const mIn = document.getElementById('mm');
+const drawH = () => { const m0 = +mIn.value, [c, W, H] = mk(document.getElementById('hl'), 0.55, 520), pad = 26;
+  const X = m => pad + (m + 2) / 5 * (W - 2 * pad), Y = v => H - pad - v / 3.2 * (H - 2 * pad);
+  c.strokeStyle = css('line'); c.lineWidth = 1; c.beginPath(); c.moveTo(pad, Y(0)); c.lineTo(W - pad, Y(0)); c.moveTo(X(0), pad); c.lineTo(X(0), H - pad); c.stroke();
+  c.setLineDash([3, 3]); c.beginPath(); c.moveTo(X(1), pad); c.lineTo(X(1), H - pad); c.stroke(); c.setLineDash([]);
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center';
+  [-2, -1, 0, 1, 2, 3].forEach(v => c.fillText(String(v), X(v), H - pad + 13)); c.fillText('m = y·f(x) →', W / 2, H - 2);
+  c.fillText('اشتباه', X(-1.2), pad + 4); c.fillText('درست', X(2.2), pad + 4);
+  [['accent', hinge], ['blue', logl]].forEach(([col, fn]) => { c.strokeStyle = css(col); c.lineWidth = 2.5; c.beginPath();
+    for (let i = 0; i <= 200; i++) { const m = -2 + i / 40, y = Y(Math.min(3.2, fn(m))); i ? c.lineTo(X(m), y) : c.moveTo(X(m), y); } c.stroke();
+    c.fillStyle = css(col); c.beginPath(); c.arc(X(m0), Y(fn(m0)), 5, 0, 7); c.fill(); });
+  c.strokeStyle = css('ink'); c.setLineDash([2, 3]); c.beginPath(); c.moveTo(X(m0), pad); c.lineTo(X(m0), H - pad); c.stroke(); c.setLineDash([]);
+  document.getElementById('mv').textContent = m0.toFixed(1);
+  const zone = m0 < 0 ? 'آن طرفِ خط (اشتباه)' : m0 < 1 ? 'درست، ولی داخلِ خیابان' : 'درست و بیرونِ خیابان';
+  document.getElementById('hinfo').innerHTML = `${zone} · Hinge: <b>${fa(hinge(m0), 3)}</b> · Log Loss: <b>${fa(logl(m0), 3)}</b>`; };
+mIn.oninput = drawH;
+
+// ---------- figure 5: RBF kernel and gamma ----------
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const ringData = n => Array.from({ length: n }, () => { const inner = rnd() < 0.5, r = inner ? rnd() * 1.6 : 1.3 + rnd() * 1.5, t = rnd() * 2 * Math.PI;
+  return [r * Math.cos(t) + (rnd() - .5) * 1.0, r * Math.sin(t) + (rnd() - .5) * 1.0, inner ? 1 : -1]; });
+const GTR = ringData(80), GTE = ringData(400);
+const GAM = [0.01, 0.1, 1, 10, 100], gModels = {};
+const gModel = k => { if (gModels[k]) return gModels[k]; const r = smo(GTR.map(p => [p[0], p[1]]), GTR.map(p => p[2]), 1, rbf(GAM[k]), 1e-3);
+  const acc = D => D.filter(p => Math.sign(r.f(p)) === p[2]).length / D.length;
+  return gModels[k] = { f: r.f, nsv: r.nsv, tr: acc(GTR), te: acc(GTE) }; };
+const giIn = document.getElementById('gi');
+const drawG = () => { const k = +giIn.value, md = gModel(k), [c, W, H] = mk(document.getElementById('gm'), 1, 420), T = frame(c, W, H, -3.5, 3.5, 12);
+  const step = 5, cols = { 1: css('orange'), '-1': css('blue') }, inv = v => T.lo + (v - T.pad) / (T.W - 2 * T.pad) * (T.hi - T.lo);
+  const sg = []; for (let py = T.pad; py < H - T.pad; py += step) { const row = []; for (let px = T.pad; px < W - T.pad; px += step) row.push(md.f([inv(px + step / 2), inv(H - py - step / 2)]) >= 0 ? 1 : -1); sg.push(row); }
+  c.globalAlpha = 0.2; sg.forEach((row, iy) => row.forEach((s, ix) => { c.fillStyle = cols[s]; c.fillRect(T.pad + ix * step, T.pad + iy * step, step, step); }));
+  c.globalAlpha = 1; c.fillStyle = css('ink');
+  sg.forEach((row, iy) => row.forEach((s, ix) => { if ((ix + 1 < row.length && row[ix + 1] !== s) || (iy + 1 < sg.length && sg[iy + 1][ix] !== s)) c.fillRect(T.pad + ix * step + step - 1, T.pad + iy * step + step - 1, 2, 2); }));
+  dots(c, T, GTR, 4);
+  document.getElementById('gv').textContent = String(GAM[k]);
+  document.getElementById('ginfo').innerHTML = `دقتِ آموزش: <b>${fa(md.tr * 100, 1)}٪</b> · دقتِ آزمون: <b>${fa(md.te * 100, 1)}٪</b> · بردارهای پشتیبان: ${fa(md.nsv)} از ${fa(GTR.length)}`; };
+giIn.oninput = drawG;
+
+const drawAll = () => { drawCmp(); drawSV(); drawC(); drawH(); drawG(); };
+addEventListener('resize', drawAll); drawAll();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PCA: کم کردن ابعاد</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.pic { width: 100%; max-width: 300px; display: block; margin: 4px auto; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="kmeans.html">خوشه‌بندی K-Means</a> · <a href="naive-bayes.html">بعدی: بیز ساده ←</a></p>
+<h1>PCA: کم کردن ابعاد <span class="en">(Principal Component Analysis)</span></h1>
+<p class="sub">ستون‌های زیاد و به‌هم‌وابسته را به چند ستونِ جدید و مستقل خلاصه می‌کنیم. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>یک جدول از خانه‌ها داریم. دو ستونِ آن:</p>
+<ul>
+<li><b>متراژ</b> (متر مربع)</li>
+<li><b>تعدادِ اتاق</b></li>
+</ul>
+<p>این دو ستون تقریباً یک چیز را می‌گویند: «خانه چقدر بزرگ است». خانه‌ی ۱۵۰ متری معمولاً اتاقِ بیشتری از خانه‌ی ۶۰ متری دارد. پس به‌جای دو ستون، شاید یک ستون به اسمِ «اندازه‌ی خانه» کافی باشد.</p>
+<div class="key">PCA ستون‌های به‌هم‌وابسته را به چند ستونِ جدید تبدیل می‌کند. ستونِ جدیدِ اول بیشترین اطلاعات (بیشترین پخش) را دارد، دومی کمتر، و الی آخر. بعد فقط چند ستونِ اول را نگه می‌داریم.</div>
+<p>چرا ابعاد را کم کنیم؟</p>
+<div class="kinds">
+<div><p><b>دیدن داده</b></p><p class="ex">داده‌ی ۵۰ستونی را نمی‌شود کشید. با ۲ مؤلفه‌ی اول می‌شود آن را روی صفحه دید.</p></div>
+<div><p><b>سرعت</b></p><p class="ex">مدل با ۵۰ ستون به‌جای ۱۰۰۰ ستون، ۲۰ برابر عددِ کمتری در هر سطر می‌بیند؛ آموزش و حافظه سبک‌تر می‌شود.</p></div>
+<div><p><b>کم کردنِ نویز</b></p><p class="ex">جهت‌هایی که پخشِ خیلی کمی دارند معمولاً نویزند. دور ریختنشان داده را تمیزتر می‌کند.</p></div>
+<div><p><b>ستون‌های به‌هم‌وابسته</b></p><p class="ex">متراژ و اتاق با هم بالا و پایین می‌روند. برای رگرسیونِ خطی این مشکل است. مؤلفه‌های PCA با هم هیچ همبستگی ندارند.</p></div>
+</div>
+<p style="margin-top:12px">چرا در مصاحبه مهم است: PCA معروف‌ترین روشِ کم کردنِ ابعاد است. سؤال‌هایش تقریباً همیشه این‌هاست: «بردار ویژه این‌جا یعنی چه؟»، «چرا باید استاندارد کرد؟»، «چند مؤلفه نگه داریم؟».</p>
+</section>
+
+<section>
+<h2>ایده: جهتِ بیشترین پخش</h2>
+<p>نقطه‌ها (خانه‌ها) را روی صفحه بکشید: متراژ افقی، اتاق عمودی. ابرِ نقطه‌ها یک بیضیِ کج است. PCA دو کار می‌کند:</p>
+<ol>
+<li>جهتی را پیدا می‌کند که نقطه‌ها در آن <b>بیشترین پخش</b> (واریانس) را دارند. به آن <b>مؤلفه‌ی اصلیِ اول</b> <span class="en">(PC1)</span> می‌گویند.</li>
+<li>هر نقطه را روی این جهت <b>تصویر</b> می‌کند؛ یعنی از نقطه یک خطِ عمود روی آن جهت می‌کشد و جای پایِ عمود را نگه می‌دارد. حالا هر خانه به‌جای دو عدد، <b>یک عدد</b> دارد.</li>
+</ol>
+<p>مؤلفه‌ی دوم <span class="en">(PC2)</span> عمود بر اولی است و پخشِ باقی‌مانده را می‌گیرد. با \(d\) ستون، \(d\) مؤلفه داریم، هر کدام عمود بر قبلی‌ها.</p>
+<div class="key">چرا بیشترین پخش؟ اگر در یک جهت همه‌ی خانه‌ها تقریباً یک عدد بگیرند، آن جهت چیزی درباره‌ی تفاوتِ خانه‌ها نمی‌گوید. جهتی که خانه‌ها را بیشتر از هم جدا می‌کند، اطلاعاتِ بیشتری دارد.</div>
+</section>
+
+<section>
+<h2>خودتان جهت را بچرخانید</h2>
+<p>۴۰ خانه (متراژ ۶۰ تا ۱۵۶ متر، ۲ تا ۶ اتاق). هر دو ستون استاندارد شده‌اند (میانگین ۰، انحراف معیار ۱). جهت را بچرخانید و ببینید سایه‌ی نقطه‌ها روی خط چقدر پخش است:</p>
+<div class="box">
+<canvas id="rot"></canvas>
+<canvas id="strip"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>خانه‌ها</span><span><i style="background:var(--accent)"></i>جهت و سایه‌ی نقطه‌ها روی آن</span><span><i style="background:var(--red)"></i>فاصله تا خط (خطای بازسازی)</span></div>
+<label>زاویه‌ی جهت <input id="ang" type="range" min="0" max="179" step="1" value="0"><b id="angv"></b></label>
+<div class="ctl"><button id="best" style="margin-top:0">برو به PC1</button></div>
+<div class="err" id="rinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>زاویه‌ی ۰ (فقط متراژ)</b></p><p class="ex">واریانسِ سایه‌ها ۱٫۰۰ است؛ یعنی فقط پخشِ متراژ. خطای بازسازی هم ۱٫۰۰.</p></div>
+<div><p><b>زاویه‌ی ۴۵ (PC1)</b></p><p class="ex">واریانس به بیشترین مقدار می‌رسد: <b>۱٫۷۶</b>، یعنی ۸۸٪ از کلِ پخش (۲). خطای بازسازی کمترین است: ۰٫۲۴.</p></div>
+<div><p><b>زاویه‌ی ۱۳۵ (PC2)</b></p><p class="ex">عمود بر PC1. کمترین واریانس: ۰٫۲۴. این همان پخشی است که PC1 نگرفت.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">دقت کنید: در هر زاویه، <b>واریانسِ سایه‌ها + خطای بازسازی = ۲</b>. پس «بیشترین واریانس» و «کمترین خطای بازسازی» یک جهت را پیدا می‌کنند. همبستگیِ متراژ و اتاق در این داده ۰٫۷۶ است، و واریانسِ PC1 دقیقاً ۱ + ۰٫۷۶ شد.</p>
+</section>
+
+<section>
+<h2>تصویر کردن و بازسازی</h2>
+<p>بعد از پیدا کردنِ جهت، دو کار می‌شود کرد. مثال: ۵ خانه، با متراژ به واحدِ <b>۱۰ متر مربع</b> (تا عددها کوچک بمانند):</p>
+<div dir="ltr"><table>
+<tr><th>house</th><th>area (×10 m²)</th><th>rooms</th></tr>
+<tr><td>A</td><td>6</td><td>2</td></tr>
+<tr><td>B</td><td>8</td><td>2</td></tr>
+<tr><td>C</td><td>10</td><td>3</td></tr>
+<tr><td>D</td><td>12</td><td>4</td></tr>
+<tr><td>E</td><td>14</td><td>4</td></tr>
+</table></div>
+<p class="ex" style="margin-top:6px">PC1 این داده (محاسبه در بخشِ بعدی) جهتِ \((0.957,\ 0.290)\) است.</p>
+<div class="kinds">
+<div><p><b>تصویر کردن (Projection)</b></p><p class="ex">۲ عدد ← ۱ عدد. خانه‌ی B را منهای میانگین \((10, 3)\) می‌کنیم: \((-2, -1)\). ضربِ داخلی با جهت:</p>
+<div class="f">\( z = -2(0.957) + (-1)(0.290) = -2.204 \)</div>
+<p class="ex">این عدد، «اندازه‌ی» خانه‌ی B روی محورِ جدید است. ستونِ جدید برای ۵ خانه: −۴٫۱۲، −۲٫۲۰، ۰، ۲٫۲۰، ۴٫۱۲.</p></div>
+<div><p><b>بازسازی (Reconstruction)</b></p><p class="ex">۱ عدد ← ۲ عدد. از \(z\) برمی‌گردیم:</p>
+<div class="f">\( \hat{x} = \bar{x} + z\,v = (10, 3) - 2.204\,(0.957, 0.290) = (7.89,\ 2.36) \)</div>
+<p class="ex">خانه‌ی واقعی \((8, 2)\) بود. مربعِ فاصله = <b>۰٫۱۴</b>. این <b>خطای بازسازی</b> است: اطلاعاتی که با دور ریختنِ PC2 از دست رفت.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">جمعِ مربعِ خطای بازسازیِ ۵ خانه ۰٫۳۶۷ است. تقسیم بر \(n-1 = 4\) می‌شود ۰٫۰۹۲، یعنی دقیقاً واریانسِ مؤلفه‌ای که دور ریختیم. کاربردِ عملی: اگر خطای بازسازیِ یک نمونه خیلی بزرگ باشد، آن نمونه با بقیه فرق دارد؛ برای <b>پیدا کردنِ داده‌ی غیرعادی</b> از همین استفاده می‌کنند.</p>
+</section>
+
+<section>
+<h2>ریاضی قدم‌به‌قدم</h2>
+<p>همان ۵ خانه. سه قدم:</p>
+<ol class="flow">
+<li><span class="n">۱</span><div><p><b>مرکز کردن:</b> میانگینِ هر ستون را کم کن.</p>
+<p class="ex">میانگینِ متراژ ۱۰، میانگینِ اتاق ۳. ستون‌های جدید: متراژ \((-4, -2, 0, 2, 4)\)، اتاق \((-1, -1, 0, 1, 1)\).</p></div></li>
+<li><span class="n">۲</span><div><p><b>ماتریس کوواریانس:</b> واریانسِ هر ستون روی قطر، کوواریانسِ هر دو ستون بیرونِ قطر.</p>
+<div class="f">\[ C = \frac{1}{n-1} X_c^\top X_c = \frac{1}{4}\begin{pmatrix} 40 & 12 \\ 12 & 4 \end{pmatrix} = \begin{pmatrix} 10 & 3 \\ 3 & 1 \end{pmatrix} \]</div>
+<p class="ex">مثلاً ۱۲ = \((-4)(-1) + (-2)(-1) + 0 + (2)(1) + (4)(1)\). عددِ ۳ مثبت است: متراژ و اتاق با هم بالا می‌روند.</p></div></li>
+<li><span class="n">۳</span><div><p><b>بردارها و مقدارهای ویژه</b> ماتریس \(C\) را پیدا کن:</p>
+<div class="f">\[ C\,v = \lambda\,v \]</div>
+<p class="ex">برای ماتریسِ ۲×۲: \(\lambda^2 - 11\lambda + 1 = 0\) (۱۱ جمعِ قطر، ۱ دترمینان). پس \(\lambda_1 = 10.908\) و \(\lambda_2 = 0.092\). بردارها: \(v_1 = (0.957, 0.290)\) و \(v_2 = (-0.290, 0.957)\).</p></div></li>
+</ol>
+<ul class="sym">
+<li>\(X_c\): داده‌ی مرکزشده، \(n\) سطر در \(d\) ستون</li>
+<li>\(C\): ماتریس کوواریانس، \(d \times d\)</li>
+<li>\(v_k\): بردار ویژه‌ی \(k\)ام = جهتِ مؤلفه‌ی \(k\)ام</li>
+<li>\(\lambda_k\): مقدار ویژه = واریانس در جهتِ \(v_k\)</li>
+<li>\(n\): تعدادِ نمونه‌ها</li>
+<li>\(d\): تعدادِ ستون‌ها</li>
+</ul>
+<p>بعد از این، داده‌ی جدید با \(k\) مؤلفه این است:</p>
+<div class="f">\[ Z = X_c\, V_k \qquad (n \times d)(d \times k) = (n \times k) \]</div>
+<p class="ex">\(V_k\): \(k\) بردار ویژه‌ی اول، کنارِ هم به‌عنوانِ ستون. در مثال \(k = 1\) و ستونِ \(Z\) همان −۴٫۱۲، −۲٫۲۰، ۰، ۲٫۲۰، ۴٫۱۲ است. واریانسِ همین ستون دقیقاً \(\lambda_1 = 10.908\) است.</p>
+
+<h3 style="font-size:17px;margin:20px 0 6px">بردار ویژه به زبانِ ساده</h3>
+<p>ماتریس \(C\) هر بردار را به یک بردارِ دیگر می‌برد. معمولاً هم <b>می‌چرخاند</b> و هم <b>می‌کشد</b>. بردار ویژه جهتی است که ماتریس فقط آن را <b>می‌کشد</b> و نمی‌چرخاند. مقدار ویژه، اندازه‌ی این کشش است.</p>
+<div class="kinds">
+<div><p><b>یک بردارِ معمولی</b></p><p class="ex">\(u = (1, 0)\) ← \(Cu = (10, 3)\). جهت عوض شد (۱۶٫۷ درجه چرخید).</p></div>
+<div><p><b>بردار ویژه</b></p><p class="ex">\(v_1 = (0.957, 0.290)\) ← \(Cv_1 = (10.44, 3.16) = 10.908 \times v_1\). فقط ۱۰٫۹ برابر کشیده شد.</p></div>
+</div>
+<p style="margin-top:12px">خودتان امتحان کنید. پیکانِ آبی \(u\) را بچرخانید تا با پیکانِ سبز \(Cu\) هم‌جهت شود:</p>
+<div class="box">
+<canvas id="eig"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>u (طولِ واقعی ۱، این‌جا ۴ برابر کشیده شده)</span><span><i style="background:var(--accent)"></i>Cu (طولِ واقعی)</span></div>
+<label>زاویه‌ی u <input id="eang" type="range" min="0" max="180" step="0.1" value="60"><b id="eangv"></b></label>
+<div class="err" id="einfo"></div>
+</div>
+<p class="ex" style="margin-top:8px">در حدودِ <b>۱۶٫۸</b> درجه هم‌جهت می‌شوند و کشش ۱۰٫۹۱ است (\(\lambda_1\)). جهتِ ویژه‌ی دوم، عمود بر اولی، حدودِ <b>۱۰۶٫۸</b> درجه است: آن‌جا ماتریس \(u\) را فقط ۰٫۰۹ برابر می‌کند (\(\lambda_2\))، پس پیکانِ سبز آن‌قدر کوتاه می‌شود که تقریباً دیده نمی‌شود. در زاویه‌های دیگر، \(Cu\) همیشه به‌سمتِ \(v_1\) کج می‌شود: ماتریس همه‌چیز را به‌سمتِ جهتِ بیشترین پخش می‌کشد.</p>
+<details class="drop"><summary><b>چرا بردار ویژه‌ی کوواریانس همان جهتِ بیشترین واریانس است؟</b></summary>
+<p>واریانسِ سایه‌ها روی یک جهتِ واحدِ \(w\) برابر است با \(w^\top C w\). می‌خواهیم این را با شرطِ \(\|w\| = 1\) بیشینه کنیم. با ضریب لاگرانژ:</p>
+<div class="f">\[ \frac{\partial}{\partial w}\Big( w^\top C w - \lambda (w^\top w - 1) \Big) = 2Cw - 2\lambda w = 0 \;\Rightarrow\; Cw = \lambda w \]</div>
+<p>پس جوابِ بهینه حتماً بردار ویژه است، و واریانس روی آن \(w^\top C w = \lambda\) است. بزرگ‌ترین \(\lambda\) یعنی بیشترین واریانس. چون \(C\) متقارن است، بردارهای ویژه‌اش بر هم عمودند.</p>
+</details>
+</section>
+
+<section>
+<h2>چند مؤلفه نگه داریم؟</h2>
+<p>سهمِ هر مؤلفه از کلِ پخش را <b>نسبت واریانسِ توضیح‌داده‌شده</b> <span class="en">(Explained Variance Ratio)</span> می‌گویند:</p>
+<div class="f">\[ r_k = \frac{\lambda_k}{\lambda_1 + \lambda_2 + \dots + \lambda_d} \]</div>
+<p class="ex">در مثالِ ۵ خانه: \(r_1 = 10.908 / 11 = 99.2\%\). یک مؤلفه تقریباً همه‌ی پخش را دارد.</p>
+<p>حالا یک جدولِ واقعی‌تر: ۲۰۰ خانه با ۸ ستون (همه استاندارد شده):</p>
+<ul class="ex">
+<li>به اندازه وابسته: متراژ، اتاق، حمام، بالکن</li>
+<li>به محل وابسته: فاصله تا مرکز، فاصله تا مترو</li>
+<li>به عمر وابسته: سنِ ساختمان، بازسازی‌شده</li>
+</ul>
+<p>نمودارِ زیر <b>Scree plot</b> است: میله‌ها سهمِ هر مؤلفه، خط سهمِ تجمعی. آستانه را عوض کنید:</p>
+<div class="box">
+<canvas id="scree"></canvas>
+<div class="legend"><span><i style="background:var(--accent)"></i>مؤلفه‌های نگه‌داشته</span><span><i style="background:var(--muted)"></i>دورریخته</span><span><i style="background:var(--blue)"></i>سهمِ تجمعی</span><span><i style="background:var(--red)"></i>آستانه</span></div>
+<label>آستانه‌ی سهمِ تجمعی <input id="th" type="range" min="70" max="99" step="1" value="95"><b id="thv"></b></label>
+<div class="err" id="sinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>قانونِ آستانه (مثلاً ۹۵٪)</b></p><p class="ex">کمترین \(k\) که سهمِ تجمعی‌اش به ۹۵٪ برسد. این‌جا <b>۵</b> مؤلفه (۹۵٫۶٪). با ۹۰٪ می‌شود ۴ (۹۳٫۲٪).</p></div>
+<div><p><b>قانونِ آرنج (Elbow)</b></p><p class="ex">جایی که میله‌ها ناگهان کوتاه می‌شوند. این‌جا بعد از مؤلفه‌ی ۴: سهم‌ها ۳۹٫۶، ۲۳٫۹، ۲۱٫۷، ۸٫۰ و بعد همه زیرِ ۲٫۵٪.</p></div>
+<div><p><b>با کیفیتِ مدل</b></p><p class="ex">اگر PCA قبل از یک مدل است، \(k\) را مثلِ یک ابرپارامتر با اعتبارسنجیِ متقابل انتخاب کن.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">داده سه عاملِ پنهان دارد (اندازه، محل، عمر)، و سه مؤلفه‌ی اول ۸۵٫۲٪ را می‌گیرند. مؤلفه‌ی چهارم بیشتر از نویزِ ستونِ «بالکن» می‌آید.</p>
+</section>
+
+<section>
+<h2>اول استاندارد کن</h2>
+<p>PCA دنبالِ بیشترین واریانس است. واریانس به <b>واحد</b> بستگی دارد. اگر متراژ را به متر مربع بنویسیم، عددهایش بزرگ‌اند و واریانسش ۱۰۰ برابر می‌شود. آن‌وقت PC1 تقریباً فقط «متراژ» است، و دلیلش فقط واحد است، نه اطلاعات.</p>
+<p>همان ۵ خانه، با سه واحدِ مختلف:</p>
+<div class="box">
+<canvas id="units"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>خانه‌ها (مرکزشده، با مقیاسِ برابر برای دو محور)</span><span><i style="background:var(--accent)"></i>PC1</span></div>
+<div class="ctl">واحدِ متراژ:
+<select id="unit"><option value="10">متر مربع</option><option value="1" selected>۱۰ متر مربع</option><option value="0">استاندارد شده (z-score)</option></select></div>
+<div class="err" id="uinfo"></div>
+</div>
+<div dir="ltr" style="margin-top:8px"><table>
+<tr><th>area unit</th><th>variance of area</th><th>PC1 = (w_area, w_rooms)</th><th>angle of PC1</th><th>PC1 share</th></tr>
+<tr><td>m²</td><td>1000</td><td>(0.9996, 0.030)</td><td>1.7°</td><td>99.99%</td></tr>
+<tr><td>10 m²</td><td>10</td><td>(0.957, 0.290)</td><td>16.8°</td><td>99.2%</td></tr>
+<tr><td>standardized</td><td>1</td><td>(0.707, 0.707)</td><td>45°</td><td>97.4%</td></tr>
+</table></div>
+<div class="key">یک داده، سه جواب. با متر مربع، وزنِ اتاق در PC1 فقط ۰٫۰۳ است. بعد از استاندارد کردن، هر دو ستون وزنِ برابر دارند. اگر ستون‌ها واحدهای مختلف دارند، <b>همیشه اول استاندارد کن</b> (میانگین ۰، انحراف معیار ۱).</div>
+<p class="ex">چرا بعد از استاندارد کردن دقیقاً ۴۵ درجه؟ با دو ستونِ استاندارد، ماتریس کوواریانس همان ماتریسِ همبستگی است: \(\begin{pmatrix} 1 & \rho \\ \rho & 1 \end{pmatrix}\). بردارهای ویژه‌اش همیشه \((1,1)/\sqrt2\) و \((1,-1)/\sqrt2\) هستند، و \(\lambda_1 = 1 + \rho\). این‌جا \(\rho = 0.949\)، پس سهمِ PC1 = \((1 + 0.949)/2 = 97.4\%\).</p>
+<p class="ex">استثنا: اگر همه‌ی ستون‌ها یک واحد و یک مقیاس دارند (مثلاً پیکسل‌های تصویر، همه بین ۰ تا ۲۵۵)، معمولاً فقط مرکز کردن کافی است.</p>
+</section>
+
+<section>
+<h2>PCA با SVD</h2>
+<p>در عمل کتابخانه‌ها ماتریس کوواریانس را نمی‌سازند. مستقیم از <b>تجزیه‌ی مقدار منفرد</b> <span class="en">(SVD)</span> روی داده‌ی مرکزشده استفاده می‌کنند:</p>
+<div class="f">\[ X_c = U\,S\,V^\top \qquad \lambda_k = \frac{s_k^2}{n-1} \qquad Z = X_c V_k = U_k S_k \]</div>
+<ul class="sym">
+<li>\(V\): ستون‌هایش همان بردارهای ویژه‌ی \(C\)</li>
+<li>\(s_k\): عددهای منفرد (قطرِ \(S\))</li>
+<li>\(U\): جهت‌ها در فضای نمونه‌ها</li>
+</ul>
+<p class="ex">در مثالِ ۵ خانه: \(s_1 = 6.606\) و \(s_2 = 0.606\). پس \(6.606^2 / 4 = 10.908\) و \(0.606^2/4 = 0.092\)؛ همان مقدارهای ویژه.</p>
+<div class="kinds">
+<div><p><b>از راهِ کوواریانس</b></p><p class="ex">ساختنِ \(X^\top X\) خطای گردکردن را <b>به توان ۲</b> می‌رساند. برای ستون‌های خیلی زیاد (\(d\) بزرگ) ماتریسِ \(d \times d\) هم بزرگ است.</p></div>
+<div><p><b>از راهِ SVD</b></p><p class="ex">پایدارتر از نظرِ عددی. نسخه‌های تصادفی <span class="en">(randomized SVD)</span> فقط \(k\) مؤلفه‌ی اول را سریع پیدا می‌کنند. scikit-learn از SVD استفاده می‌کند.</p></div>
+</div>
+</section>
+
+<section>
+<h2>محدودیت‌ها</h2>
+<div class="kinds">
+<div><p><b>فقط خطی</b></p>
+<svg class="pic" viewBox="0 0 200 110"><g fill="var(--blue)"><circle cx="20" cy="90" r="3.5"/><circle cx="35" cy="60" r="3.5"/><circle cx="55" cy="35" r="3.5"/><circle cx="80" cy="20" r="3.5"/><circle cx="100" cy="17" r="3.5"/><circle cx="120" cy="20" r="3.5"/><circle cx="145" cy="35" r="3.5"/><circle cx="165" cy="60" r="3.5"/><circle cx="180" cy="90" r="3.5"/></g><line x1="5" y1="47" x2="195" y2="47" stroke="var(--accent)" stroke-width="2"/></svg>
+<p class="ex">نقطه‌ها روی یک کمان‌اند؛ یک عدد (جای روی کمان) کافی است. ولی PCA فقط خطِ راست می‌شناسد: روی خطِ سبز، نقطه‌ی اول و آخر یک جا می‌افتند. برای ساختارِ خمیده: Kernel PCA، Autoencoder، یا UMAP.</p></div>
+<div><p><b>ممکن است برچسب را دور بریزد</b></p>
+<svg class="pic" viewBox="0 0 200 110"><line x1="5" y1="55" x2="195" y2="55" stroke="var(--accent)" stroke-width="2"/><g fill="var(--blue)"><circle cx="20" cy="35" r="4"/><circle cx="60" cy="35" r="4"/><circle cx="100" cy="35" r="4"/><circle cx="140" cy="35" r="4"/><circle cx="180" cy="35" r="4"/></g><g fill="var(--red)"><circle cx="20" cy="75" r="4"/><circle cx="60" cy="75" r="4"/><circle cx="100" cy="75" r="4"/><circle cx="140" cy="75" r="4"/><circle cx="180" cy="75" r="4"/></g><text x="190" y="50" font-size="9" text-anchor="end" style="fill:var(--accent)">PC1</text></svg>
+<p class="ex">PCA بدونِ نظارت است؛ برچسب را نمی‌بیند. این‌جا x ها ۴−، ۲−، ۰، ۲، ۴ و y ها ۰٫۵± است. PC1 (محور افقی) <b>۹۷٪</b> پخش را دارد، ولی روی آن آبی و قرمز کاملاً روی هم می‌افتند. جداکننده در PC2 است، همان ۳٪ که دور ریخته می‌شود.</p></div>
+<div><p><b>تفسیرِ سخت</b></p><p class="ex">هر مؤلفه ترکیبی از همه‌ی ستون‌هاست. مثلاً \(0.71 \cdot z_{\text{area}} + 0.71 \cdot z_{\text{rooms}}\) را می‌شود «اندازه» نامید، ولی با ۸۰ ستون، PC7 معمولاً معنیِ روشنی ندارد. برای توضیح دادن به مدیر یا تنظیم‌کننده سخت است.</p></div>
+<div><p><b>حساس به مقیاس و داده‌ی پرت</b></p><p class="ex">واحد جواب را عوض می‌کند (۱٫۷ درجه در برابرِ ۴۵ درجه در مثالِ بالا). یک نقطه‌ی خیلی دور هم واریانس را بزرگ می‌کند و PC1 را به‌سمتِ خودش می‌کشد.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">یک نکته‌ی دیگر: PCA را فقط روی داده‌ی <b>آموزش</b> fit کن، بعد همان تبدیل را روی داده‌ی آزمون اعمال کن. fit روی کلِ داده یعنی نشتِ اطلاعات <span class="en">(data leakage)</span>.</p>
+</section>
+
+<section>
+<h2>PCA در برابر انتخابِ ویژگی</h2>
+<div class="kinds">
+<div><p><b>PCA (ساختنِ ویژگیِ جدید)</b></p><ul class="ex">
+<li>ستون‌های <b>جدید</b> می‌سازد: ترکیبِ خطیِ همه‌ی ستون‌ها.</li>
+<li>مثال: \(\text{PC1} = 0.71 \cdot z_{\text{area}} + 0.71 \cdot z_{\text{rooms}}\)</li>
+<li>هنوز به <b>همه‌ی</b> ستون‌های ورودی نیاز دارد.</li>
+<li>بدونِ نظارت؛ برچسب را نمی‌بیند.</li>
+<li>ستون‌های خروجی هیچ همبستگی ندارند.</li>
+<li>تفسیرش سخت است.</li></ul></div>
+<div><p><b>انتخابِ ویژگی (Feature Selection)</b></p><ul class="ex">
+<li>چند ستونِ <b>اصلی</b> را نگه می‌دارد و بقیه را حذف می‌کند.</li>
+<li>مثال: «متراژ» را نگه دار، «اتاق» را حذف کن.</li>
+<li>ستون‌های حذف‌شده دیگر لازم نیستند؛ جمع‌آوری‌شان ارزان‌تر می‌شود.</li>
+<li>می‌تواند برچسب را ببیند (مثلاً همبستگی با قیمت، Lasso).</li>
+<li>ستون‌های باقی‌مانده ممکن است هنوز به هم وابسته باشند.</li>
+<li>تفسیرش آسان است: همان ستون‌های آشنا.</li></ul></div>
+</div>
+</section>
+
+<section>
+<h2>برای دیدنِ داده: t-SNE و UMAP</h2>
+<p>اگر فقط می‌خواهید داده را در ۲ بعد <b>ببینید</b> (مثلاً embedding کلمه‌ها یا تصویرها)، PCA همیشه بهترین تصویر را نمی‌دهد، چون خطی است.</p>
+<div class="kinds">
+<div><p><b>PCA</b></p><ul class="ex"><li>خطی و سریع.</li><li>فاصله‌های بزرگ (ساختارِ کلی) را نگه می‌دارد.</li><li>تبدیل را می‌شود روی داده‌ی جدید اعمال کرد.</li><li>برای ورودیِ مدل خوب است.</li></ul></div>
+<div><p><b>t-SNE</b></p><ul class="ex"><li>غیرخطی و کند.</li><li>همسایه‌های نزدیک را کنارِ هم نگه می‌دارد؛ خوشه‌ها را خوب نشان می‌دهد.</li><li>فاصله‌ی بینِ خوشه‌ها و اندازه‌ی خوشه‌ها معنیِ قابلِ اعتمادی ندارد.</li><li>فقط برای دیدن.</li></ul></div>
+<div><p><b>UMAP</b></p><ul class="ex"><li>غیرخطی، سریع‌تر از t-SNE.</li><li>ساختارِ کلی را کمی بهتر از t-SNE نگه می‌دارد.</li><li>می‌شود روی داده‌ی جدید هم اعمال کرد.</li><li>بیشتر برای دیدن.</li></ul></div>
+</div>
+<p class="ex" style="margin-top:8px">روشِ رایج روی داده‌ی خیلی پرستون: اول PCA تا ۵۰ بعد (برای حذفِ نویز و سرعت)، بعد t-SNE یا UMAP تا ۲ بعد.</p>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>PCA از صفر با NumPy</b> (با <code>eigh</code> و با SVD):</p>
+<pre>import numpy as np
+
+X = np.array([[6, 2], [8, 2], [10, 3], [12, 4], [14, 4]], dtype=float)  # area (x10 m2), rooms
+
+def pca_eig(X, k):
+    mu = X.mean(axis=0)
+    Xc = X - mu                                  # 1) center
+    C = Xc.T @ Xc / (len(X) - 1)                 # 2) covariance  -> [[10, 3], [3, 1]]
+    vals, vecs = np.linalg.eigh(C)               # 3) eigh: for symmetric matrices, ASCENDING order
+    order = np.argsort(vals)[::-1]               #    sort largest first
+    vals, vecs = vals[order], vecs[:, order]
+    Z = Xc @ vecs[:, :k]                         # project
+    X_rec = Z @ vecs[:, :k].T + mu               # reconstruct
+    return Z, vals / vals.sum(), X_rec
+
+def pca_svd(X, k):
+    mu = X.mean(axis=0)
+    U, S, Vt = np.linalg.svd(X - mu, full_matrices=False)
+    var = S**2 / (len(X) - 1)                    # = eigenvalues: [10.908, 0.092]
+    return (X - mu) @ Vt[:k].T, var / var.sum()
+
+Z, ratio, X_rec = pca_eig(X, 1)
+print(ratio)          # [0.9917 0.0083]
+print(Z.ravel())      # [-4.118 -2.204 0. 2.204 4.118]  (the sign may be flipped)</pre>
+<p class="ex">علامتِ بردار ویژه قراردادی است: \(v\) و \(-v\) هر دو جواب‌اند. برای همین ممکن است خروجیِ دو کتابخانه با علامتِ مخالف باشد.</p>
+<p><b>با scikit-learn</b> (استاندارد کردن + PCA در یک pipeline، با آستانه‌ی ۹۵٪):</p>
+<pre>from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LogisticRegression
+
+pca = make_pipeline(StandardScaler(), PCA(n_components=0.95))  # keep 95% of variance
+Z_train = pca.fit_transform(X_train)        # fit on TRAIN only
+Z_test = pca.transform(X_test)              # same transform for test
+p = pca.named_steps["pca"]
+print(p.n_components_, p.explained_variance_ratio_.cumsum())
+
+# as a step before a model; tune the number of components with CV
+clf = make_pipeline(StandardScaler(), PCA(n_components=10), LogisticRegression())
+clf.fit(X_train, y_train)</pre>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>What is PCA and how does it work, step by step?</summary>
+<p>PCA is an unsupervised linear method that finds new orthogonal axes (principal components) ordered by how much variance of the data they capture, then keeps only the first \(k\). Steps: (1) center each feature (and usually standardize); (2) compute the covariance matrix \(C = X_c^\top X_c/(n-1)\); (3) compute its eigenvectors and eigenvalues and sort by eigenvalue; (4) project: \(Z = X_c V_k\). Example: 5 houses with area (×10 m²) 6, 8, 10, 12, 14 and rooms 2, 2, 3, 4, 4 give \(C = \begin{pmatrix}10&3\\3&1\end{pmatrix}\), eigenvalues 10.908 and 0.092, and PC1 = (0.957, 0.290), which alone explains 99.2% of the variance.</p>
+<p class="src">Analytics Vidhya; Towards AI</p></details>
+
+<details><summary>What do the eigenvectors and eigenvalues of the covariance matrix mean?</summary>
+<p>An eigenvector \(v\) satisfies \(Cv = \lambda v\): the matrix only stretches it, it does not rotate it. For a covariance matrix, eigenvectors are the principal directions and the eigenvalue is the variance of the data projected on that direction. Example: \(C(1,0) = (10,3)\) changes direction, but \(C(0.957, 0.290) = (10.44, 3.16) = 10.908 \times (0.957, 0.290)\). Because \(C\) is symmetric, eigenvalues are real and non-negative and eigenvectors are orthogonal.</p>
+<p class="src">Analytics Vidhya; devinterview.io</p></details>
+
+<details><summary>Why does PCA pick the direction of maximum variance? Is that the same as minimizing reconstruction error?</summary>
+<p>Maximize \(w^\top C w\) subject to \(\|w\| = 1\). The Lagrangian gives \(Cw = \lambda w\), and the variance on \(w\) equals \(\lambda\), so the best \(w\) is the top eigenvector. For centered data, \(\|x\|^2 = (\text{projection})^2 + (\text{distance to the line})^2\) for each point, so the total is fixed: maximizing projected variance is the same as minimizing squared reconstruction error. In the demo with standardized area and rooms, variance + error = 2 at every angle; at PC1 (45°) variance is 1.76 and error 0.24. In the 5-house example, the summed squared reconstruction error divided by \(n-1\) is 0.092, exactly the dropped eigenvalue.</p></details>
+
+<details><summary>Why do you need to standardize features before PCA?</summary>
+<p>PCA maximizes variance, and variance depends on units. A feature with large numbers dominates PC1 just because of its scale. Example (same 5 houses): with area in m² (variance 1000) PC1 = (0.9996, 0.030), i.e. almost only area, at 1.7°; with area in units of 10 m², PC1 is at 16.8°; after standardizing, PC1 = (0.707, 0.707) at 45°. Same data, three answers. Standardize (zero mean, unit variance) when features have different units; centering alone is fine when all features share a scale (e.g. pixels).</p>
+<p class="src">Analytics Vidhya; Towards AI</p></details>
+
+<details><summary>How do you choose the number of components?</summary>
+<p>(1) Cumulative explained variance threshold: the smallest \(k\) with \(\sum_{i\le k}\lambda_i / \sum_i \lambda_i \ge\) 90–95%. (2) Scree plot: look for the elbow where eigenvalues drop sharply. (3) If PCA feeds a model, treat \(k\) as a hyperparameter and pick it by cross-validation. Example: 200 houses with 8 standardized features; explained ratios 39.6%, 23.9%, 21.7%, 8.0%, 2.4%, …; the elbow is after 4; a 95% threshold needs 5 components (95.6%). In scikit-learn, <code>PCA(n_components=0.95)</code> does the threshold rule.</p>
+<p class="src">Analytics Vidhya; Glassdoor (Amazon: how is variance calculated in PCA)</p></details>
+
+<details><summary>How is PCA related to SVD? Why do libraries use SVD?</summary>
+<p>For centered data \(X_c = USV^\top\): the columns of \(V\) are the eigenvectors of the covariance matrix, eigenvalues are \(\lambda_k = s_k^2/(n-1)\), and the projected data is \(U_k S_k\). Example: singular values 6.606 and 0.606 give \(6.606^2/4 = 10.908\) and \(0.606^2/4 = 0.092\). SVD avoids forming \(X^\top X\), which squares the condition number and loses precision, and randomized/truncated SVD computes only the top \(k\) components quickly. scikit-learn's PCA uses SVD.</p>
+<p class="src">scikit-learn documentation; devinterview.io</p></details>
+
+<details><summary>Why are principal components uncorrelated? Does PCA help with multicollinearity?</summary>
+<p>The components are projections on orthogonal eigenvectors of \(C\), so the covariance matrix of \(Z\) is \(V^\top C V = \text{diag}(\lambda_1, \dots, \lambda_d)\): all off-diagonal covariances are zero. That is why PCA helps with multicollinearity: regressing on the first components (principal component regression) gives stable coefficients even when area and rooms are 0.76 correlated. The cost is that coefficients are now on components, not on the original features.</p></details>
+
+<details><summary>What are the limitations of PCA? When does it fail?</summary>
+<p>(1) Linear only: data on a curve or a manifold is not captured by straight axes (use kernel PCA, autoencoders, UMAP). (2) Unsupervised: high variance is not the same as useful for the label. Example: points at x = −4, −2, 0, 2, 4 with class A at y = +0.5 and class B at y = −0.5; PC1 is the x-axis with 97% of the variance, yet the classes overlap completely on it; all class information is in the 3% that is dropped. (3) Components are mixtures of all features, hard to interpret. (4) Sensitive to scaling and outliers. (5) Assumes variance means information; mean-centered and affected by the choice of units.</p>
+<p class="src">Towards AI; Analytics Vidhya</p></details>
+
+<details><summary>What is the difference between PCA and feature selection?</summary>
+<p>PCA is feature extraction: it builds new features that are linear combinations of all original features (e.g. PC1 = 0.71·z_area + 0.71·z_rooms), unsupervised, uncorrelated, hard to interpret, and you still need every original feature at inference. Feature selection keeps a subset of the original features (e.g. keep area, drop rooms), can use the label (filter methods, Lasso, tree importance), stays interpretable, and lets you stop collecting dropped features.</p>
+<p class="src">Analytics Vidhya</p></details>
+
+<details><summary>PCA vs t-SNE vs UMAP?</summary>
+<p>PCA is linear, deterministic, fast, preserves global structure (large distances) and gives a transform you can apply to new data; use it for preprocessing and a first look. t-SNE is nonlinear, preserves local neighborhoods, is great for showing clusters, but is slow, stochastic, and cluster sizes and distances between clusters are not meaningful; mainly for 2-D/3-D visualization. UMAP is also nonlinear, faster than t-SNE, often keeps more global structure, and can transform new points. Common recipe: PCA to ~50 dimensions, then t-SNE/UMAP to 2.</p>
+<p class="src">devinterview.io; Towards AI</p></details>
+
+<details><summary>Should you fit PCA on the whole dataset before splitting?</summary>
+<p>No. Fitting the scaler and PCA on all data lets test statistics (means, variances, directions) leak into training, which makes validation scores optimistic. Fit on the training set only, then apply the same <code>transform</code> to validation and test data; a scikit-learn <code>Pipeline(StandardScaler, PCA, model)</code> inside cross-validation does this automatically.</p></details>
+
+<details><summary>Implement PCA from scratch.</summary>
+<p>See the NumPy code above: center; covariance; <code>np.linalg.eigh</code> (it returns eigenvalues in ascending order, so reverse them); take the top \(k\) eigenvectors; \(Z = X_c V_k\); reconstruction \(\hat X = Z V_k^\top + \mu\). Or use SVD of the centered data. Mention that the sign of each component is arbitrary, and that explained variance ratio = eigenvalue / sum of eigenvalues.</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://www.analyticsvidhya.com/blog/2022/09/principal-component-analysis-interview-questions/">Analytics Vidhya</a> · <a href="https://towardsai.net/p/machine-learning/top-20-principal-component-analysis-pca-interview-questions-and-answers-part-1-of-2">Towards AI</a> · <a href="https://devinterview.pages.dev/questions/machine-learning-and-data-science/pca-interview-questions">devinterview.io</a> · <a href="https://www.glassdoor.co.uk/Interview/How-is-variance-calculated-in-a-PCA-QTN_1962946.htm">Glassdoor (Amazon)</a> · <a href="https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html">scikit-learn PCA</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+const $ = id => document.getElementById(id);
+const dot = (c, x, y, r, col) => { c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); };
+const line = (c, x1, y1, x2, y2, col, w = 1, dash = []) => { c.strokeStyle = col; c.lineWidth = w; c.setLineDash(dash); c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); c.setLineDash([]); };
+const arrow = (c, x1, y1, x2, y2, col) => { line(c, x1, y1, x2, y2, col, 2.5); const a = Math.atan2(y2 - y1, x2 - x1);
+  c.fillStyle = col; c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - 9 * Math.cos(a - .4), y2 - 9 * Math.sin(a - .4)); c.lineTo(x2 - 9 * Math.cos(a + .4), y2 - 9 * Math.sin(a + .4)); c.fill(); };
+
+let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const gauss = () => { let u = 0; for (let i = 0; i < 6; i++) u += rnd(); return (u - 3) * Math.SQRT2; };
+const std = P => { const n = P.length, d = P[0].length, m = [], s = [];
+  for (let j = 0; j < d; j++) { m[j] = P.reduce((t, p) => t + p[j], 0) / n; s[j] = Math.sqrt(P.reduce((t, p) => t + (p[j] - m[j]) ** 2, 0) / n); }
+  return P.map(p => p.map((x, j) => (x - m[j]) / s[j])); };
+
+// ---- figure 1: rotate a direction (40 houses, standardized) ----
+const H = Array.from({ length: 40 }, () => { const a = 60 + 100 * rnd(); const r = Math.round(0.5 + a / 35 + gauss() * 0.45); return [Math.round(a), r]; });
+const Z = std(H);
+const varAt = deg => { const t = deg * Math.PI / 180, co = Math.cos(t), si = Math.sin(t); let v = 0, e = 0;
+  Z.forEach(([x, y]) => { const p = x * co + y * si; v += p * p; e += (x - p * co) ** 2 + (y - p * si) ** 2; }); return [v / Z.length, e / Z.length]; };
+const drawRot = () => { const d = +$('ang').value, t = d * Math.PI / 180, co = Math.cos(t), si = Math.sin(t);
+  const [c, W, Ht] = mk($('rot'), 0.8, 460), S = Math.min(W, Ht) / 6, X = x => W / 2 + x * S, Y = y => Ht / 2 - y * S;
+  line(c, 0, Ht / 2, W, Ht / 2, css('line')); line(c, W / 2, 0, W / 2, Ht, css('line'));
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'left'; c.fillText('متراژ →', W - 52, Ht / 2 - 6); c.fillText('↑ اتاق', W / 2 + 6, 12);
+  line(c, X(-4 * co), Y(-4 * si), X(4 * co), Y(4 * si), css('accent'), 2);
+  Z.forEach(([x, y]) => { const p = x * co + y * si; line(c, X(x), Y(y), X(p * co), Y(p * si), css('red'), 1); });
+  Z.forEach(([x, y]) => { const p = x * co + y * si; dot(c, X(p * co), Y(p * si), 2.5, css('accent')); dot(c, X(x), Y(y), 3.5, css('blue')); });
+  const [c2, W2, H2] = mk($('strip'), 0.12, 460), X2 = p => W2 / 2 + p / 3.2 * (W2 / 2 - 10);
+  line(c2, 6, H2 / 2, W2 - 6, H2 / 2, css('line'));
+  Z.forEach(([x, y]) => { c2.globalAlpha = .6; dot(c2, X2(x * co + y * si), H2 / 2, 4, css('accent')); }); c2.globalAlpha = 1;
+  c2.fillStyle = css('muted'); c2.font = '10px Vazirmatn'; c2.textAlign = 'center'; c2.fillText('ستونِ جدید (یک عدد برای هر خانه)', W2 / 2, H2 - 2);
+  const [v, e] = varAt(d);
+  $('angv').textContent = fa(d) + '°';
+  $('rinfo').innerHTML = `واریانسِ سایه‌ها: <b>${fa(v, 2)}</b> (${fa(v / 2 * 100)}٪ از کل) · خطای بازسازی: <b>${fa(e, 2)}</b> · جمع: ${fa(v + e, 2)}`; };
+$('ang').oninput = drawRot; $('best').onclick = () => { $('ang').value = 45; drawRot(); };
+
+// ---- figure 2: eigenvector = only stretched ----
+const CM = [[10, 3], [3, 1]];
+const drawEig = () => { const d = +$('eang').value, t = d * Math.PI / 180, u = [Math.cos(t), Math.sin(t)];
+  const Cu = [CM[0][0] * u[0] + CM[0][1] * u[1], CM[1][0] * u[0] + CM[1][1] * u[1]];
+  const [c, W, Ht] = mk($('eig'), 0.45, 520), S = (W - 20) / 23, X = x => W / 2 + x * S, Y = y => Ht / 2 - y * S;
+  line(c, 0, Ht / 2, W, Ht / 2, css('line')); line(c, W / 2, 0, W / 2, Ht, css('line'));
+  arrow(c, X(0), Y(0), X(4 * u[0]), Y(4 * u[1]), css('blue'));
+  arrow(c, X(0), Y(0), X(Cu[0]), Y(Cu[1]), css('accent'));
+  const len = Math.hypot(...Cu); let diff = Math.abs(Math.atan2(Cu[1], Cu[0]) - t) * 180 / Math.PI; if (diff > 180) diff = 360 - diff;
+  $('eangv').textContent = fa(d, 1) + '°';
+  $('einfo').innerHTML = `طولِ Cu: <b>${fa(len, 2)}</b> · زاویه‌ی بینِ u و Cu: <b>${fa(diff, 1)}°</b>` +
+    (diff < 0.5 ? `<br>هم‌جهت شدند! این یک بردار ویژه است و مقدار ویژه ≈ ${fa(len, 2)}` :
+     len < 0.2 ? `<br>Cu تقریباً صفر شد: این جهتِ بردار ویژه‌ی دوم است و ماتریس آن را فقط حدودِ ۰٫۰۹ برابر می‌کند` : ''); };
+$('eang').oninput = drawEig;
+
+// ---- figure 3: scree plot (200 houses, 8 standardized features) ----
+seed = 7;
+const D = Array.from({ length: 200 }, () => { const s = gauss(), l = gauss(), g = gauss(), e = () => gauss();
+  return [s + .2 * e(), s + .35 * e(), .8 * s + .45 * e(), .5 * s + .7 * e(), l + .3 * e(), .9 * l + .45 * e(), g + .25 * e(), -.8 * g + .55 * e()]; });
+const covM = P => { const n = P.length, d = P[0].length; return Array.from({ length: d }, (_, i) => Array.from({ length: d }, (_, j) => P.reduce((t, p) => t + p[i] * p[j], 0) / n)); };
+const eigVals = M => { const n = M.length, A = M.map(r => r.slice()); for (let sw = 0; sw < 100; sw++) { let off = 0;
+  for (let p = 0; p < n; p++) for (let q = p + 1; q < n; q++) { off += A[p][q] ** 2; if (Math.abs(A[p][q]) < 1e-12) continue;
+    const th = (A[q][q] - A[p][p]) / (2 * A[p][q]), tt = Math.sign(th || 1) / (Math.abs(th) + Math.sqrt(th * th + 1)), co = 1 / Math.sqrt(tt * tt + 1), si = tt * co;
+    for (let k = 0; k < n; k++) { const a = A[k][p], b = A[k][q]; A[k][p] = co * a - si * b; A[k][q] = si * a + co * b; }
+    for (let k = 0; k < n; k++) { const a = A[p][k], b = A[q][k]; A[p][k] = co * a - si * b; A[q][k] = si * a + co * b; } }
+  if (off < 1e-20) break; } return A.map((r, i) => r[i]).sort((a, b) => b - a); };
+const LAM = eigVals(covM(std(D))), TOT = LAM.reduce((a, b) => a + b, 0), RAT = LAM.map(l => l / TOT);
+const CUM = RAT.map((_, i) => RAT.slice(0, i + 1).reduce((a, b) => a + b, 0));
+const drawScree = () => { const th = +$('th').value / 100, k = CUM.findIndex(v => v >= th - 1e-12) + 1;
+  const [c, W, Ht] = mk($('scree'), 0.55, 520), L = 30, R = 10, T = 10, B = 24, bw = (W - L - R) / 8, Y = v => Ht - B - v * (Ht - T - B);
+  c.fillStyle = css('muted'); c.font = '10px Vazirmatn'; c.textAlign = 'right';
+  [0, .25, .5, .75, 1].forEach(v => { line(c, L, Y(v), W - R, Y(v), css('line')); c.fillText(fa(v * 100) + '٪', L - 3, Y(v) + 3); });
+  RAT.forEach((r, i) => { c.fillStyle = i < k ? css('accent') : css('muted'); c.fillRect(L + i * bw + bw * .2, Y(r), bw * .6, Y(0) - Y(r)); });
+  c.fillStyle = css('muted'); c.textAlign = 'center'; RAT.forEach((_, i) => c.fillText(fa(i + 1), L + (i + .5) * bw, Ht - B + 13));
+  c.fillText('شماره‌ی مؤلفه', (W + L) / 2, Ht - 1);
+  c.strokeStyle = css('blue'); c.lineWidth = 2; c.beginPath(); CUM.forEach((v, i) => { const x = L + (i + .5) * bw; i ? c.lineTo(x, Y(v)) : c.moveTo(x, Y(v)); }); c.stroke();
+  CUM.forEach((v, i) => dot(c, L + (i + .5) * bw, Y(v), 3, css('blue')));
+  line(c, L, Y(th), W - R, Y(th), css('red'), 1.5, [5, 4]);
+  $('thv').textContent = fa(th * 100) + '٪';
+  $('sinfo').innerHTML = `برای رسیدن به ${fa(th * 100)}٪ باید <b>${fa(k)}</b> مؤلفه از ۸ نگه داریم (سهمِ تجمعی: ${fa(CUM[k - 1] * 100, 1)}٪)`; };
+$('th').oninput = drawScree;
+
+// ---- figure 4: units change the answer (5 houses) ----
+const A5 = [6, 8, 10, 12, 14], R5 = [2, 2, 3, 4, 4];
+const f4 = n => n.toLocaleString('fa-IR', { maximumFractionDigits: 4 });
+const drawUnits = () => { const u = +$('unit').value;
+  let P = A5.map((a, i) => [u ? a * u : a, R5[i]]);
+  P = u ? (() => { const m = [0, 1].map(j => P.reduce((t, p) => t + p[j], 0) / 5); return P.map(p => [p[0] - m[0], p[1] - m[1]]); })() : std(P);
+  const a = P.reduce((t, p) => t + p[0] ** 2, 0) / 4, b = P.reduce((t, p) => t + p[0] * p[1], 0) / 4, cc = P.reduce((t, p) => t + p[1] ** 2, 0) / 4;
+  const l1 = (a + cc) / 2 + Math.sqrt(((a - cc) / 2) ** 2 + b * b), l2 = a + cc - l1;
+  let v = [b, l1 - a]; const nv = Math.hypot(...v); v = v.map(z => z / nv); const angle = Math.atan2(v[1], v[0]) * 180 / Math.PI;
+  const mx = Math.max(...P.map(p => Math.abs(p[0]))) * 1.15, my = Math.max(...P.map(p => Math.abs(p[1]))) * 1.15;
+  const [c, W, Ht] = mk($('units'), 0.5, 520), S = Math.min((W - 20) / (2 * mx), (Ht - 20) / (2 * my)), X = x => W / 2 + x * S, Y = y => Ht / 2 - y * S;
+  line(c, 0, Ht / 2, W, Ht / 2, css('line')); line(c, W / 2, 0, W / 2, Ht, css('line'));
+  const big = 2 * Math.max(mx, my);
+  line(c, X(-big * v[0]), Y(-big * v[1]), X(big * v[0]), Y(big * v[1]), css('accent'), 2);
+  P.forEach(([x, y]) => dot(c, X(x), Y(y), 4, css('blue')));
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'left'; c.fillText('متراژ →', W - 52, Ht / 2 - 6); c.fillText('↑ اتاق', W / 2 + 6, 12);
+  $('uinfo').innerHTML = `PC1 = (<b>${f4(v[0])}</b> × متراژ، <b>${f4(v[1])}</b> × اتاق) · زاویه: <b>${fa(angle, 1)}°</b> · سهمِ PC1: ${fa(l1 / (l1 + l2) * 100, 2)}٪`; };
+$('unit').onchange = drawUnits;
+
+const drawAll = () => { drawRot(); drawEig(); drawScree(); drawUnits(); };
+addEventListener('resize', drawAll); drawAll();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

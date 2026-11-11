@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>گرادیان بوستینگ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="random-forest.html">جنگل تصادفی</a> · <a href="knn.html">بعدی: نزدیک‌ترین همسایه‌ها ←</a></p>
+<h1>گرادیان بوستینگ <span class="en">(Gradient Boosting)</span></h1>
+<p class="sub">درخت‌هایی که یکی پس از دیگری، اشتباهِ قبلی‌ها را درست می‌کنند. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>جنگل تصادفی صدها درختِ <b>مستقل</b> می‌سازد و میانگین می‌گیرد. Boosting برعکس، درخت‌ها را <b>پشتِ سرِ هم</b> می‌سازد:</p>
+<ol>
+<li>یک حدسِ ساده بزن (مثلاً میانگینِ قیمت‌ها).</li>
+<li>ببین کجا اشتباه کردی.</li>
+<li>یک درختِ <b>کوچک</b> بساز که <b>همین اشتباه‌ها</b> را پیش‌بینی کند.</li>
+<li>کمی از آن را به حدست اضافه کن، و از قدمِ ۲ تکرار کن.</li>
+</ol>
+<div class="key">هر درخت به‌تنهایی ضعیف است. ولی هر کدام یک تکه از اشتباهِ باقی‌مانده را درست می‌کند، و جمعِ صدها درخت یک مدلِ خیلی دقیق می‌سازد.</div>
+<p>چرا مهم است: روی داده‌ی <b>جدولی</b> (جدول‌های مشتری، تراکنش، تبلیغ) معمولاً <b>دقیق‌ترین</b> مدل است. XGBoost، LightGBM و CatBoost در صنعت و مسابقه‌های Kaggle همه‌جا هستند، و تقریباً در هر مصاحبه‌ی ML پرسیده می‌شوند.</p>
+</section>
+
+<section>
+<h2>مثال با عدد</h2>
+<p>چهار خانه، با قیمت (میلیون). نرخ یادگیری <b>۰٫۵</b>؛ یعنی هر بار فقط نصفِ پیشنهادِ درخت را قبول می‌کنیم.</p>
+<div dir="ltr"><table>
+<tr><th>house</th><th>area</th><th>real price</th><th>step 0: guess = mean</th><th>error</th><th>tree 1 says</th><th>step 1 guess</th><th>new error</th><th>tree 2 says</th><th>step 2 guess</th><th>error</th></tr>
+<tr><td>A</td><td>50</td><td>300</td><td>500</td><td>−200</td><td>−150</td><td>425</td><td>−125</td><td>−75</td><td>387.5</td><td>−87.5</td></tr>
+<tr><td>B</td><td>60</td><td>400</td><td>500</td><td>−100</td><td>−150</td><td>425</td><td>−25</td><td>−75</td><td>387.5</td><td>12.5</td></tr>
+<tr><td>C</td><td>90</td><td>600</td><td>500</td><td>100</td><td>150</td><td>575</td><td>25</td><td>75</td><td>612.5</td><td>−12.5</td></tr>
+<tr><td>D</td><td>100</td><td>700</td><td>500</td><td>200</td><td>150</td><td>575</td><td>125</td><td>75</td><td>612.5</td><td>87.5</td></tr>
+</table></div>
+<ul class="ex" style="margin-top:8px">
+<li><b>قدم ۰:</b> بدونِ هیچ اطلاعاتی، بهترین حدس میانگین است: ۵۰۰. خطاها (واقعی منهای حدس) از −۲۰۰ تا +۲۰۰.</li>
+<li><b>درختِ ۱:</b> یک درختِ یک‌سؤاله («متراژ بالای ۷۵؟») که <b>خطاها</b> را پیش‌بینی می‌کند: برای خانه‌های کوچک میانگینِ خطایشان (−۱۵۰)، برای بزرگ‌ها (+۱۵۰).</li>
+<li><b>قدم ۱:</b> حدس = ۵۰۰ + ۰٫۵ × (پیشنهادِ درخت). مثلاً برای A: ۵۰۰ − ۷۵ = ۴۲۵. خطاها کوچک‌تر شدند.</li>
+<li><b>درختِ ۲:</b> همین کار روی خطاهای جدید. بعد از دو درخت، بزرگ‌ترین خطا از ۲۰۰ به ۸۷٫۵ رسید.</li>
+</ul>
+<p>به خطای باقی‌مانده <b>Residual</b> می‌گویند. هر درخت، residualهای قبلی را یاد می‌گیرد.</p>
+</section>
+
+<section>
+<h2>خودتان ببینید</h2>
+<p>داده‌ی پرنویز با یک الگوی موج‌دار. هر درخت فقط دو سؤال می‌پرسد (عمق ۲). تعدادِ درخت‌ها را زیاد کنید:</p>
+<div class="box">
+<canvas id="fit"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>داده‌ی آموزش</span><span><i style="background:var(--accent)"></i>مدل</span><span><i style="background:var(--muted)"></i>الگوی واقعی</span></div>
+<label>تعدادِ درخت‌ها <input id="rounds" type="range" min="0" max="200" step="1" value="0"><b id="roundsv"></b></label>
+<div class="ctl">نرخ یادگیری:
+<select id="lr"><option value="1">۱ (بدونِ احتیاط)</option><option value="0.3">۰٫۳</option><option value="0.1" selected>۰٫۱ (آهسته)</option></select></div>
+<canvas id="curve"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>خطای آموزش</span><span><i style="background:var(--red)"></i>خطای داده‌ی جدید</span></div>
+<div class="err" id="finfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>چند درختِ اول</b></p><p class="ex">مدل از یک خطِ صاف (میانگین) کم‌کم شکلِ موج را می‌گیرد. هر دو خطا تند پایین می‌آیند.</p></div>
+<div><p><b>درخت‌های خیلی زیاد</b></p><p class="ex">خطای آموزش هنوز کم می‌شود (مدل نویز را حفظ می‌کند)، ولی خطای داده‌ی جدید دیگر کم نمی‌شود و کمی بالا می‌رود. برخلافِ جنگل تصادفی، <b>Boosting با درختِ زیادی بیش‌برازش می‌کند</b>.</p></div>
+</div>
+</section>
+
+<section>
+<h2>نرخ یادگیری: قدم‌های کوچک‌تر، مدلِ بهتر</h2>
+<p>به‌جای این‌که کلِ پیشنهادِ هر درخت را قبول کنیم، فقط یک تکه‌ی کوچک (\(\eta\)) را اضافه می‌کنیم <span class="en">(Shrinkage)</span>:</p>
+<div class="f">\[ F_m(x) = F_{m-1}(x) + \eta \cdot h_m(x) \]</div>
+<ul class="sym">
+<li>\(F_{m-1}\): مدل تا قبل از این درخت</li>
+<li>\(h_m\): درختِ جدید، که residualها را پیش‌بینی می‌کند</li>
+<li>\(\eta\): نرخ یادگیری، معمولاً ۰٫۰۱ تا ۰٫۳</li>
+</ul>
+<div class="kinds">
+<div><p><b>نرخِ بزرگ (مثلاً ۱)</b></p><p class="ex">با چند درخت سریع خوب می‌شود، ولی هر درخت نویزِ خودش را کامل وارد می‌کند. زود به بهترین حالت می‌رسد و زود هم خراب می‌شود.</p></div>
+<div><p><b>نرخِ کوچک (مثلاً ۰٫۱)</b></p><p class="ex">درختِ بیشتری لازم دارد، ولی هر درخت کمی اثر دارد، پس نویز میانگین گرفته می‌شود و مدل معمولاً روی داده‌ی جدید کمی بهتر است.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">در شکلِ بالا امتحان کنید: با نرخِ ۱، بهترین خطای داده‌ی جدید با حدود <b>۴</b> درخت است و بعدش سریع بدتر می‌شود؛ با نرخِ ۰٫۱ با حدود <b>۶۰</b> درخت، و منحنی خیلی صاف‌تر است، پس اگر تعدادِ درخت را کمی اشتباه انتخاب کنید، ضررش کم است. در این داده‌ی کوچک بهترین خطاها نزدیکِ هم‌اند؛ روی داده‌های بزرگِ واقعی، نرخِ کوچک معمولاً کمی هم دقیق‌تر است. قانونِ رایج: نرخ را کوچک بگذار و تعدادِ درخت را با <b>توقفِ زودهنگام</b> <span class="en">(Early Stopping)</span> پیدا کن: آموزش را وقتی خطای داده‌ی سنجش چند دور بهتر نشد، متوقف کن.</p>
+</section>
+
+<section>
+<h2>چرا «گرادیان»؟</h2>
+<p>با تابع خطای MSE، residual دقیقاً همان <b>منفیِ گرادیان</b> است:</p>
+<div class="f">\[ L = \tfrac{1}{2}(y - F)^2 \quad\Rightarrow\quad -\frac{\partial L}{\partial F} = y - F = \text{residual} \]</div>
+<p>پس «درخت روی residualها» یعنی «درخت روی منفیِ گرادیان». این‌جا گرادیان کاهشی روی <b>وزن‌ها</b> نیست، روی <b>خودِ پیش‌بینی‌ها</b> است: هر درخت یک قدم در جهتی است که خطا را کم می‌کند.</p>
+<p>مزیتِ این دید: برای <b>هر</b> تابع خطای مشتق‌پذیر کار می‌کند، نه فقط MSE:</p>
+<div class="kinds">
+<div><p><b>رگرسیون با MSE</b></p><p class="ex">منفیِ گرادیان = \(y - F\) (همان residual)</p></div>
+<div><p><b>دسته‌بندی با Log Loss</b></p><p class="ex">منفیِ گرادیان = \(y - p\)؛ برچسب منهای احتمالِ پیش‌بینی‌شده (همان فرمولِ <a href="logistic-regression.html">رگرسیون لجستیک</a>). خروجیِ درخت‌ها جمع می‌شود و از سیگموید رد می‌شود.</p></div>
+<div><p><b>رگرسیون با Huber یا MAE</b></p><p class="ex">برای داده‌ی پرت؛ فقط فرمولِ گرادیان عوض می‌شود.</p></div>
+</div>
+</section>
+
+<section>
+<h2>Boosting در برابر Bagging</h2>
+<div class="kinds">
+<div><p><b>جنگل تصادفی (Bagging)</b></p><ul class="ex">
+<li>درخت‌ها <b>مستقل و هم‌زمان</b>.</li>
+<li>درخت‌ها <b>عمیق</b>؛ هر کدام دقیق ولی پرنوسان.</li>
+<li>میانگین‌گیری ← <b>واریانس</b> کم می‌شود.</li>
+<li>درختِ بیشتر ← بیش‌برازش نمی‌کند.</li>
+<li>با تنظیمِ پیش‌فرض خوب است.</li></ul></div>
+<div><p><b>گرادیان بوستینگ</b></p><ul class="ex">
+<li>درخت‌ها <b>پشتِ سرِ هم</b>؛ هر کدام به قبلی وابسته.</li>
+<li>درخت‌ها <b>کم‌عمق</b> (معمولاً ۳ تا ۸ طبقه)؛ هر کدام ضعیف.</li>
+<li>جمع کردن ← <b>بایاس</b> کم می‌شود.</li>
+<li>درختِ زیادی ← بیش‌برازش؛ توقفِ زودهنگام لازم است.</li>
+<li>معمولاً دقیق‌تر، ولی تنظیمِ بیشتری می‌خواهد.</li></ul></div>
+</div>
+<details class="drop"><summary><b>AdaBoost: نسخه‌ی قدیمی‌تر</b></summary>
+<p>AdaBoost (سال ۱۹۹۵) هم درخت‌ها را پشتِ سرِ هم می‌سازد، ولی به‌جای پیش‌بینیِ residual، <b>وزنِ نمونه‌ها</b> را عوض می‌کند: نمونه‌هایی که درختِ قبلی اشتباه دسته‌بندی کرده، وزنِ بیشتری می‌گیرند تا درختِ بعدی بیشتر به آن‌ها توجه کند. هر درخت هم بسته به دقتش یک وزن در رأیِ نهایی دارد. بعدها معلوم شد AdaBoost همان گرادیان بوستینگ با تابع خطای نمایی است.</p>
+</details>
+</section>
+
+<section>
+<h2>XGBoost، LightGBM و CatBoost</h2>
+<p>هر سه همان گرادیان بوستینگ‌اند، با ترفندهایی برای سرعت و دقت:</p>
+<div dir="ltr"><table>
+<tr><th></th><th>XGBoost</th><th>LightGBM</th><th>CatBoost</th></tr>
+<tr><td>Main idea</td><td>Regularized objective (L1/L2 on leaf values, penalty per leaf) and second-order (Hessian) steps</td><td>Very fast: histogram bins and <b>leaf-wise</b> tree growth</td><td>Built for <b>categorical</b> features; ordered boosting against target leakage</td></tr>
+<tr><td>Tree growth</td><td>Level-wise (by default)</td><td>Leaf-wise: always split the leaf with the biggest gain</td><td>Symmetric (oblivious) trees</td></tr>
+<tr><td>Strength</td><td>Robust, well-known default</td><td>Fastest on large data</td><td>Little tuning; great with many categories</td></tr>
+<tr><td>Watch out</td><td>Slower on very large data</td><td>Leaf-wise trees overfit small data: limit <code>num_leaves</code></td><td>Slower training in some setups</td></tr>
+</table></div>
+<p class="ex" style="margin-top:8px">در عمل دقتِ هر سه معمولاً نزدیک است؛ انتخاب بیشتر به اندازه‌ی داده، تعدادِ ویژگی‌های دسته‌ای، و سرعت بستگی دارد.</p>
+</section>
+
+<section>
+<h2>تنظیم‌های مهم</h2>
+<div class="kinds">
+<div><p><b>learning_rate + n_estimators</b></p><p class="ex">با هم تنظیم می‌شوند: نرخ کوچک، درختِ بیشتر، با early stopping.</p></div>
+<div><p><b>max_depth / num_leaves</b></p><p class="ex">پیچیدگیِ هر درخت. کم‌عمق (۳ تا ۸) معمولاً کافی است.</p></div>
+<div><p><b>subsample / colsample</b></p><p class="ex">هر درخت فقط بخشی از سطرها یا ستون‌ها را ببیند (مثل جنگل تصادفی). بیش‌برازش را کم و سرعت را زیاد می‌کند.</p></div>
+<div><p><b>min_child_weight / min_data_in_leaf</b></p><p class="ex">حداقلِ داده در هر برگ؛ جلوی برگ‌های ریز و حفظ کردنِ نویز را می‌گیرد.</p></div>
+<div><p><b>lambda / alpha / gamma</b></p><p class="ex">جریمه‌ی L2 و L1 روی مقدارِ برگ‌ها، و جریمه برای هر برگِ اضافه (XGBoost).</p></div>
+</div>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>گرادیان بوستینگ از صفر</b> (رگرسیون، با درختِ scikit-learn):</p>
+<pre>import numpy as np
+from sklearn.tree import DecisionTreeRegressor
+
+def fit_gb(X, y, n_trees=100, lr=0.1, depth=3):
+    f0 = y.mean()
+    F = np.full(len(y), f0)
+    trees = []
+    for _ in range(n_trees):
+        residual = y - F                       # = negative gradient of MSE
+        t = DecisionTreeRegressor(max_depth=depth).fit(X, residual)
+        F += lr * t.predict(X)                 # small step toward lower error
+        trees.append(t)
+    return f0, trees
+
+def predict_gb(f0, trees, X, lr=0.1):
+    return f0 + lr * sum(t.predict(X) for t in trees)</pre>
+<p><b>با XGBoost و early stopping:</b></p>
+<pre>import xgboost as xgb
+
+model = xgb.XGBClassifier(n_estimators=2000, learning_rate=0.05, max_depth=6,
+                          subsample=0.8, colsample_bytree=0.8,
+                          early_stopping_rounds=50, eval_metric="logloss")
+model.fit(X_train, y_train, eval_set=[(X_val, y_val)], verbose=False)
+print(model.best_iteration, model.score(X_test, y_test))</pre>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>How does gradient boosting work?</summary>
+<p>It builds an additive model one tree at a time. Start with a constant \(F_0\) (e.g. the mean). At step \(m\), compute the negative gradient of the loss for every training example (for MSE: the residual \(y - F_{m-1}(x)\)), fit a small tree \(h_m\) to it, and update \(F_m = F_{m-1} + \eta\, h_m\). Each tree corrects what the ensemble still gets wrong. Example: prices 300, 400, 600, 700; start at 500; after two depth-1 trees with \(\eta = 0.5\) the largest error drops from 200 to 87.5.</p></details>
+
+<details><summary>Why is it called "gradient" boosting?</summary>
+<p>Because each tree approximates the negative gradient of the loss with respect to the current predictions, i.e. it is gradient descent in function space. For \(L = \tfrac12(y-F)^2\), \(-\partial L/\partial F = y - F\), the residual. For log loss, it is \(y - p\). This makes the method work for any differentiable loss.</p></details>
+
+<details><summary>What is the difference between bagging (random forest) and boosting?</summary>
+<p>Bagging trains strong, deep models independently in parallel and averages them, which reduces <b>variance</b>; more trees never hurt. Boosting trains weak, shallow models sequentially, each fitting the errors of the previous ones, which reduces <b>bias</b>; too many rounds overfit, so it needs a learning rate and early stopping. Boosting is usually more accurate when tuned; random forest is more robust with defaults.</p>
+<p class="src">PracHub (bias-variance, bagging and boosting); Analytics Vidhya</p></details>
+
+<details><summary>What does the learning rate (shrinkage) do?</summary>
+<p>It scales each tree's contribution: \(F_m = F_{m-1} + \eta h_m\). Small \(\eta\) means each tree only nudges the model, so the noise of individual trees averages out and generalisation is usually better, at the cost of more trees. In the demo above, \(\eta = 1\) reaches its best test error at about 4 trees and then degrades quickly; \(\eta = 0.1\) needs about 60 trees but its curve is much flatter, so the exact number of trees matters less. Tune \(\eta\) and the number of trees together with early stopping on a validation set.</p></details>
+
+<details><summary>Can gradient boosting overfit? How do you prevent it?</summary>
+<p>Yes: with enough rounds it keeps reducing training error by fitting noise. Prevent it with early stopping, a small learning rate, shallow trees (<code>max_depth</code>, <code>num_leaves</code>), row and column subsampling, minimum samples per leaf, and L1/L2 regularisation on leaf values.</p></details>
+
+<details><summary>What does XGBoost do differently from plain gradient boosting?</summary>
+<p>(1) A regularised objective: \(\sum \text{loss} + \sum_{\text{trees}} \big(\gamma T + \tfrac12 \lambda \sum_j w_j^2\big)\), penalising the number of leaves \(T\) and large leaf values \(w_j\). (2) A second-order (Newton) step using both gradient and Hessian, which gives the optimal leaf value \(w_j = -G_j / (H_j + \lambda)\) and a closed-form split gain. (3) Engineering: sparsity-aware handling of missing values (a learned default direction), histogram/approximate split finding, parallel and cache-aware computation.</p>
+<p class="src">Analytics India Magazine (XGBoost interview questions)</p></details>
+
+<details><summary>XGBoost vs LightGBM vs CatBoost?</summary>
+<p><b>XGBoost:</b> regularised objective, second-order steps, level-wise trees; a robust default. <b>LightGBM:</b> histogram binning, leaf-wise growth (split the leaf with the largest gain), GOSS and feature bundling; fastest on large data but can overfit small data, so limit <code>num_leaves</code>. <b>CatBoost:</b> native categorical handling with ordered target statistics and ordered boosting to avoid target leakage; symmetric trees; good results with little tuning. Accuracy is usually similar; choose by data size, categorical features and speed.</p>
+<p class="src">KDnuggets; Towards Data Science; PracHub (compare XGBoost and LightGBM)</p></details>
+
+<details><summary>AdaBoost vs gradient boosting?</summary>
+<p>AdaBoost reweights the training examples: misclassified examples get larger weights so the next weak learner focuses on them, and each learner gets a vote weight based on its accuracy. Gradient boosting instead fits each new learner to the negative gradient (the residuals for squared error). AdaBoost is equivalent to gradient boosting with the exponential loss, which makes it sensitive to outliers and label noise.</p></details>
+
+<details><summary>Why are boosting trees shallow while random forest trees are deep?</summary>
+<p>Random forest reduces variance by averaging, so each tree should have low bias (deep) even if its variance is high. Boosting reduces bias by adding trees, so each tree only needs to capture a little structure; shallow trees (stumps to depth 8) keep each step small and the variance low. Tree depth in boosting also controls the order of feature interactions the model can learn.</p></details>
+
+<details><summary>How does gradient boosting do classification?</summary>
+<p>The trees predict a score (log-odds) \(F(x)\); the probability is \(p = \sigma(F(x))\). Each round fits a tree to the negative gradient of log loss, \(y - p\), and (in XGBoost/LightGBM) uses the Hessian \(p(1-p)\) to set leaf values. For \(K\) classes it fits \(K\) trees per round and uses softmax.</p></details>
+
+<details><summary>Implement gradient boosting for regression from scratch.</summary>
+<p>See the code above: initialise with the mean; loop: residual = y − F; fit a shallow regression tree to the residuals; F += lr × tree prediction. Mention early stopping on validation loss, and that for other losses you replace the residual with the negative gradient.</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://www.techprep.app/blog/gradient-boosting-interview-questions">TechPrep</a> · <a href="https://www.analyticsvidhya.com/blog/2022/12/ultimate-guide-to-boosting-algorithms/">Analytics Vidhya</a> · <a href="https://analyticsindiamag.com/ai-highlights/top-xgboost-interview-questions-for-data-scientists">Analytics India Magazine</a> · <a href="https://www.kdnuggets.com/2018/03/catboost-vs-light-gbm-vs-xgboost.html">KDnuggets</a> · <a href="https://towardsdatascience.com/catboost-vs-lightgbm-vs-xgboost-c80f40662924/">Towards Data Science</a> · <a href="https://prachub.com/interview-questions/compare-xgboost-and-lightgbm">PracHub</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+
+let seed = 5; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const truth = x => 3 + 2 * Math.sin(x * 0.9) + 0.25 * x;
+const gen = n => Array.from({ length: n }, () => { const x = rnd() * 10; return [x, truth(x) + (rnd() - .5) * 2.2]; });
+const TR = gen(40).sort((a, b) => a[0] - b[0]), TE = gen(150);
+const fitTree = (pts, d) => { const m = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+  if (d === 0 || pts.length < 4) return { v: m };
+  const xs = pts.map(p => p[0]).sort((a, b) => a - b); let best = null;
+  const sse = P => { const mm = P.reduce((a, p) => a + p[1], 0) / P.length; return P.reduce((a, p) => a + (p[1] - mm) ** 2, 0); };
+  for (let i = 1; i < xs.length; i++) { const t = (xs[i - 1] + xs[i]) / 2, L = pts.filter(p => p[0] <= t), R = pts.filter(p => p[0] > t);
+    if (L.length < 2 || R.length < 2) continue; const s = sse(L) + sse(R); if (!best || s < best.s) best = { t, s, L, R }; }
+  if (!best) return { v: m }; return { t: best.t, l: fitTree(best.L, d - 1), r: fitTree(best.R, d - 1) }; };
+const pt = (n, x) => 'v' in n ? n.v : (x <= n.t ? pt(n.l, x) : pt(n.r, x));
+const F0 = TR.reduce((a, p) => a + p[1], 0) / TR.length;
+const cache = {};
+const model = lr => { if (cache[lr]) return cache[lr]; const trees = [], curve = [];
+  const F = (x, k) => F0 + trees.slice(0, k).reduce((a, t) => a + lr * pt(t, x), 0);
+  const rm = (D, k) => Math.sqrt(D.reduce((a, [x, y]) => a + (y - F(x, k)) ** 2, 0) / D.length);
+  curve.push([rm(TR, 0), rm(TE, 0)]);
+  for (let k = 1; k <= 200; k++) { trees.push(fitTree(TR.map(([x, y]) => [x, y - F(x, k - 1)]), 2)); curve.push([rm(TR, k), rm(TE, k)]); }
+  return cache[lr] = { F, curve }; };
+const rounds = document.getElementById('rounds'), lrSel = document.getElementById('lr');
+const draw = () => { const k = +rounds.value, lr = +lrSel.value, m = model(lr);
+  const [c, W, Ht] = mk(document.getElementById('fit'), 0.55, 532), X = x => 12 + x / 10 * (W - 20), Y = y => Ht - 10 - (y - 0) / 8.5 * (Ht - 20);
+  c.strokeStyle = css('muted'); c.setLineDash([4, 4]); c.lineWidth = 1.5; c.beginPath(); for (let i = 0; i <= 200; i++) { const x = i / 20; i ? c.lineTo(X(x), Y(truth(x))) : c.moveTo(X(x), Y(truth(x))); } c.stroke(); c.setLineDash([]);
+  c.fillStyle = css('blue'); TR.forEach(([x, y]) => { c.beginPath(); c.arc(X(x), Y(y), 3.5, 0, 7); c.fill(); });
+  c.strokeStyle = css('accent'); c.lineWidth = 2.5; c.beginPath(); for (let i = 0; i <= 400; i++) { const x = i / 40, y = m.F(x, k); i ? c.lineTo(X(x), Y(y)) : c.moveTo(X(x), Y(y)); } c.stroke();
+  const [c2, W2, H2] = mk(document.getElementById('curve'), 0.35, 532), X2 = i => 12 + i / 200 * (W2 - 20), mx = 1.7, Y2 = v => H2 - 12 - v / mx * (H2 - 20);
+  [['blue', 0], ['red', 1]].forEach(([col, j]) => { c2.strokeStyle = css(col); c2.lineWidth = 2; c2.beginPath(); m.curve.forEach((v, i) => i ? c2.lineTo(X2(i), Y2(v[j])) : c2.moveTo(X2(i), Y2(v[j]))); c2.stroke(); });
+  c2.strokeStyle = css('ink'); c2.setLineDash([3, 3]); c2.beginPath(); c2.moveTo(X2(k), 0); c2.lineTo(X2(k), H2); c2.stroke(); c2.setLineDash([]);
+  c2.fillStyle = css('muted'); c2.font = '11px Vazirmatn'; c2.textAlign = 'center'; c2.fillText('تعداد درخت →', W2 / 2, H2 - 1);
+  const best = m.curve.reduce((b, v, i) => v[1] < m.curve[b][1] ? i : b, 0);
+  document.getElementById('roundsv').textContent = fa(k);
+  document.getElementById('finfo').innerHTML = `خطا (RMSE) روی آموزش: <b>${fa(m.curve[k][0], 2)}</b> · روی داده‌ی جدید: <b>${fa(m.curve[k][1], 2)}</b><br>کمترین خطای داده‌ی جدید با این نرخ: ${fa(m.curve[best][1], 2)} با <b>${fa(best)}</b> درخت`; };
+rounds.oninput = lrSel.onchange = draw;
+addEventListener('resize', draw); draw();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

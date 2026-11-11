@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>شبکه‌ی بازگشتی</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.ctl button { margin-top: 0; font-size: 13px; padding: 4px 10px; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.pic { width: 100%; display: block; margin: 8px auto; direction: ltr; }
+.pic text { font-family: "Vazirmatn", Tahoma, sans-serif; }
+.ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="cnn.html">شبکه‌ی کانولوشنی (CNN)</a> · <a href="transformer.html">بعدی: ترنسفورمر و Attention ←</a></p>
+<h1>شبکه‌ی بازگشتی <span class="en">(Recurrent Neural Network, RNN, LSTM)</span></h1>
+<p class="sub">شبکه‌ای که داده را قدم‌به‌قدم می‌خواند و یک حافظه‌ی کوچک با خودش می‌برد. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>خیلی از داده‌ها <b>دنباله</b> <span class="en">(Sequence)</span> هستند؛ یعنی ترتیب دارند:</p>
+<ul>
+<li><b>متن:</b> کلمه‌ها پشتِ سرِ هم می‌آیند.</li>
+<li><b>سری زمانی:</b> دمای هر ساعت، قیمتِ هر روز.</li>
+<li><b>تاریخچه‌ی تماشای یک کاربر:</b> ویدیوهایی که پشتِ سرِ هم دیده یا رد کرده.</li>
+</ul>
+<p>در دنباله، <b>ترتیب مهم است</b>. دو کاربر هر دو سه ویدیوی آشپزی دیده‌اند:</p>
+<div class="kinds">
+<div><p><b>کاربرِ الف</b></p><p class="ex">دید ✓ ← دید ✓ ← رد کرد ✗<br>اولش علاقه داشت، <b>حالا</b> خسته شده.</p></div>
+<div><p><b>کاربرِ ب</b></p><p class="ex">رد کرد ✗ ← دید ✓ ← دید ✓<br>اولش علاقه نداشت، <b>حالا</b> علاقه‌مند شده.</p></div>
+</div>
+<p style="margin-top:12px">هر دو دو بار دیده‌اند و یک بار رد کرده‌اند. ولی ویدیوی آشپزیِ بعدی را به کاربرِ ب باید بیشتر نشان داد.</p>
+<div class="key">RNN دنباله را یکی‌یکی می‌خواند و بعد از هر قدم یک «خلاصه» از گذشته نگه می‌دارد. این خلاصه را <b>حالتِ پنهان</b> <span class="en">(Hidden State)</span> می‌گویند.</div>
+<p><b>مثالِ اصلیِ این صفحه:</b> از روی تاریخچه‌ی تماشای یک کاربر، پیش‌بینی کن ویدیوی آشپزیِ بعدی را می‌بیند یا نه.</p>
+<p>چرا مهم است: RNN و LSTM سال‌ها مدلِ اصلیِ ترجمه، تشخیصِ گفتار و پیشنهادِ «بعدی چه ببیند» بودند. امروز ترنسفورمر جایشان را گرفته، ولی مصاحبه‌ها هنوز می‌پرسند، چون مشکلِ گرادیانِ محوشونده و ایده‌ی دریچه‌ها <span class="en">(Gates)</span> از همین‌جا آمده.</p>
+</section>
+
+<section>
+<h2>چرا شبکه‌ی معمولی کافی نیست</h2>
+<p>یک شبکه‌ی معمولی <span class="en">(Feedforward / MLP)</span> یک بردار با طولِ ثابت می‌گیرد و یک جواب می‌دهد. برای دنباله دو مشکل دارد:</p>
+<div class="kinds">
+<div><p><b>۱. اندازه‌ی ورودی ثابت است</b></p><p class="ex">اگر شبکه برای ۳ ویدیو ساخته شده باشد، کاربری که ۵۰ ویدیو دیده جا نمی‌شود. کاربری که ۱ ویدیو دیده هم باید با صفر پر شود.</p></div>
+<div><p><b>۲. حافظه و ترتیب ندارد</b></p><p class="ex">راهِ ساده این است که از همه میانگین بگیریم. با دید = ۱+ و رد = ۱−، میانگینِ کاربرِ الف و کاربرِ ب <b>هر دو ۰٫۳۳</b> می‌شود. ترتیب گم شد.</p></div>
+</div>
+<p style="margin-top:12px">یک مشکلِ دیگر: اگر برای هر جایگاه وزنِ جدا داشته باشیم، چیزی که شبکه درباره‌ی «ویدیوی سوم» یاد گرفته، به «ویدیوی دهم» نمی‌رسد. RNN این را با <b>وزنِ مشترک در همه‌ی قدم‌ها</b> حل می‌کند.</p>
+</section>
+
+<section>
+<h2>ایده‌ی RNN: حافظه‌ای که هر قدم به‌روز می‌شود</h2>
+<p>در هر قدمِ زمانی \(t\)، شبکه دو چیز می‌گیرد:</p>
+<ul>
+<li>ورودیِ همین قدم \(x_t\) (مثلاً: این ویدیو را دید یا رد کرد).</li>
+<li>حافظه‌ی قدمِ قبل \(h_{t-1}\).</li>
+</ul>
+<p>و یک حافظه‌ی جدید \(h_t\) می‌سازد. همین کار با <b>همان وزن‌ها</b> برای همه‌ی قدم‌ها تکرار می‌شود.</p>
+<svg class="pic" viewBox="0 0 400 150" style="max-width:600px">
+<defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>
+<g font-size="12" text-anchor="middle">
+<text x="55" y="14" fill="var(--muted)" font-size="10">شکلِ جمع‌شده</text>
+<rect x="30" y="55" width="50" height="34" rx="8" fill="color-mix(in srgb, var(--accent) 22%, var(--card))" stroke="var(--accent)"/><text x="55" y="77" fill="var(--ink)">RNN</text>
+<path d="M80,64 C110,40 110,100 82,82" fill="none" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#a1)"/><text x="112" y="74" fill="var(--accent)" font-size="10">h</text>
+<line x1="55" y1="128" x2="55" y2="92" stroke="var(--muted)" marker-end="url(#a1)"/><text x="55" y="142" fill="var(--ink)">xₜ</text>
+<line x1="55" y1="55" x2="55" y2="30" stroke="var(--muted)" marker-end="url(#a1)"/><text x="55" y="26" fill="var(--ink)">yₜ</text>
+<text x="140" y="77" fill="var(--muted)" font-size="20">=</text>
+<text x="280" y="14" fill="var(--muted)" font-size="10">شکلِ بازشده در زمان (Unrolled)</text>
+<rect x="160" y="60" width="30" height="24" rx="6" fill="var(--soft)" stroke="var(--muted)"/><text x="175" y="77" fill="var(--ink)" font-size="11">h₀</text>
+<line x1="190" y1="72" x2="208" y2="72" stroke="var(--muted)" marker-end="url(#a1)"/>
+<rect x="210" y="55" width="44" height="34" rx="8" fill="color-mix(in srgb, var(--accent) 22%, var(--card))" stroke="var(--accent)"/><text x="232" y="77" fill="var(--ink)">h₁</text>
+<line x1="254" y1="72" x2="272" y2="72" stroke="var(--muted)" marker-end="url(#a1)"/><text x="263" y="66" fill="var(--muted)" font-size="8">Wₕ</text>
+<rect x="274" y="55" width="44" height="34" rx="8" fill="color-mix(in srgb, var(--accent) 22%, var(--card))" stroke="var(--accent)"/><text x="296" y="77" fill="var(--ink)">h₂</text>
+<line x1="318" y1="72" x2="336" y2="72" stroke="var(--muted)" marker-end="url(#a1)"/><text x="327" y="66" fill="var(--muted)" font-size="8">Wₕ</text>
+<rect x="338" y="55" width="44" height="34" rx="8" fill="color-mix(in srgb, var(--accent) 22%, var(--card))" stroke="var(--accent)"/><text x="360" y="77" fill="var(--ink)">h₃</text>
+<line x1="232" y1="128" x2="232" y2="92" stroke="var(--muted)" marker-end="url(#a1)"/><text x="232" y="142" fill="var(--ink)">x₁</text>
+<line x1="296" y1="128" x2="296" y2="92" stroke="var(--muted)" marker-end="url(#a1)"/><text x="296" y="142" fill="var(--ink)">x₂</text>
+<line x1="360" y1="128" x2="360" y2="92" stroke="var(--muted)" marker-end="url(#a1)"/><text x="360" y="142" fill="var(--ink)">x₃</text>
+<text x="242" y="112" fill="var(--muted)" font-size="8">Wₓ</text><text x="306" y="112" fill="var(--muted)" font-size="8">Wₓ</text><text x="370" y="112" fill="var(--muted)" font-size="8">Wₓ</text>
+<line x1="360" y1="55" x2="360" y2="30" stroke="var(--muted)" marker-end="url(#a1)"/><text x="360" y="26" fill="var(--ink)">y</text>
+</g></svg>
+<div class="kinds">
+<div><p><b>شکلِ جمع‌شده</b></p><p class="ex">یک خانه با یک حلقه: خروجیِ هر قدم، ورودیِ قدمِ بعد است. اسمِ «بازگشتی» از همین حلقه است.</p></div>
+<div><p><b>شکلِ بازشده</b></p><p class="ex">همان شبکه، کپی‌شده برای هر قدم. همه‌ی کپی‌ها <b>یک</b> \(W_x\) و <b>یک</b> \(W_h\) دارند. پس تعدادِ پارامترها با طولِ دنباله زیاد نمی‌شود.</p></div>
+</div>
+</section>
+
+<section>
+<h2>فرمول</h2>
+<div class="f">\[ h_t = \tanh\left(W_x\, x_t + W_h\, h_{t-1} + b\right) \]</div>
+<div class="f">\[ \hat{y} = \sigma\left(W_y\, h_T + b_y\right) \]</div>
+<ul class="sym">
+<li>\(x_t\): ورودیِ قدمِ \(t\)</li>
+<li>\(h_t\): حالتِ پنهان (حافظه) بعد از قدمِ \(t\)</li>
+<li>\(h_{t-1}\): حافظه‌ی قدمِ قبل؛ \(h_0 = 0\)</li>
+<li>\(W_x\): وزنِ ورودی به حافظه</li>
+<li>\(W_h\): وزنِ بازگشتی، حافظه‌ی قبلی به حافظه‌ی جدید</li>
+<li>\(b\): بایاس</li>
+<li>\(\tanh\): خروجی را بین ۱− و ۱ نگه می‌دارد</li>
+<li>\(W_y, b_y\): وزن و بایاسِ لایه‌ی خروجی</li>
+<li>\(\sigma\): سیگموید؛ عدد را به احتمال تبدیل می‌کند</li>
+<li>\(T\): طولِ دنباله (قدمِ آخر)</li>
+<li>\(\hat{y}\): احتمالِ این‌که ویدیوی بعدی را ببیند</li>
+</ul>
+<p class="ex">در عمل \(x_t\) و \(h_t\) بردار هستند (مثلاً \(h_t\) با ۱۲۸ عدد) و \(W_x, W_h\) ماتریس. در مثالِ زیر برای سادگی همه یک عدد هستند.</p>
+</section>
+
+<section>
+<h2>مثال با عدد: سه قدم با دست</h2>
+<p>کاربرِ الف: دید، دید، رد کرد. پس \(x = (1, 1, -1)\). وزن‌ها: \(W_x = 0.5\)، \(W_h = 0.8\)، \(b = 0\)، \(h_0 = 0\).</p>
+<div dir="ltr"><table>
+<tr><th>step t</th><th>xₜ</th><th>a = 0.5·xₜ + 0.8·hₜ₋₁</th><th>hₜ = tanh(a)</th></tr>
+<tr><td>1</td><td>+1</td><td>0.5 + 0.8 × 0 = 0.5</td><td>0.462</td></tr>
+<tr><td>2</td><td>+1</td><td>0.5 + 0.8 × 0.462 = 0.870</td><td>0.701</td></tr>
+<tr><td>3</td><td>−1</td><td>−0.5 + 0.8 × 0.701 = 0.061</td><td>0.061</td></tr>
+</table></div>
+<ul class="ex" style="margin-top:8px">
+<li><b>قدمِ ۱:</b> کاربر دید؛ حافظه مثبت شد: ۰٫۴۶۲.</li>
+<li><b>قدمِ ۲:</b> دوباره دید؛ حافظه‌ی قبلی هم کمک کرد، پس بیشتر شد: ۰٫۷۰۱.</li>
+<li><b>قدمِ ۳:</b> رد کرد؛ ۰٫۵− تقریباً همه‌ی حافظه را خنثی کرد: ۰٫۰۶۱.</li>
+</ul>
+<p>خروجی با \(W_y = 2\) و \(b_y = 0\): \(\hat{y} = \sigma(2 \times 0.061) = 0.530\). یعنی تقریباً پنجاه‌پنجاه.</p>
+<p>حالا کاربرِ ب با همان سه ورودی، ولی به ترتیبِ دیگر: \(x = (-1, 1, 1)\):</p>
+<div class="kinds">
+<div><p><b>کاربرِ الف</b> <span class="en">(1, 1, −1)</span></p><p class="ex">\(h\): ۰٫۴۶۲ ← ۰٫۷۰۱ ← ۰٫۰۶۱<br>احتمالِ دیدن: <b>۰٫۵۳</b></p></div>
+<div><p><b>کاربرِ ب</b> <span class="en">(−1, 1, 1)</span></p><p class="ex">\(h\): ۰٫۴۶۲− ← ۰٫۱۳۰ ← ۰٫۵۴۰<br>احتمالِ دیدن: <b>۰٫۷۵</b></p></div>
+</div>
+<div class="key" style="margin-top:12px">همان ورودی‌ها، ترتیبِ متفاوت، جوابِ متفاوت. میانگین هر دو را ۰٫۳۳ می‌دید؛ RNN فرقشان را می‌فهمد.</div>
+</section>
+
+<section>
+<h2>خودتان ببینید: RNN باز شده در زمان</h2>
+<p>پنج ویدیو. روی هر ویدیو بزنید تا عوض شود (دید / رد کرد / هیچ). بعد «قدمِ بعد» را بزنید تا حافظه یکی‌یکی حساب شود. \(W_x = 0.5\) و \(W_y = 2\) ثابت‌اند.</p>
+<div class="box">
+<div class="ctl" id="xbtns" dir="ltr" style="justify-content:center"></div>
+<canvas id="unroll"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>حافظه‌ی مثبت (علاقه)</span><span><i style="background:var(--red)"></i>حافظه‌ی منفی (بی‌علاقگی)</span><span>پررنگ‌تر = عددِ بزرگ‌تر</span></div>
+<label>وزنِ بازگشتی \(W_h\) <input id="wh" type="range" min="0" max="1.5" step="0.1" value="0.8"><b id="whv"></b></label>
+<div class="ctl"><button id="stepb">قدمِ بعد</button><button id="allb">همه‌ی قدم‌ها</button><button id="resetb">از اول</button></div>
+<div class="err" id="uinfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>\(W_h = 0\)</b></p><p class="ex">بدونِ حافظه. هر \(h\) فقط به ویدیوی همان قدم بستگی دارد: یا ۰٫۴۶۲ یا ۰٫۴۶۲−.</p></div>
+<div><p><b>\(W_h = 0.5\)</b></p><p class="ex">حافظه‌ی کوتاه. اگر فقط ویدیوی اول دیده شود و بقیه «هیچ» باشند، ۰٫۴۶۲ در چهار قدم به ۰٫۰۲۸ می‌رسد.</p></div>
+<div><p><b>\(W_h = 1.5\)</b></p><p class="ex">حافظه‌ی خیلی قوی. با دنباله‌ی پیش‌فرض، بعد از دو «رد کرد» هم \(h\) مثبت می‌ماند (آخرش ۰٫۶۸۸). مدل به گذشته می‌چسبد.</p></div>
+</div>
+</section>
+
+<section>
+<h2>آموزش: پس‌انتشار در زمان (BPTT)</h2>
+<p>برای آموزش، شبکه را در زمان <b>باز</b> می‌کنیم (مثلِ شکلِ بالا) و آن را یک شبکه‌ی عمیقِ معمولی می‌بینیم که هر قدم یک لایه است. بعد پس‌انتشارِ معمولی را از قدمِ آخر به قدمِ اول اجرا می‌کنیم. به این <b>پس‌انتشار در زمان</b> <span class="en">(Backpropagation Through Time, BPTT)</span> می‌گویند.</p>
+<p>دو نکته:</p>
+<ul>
+<li>چون \(W_h\) در همه‌ی قدم‌ها یکی است، گرادیانش <b>جمعِ</b> سهمِ همه‌ی قدم‌ها است.</li>
+<li>برای این‌که خطای قدمِ آخر به قدمِ اول برسد، باید از همه‌ی قدم‌های بین عبور کند. در هر قدم در یک عدد ضرب می‌شود:</li>
+</ul>
+<div class="f">\[ \frac{\partial h_T}{\partial h_k} = \prod_{t=k+1}^{T} \frac{\partial h_t}{\partial h_{t-1}} = \prod_{t=k+1}^{T} W_h \left(1 - h_t^2\right) \]</div>
+<ul class="sym">
+<li>\(\partial h_T / \partial h_k\): اثرِ حافظه‌ی قدمِ \(k\) روی حافظه‌ی آخر</li>
+<li>\(\prod\): ضربِ همه‌ی جمله‌ها</li>
+<li>\(1 - h_t^2\): مشتقِ \(\tanh\)؛ همیشه بین ۰ و ۱</li>
+</ul>
+<p><b>با عددهای مثالِ سه‌قدمی:</b></p>
+<div class="f">\[ \frac{\partial h_3}{\partial h_1} = \underbrace{0.8\,(1 - 0.061^2)}_{0.797} \times \underbrace{0.8\,(1 - 0.701^2)}_{0.407} = 0.324 \]</div>
+<p>فقط با دو قدم، اثرِ قدمِ اول به حدودِ یک‌سوم رسید. با بیست قدم چه می‌شود؟</p>
+<details class="drop"><summary><b>BPTT بریده‌شده (Truncated BPTT)</b></summary>
+<p>برای دنباله‌های خیلی بلند (مثلاً ۱۰٬۰۰۰ قدم)، نگه داشتنِ همه‌ی قدم‌ها در حافظه و برگشتن تا اول خیلی گران است. پس دنباله را به تکه‌های مثلاً ۱۰۰ قدمی می‌بُریم: حالتِ پنهان از تکه‌ی قبل به تکه‌ی بعد می‌رود، ولی گرادیان فقط تا اولِ همان تکه برمی‌گردد. ارزان‌تر است، ولی مدل وابستگی‌های بلندتر از تکه را سخت‌تر یاد می‌گیرد.</p>
+</details>
+</section>
+
+<section>
+<h2>گرادیانِ محوشونده و انفجاری</h2>
+<p>اگر مشتقِ \(\tanh\) را کنار بگذاریم، گرادیان در هر قدم در \(W_h\) ضرب می‌شود. بعد از ۲۰ قدم:</p>
+<div class="kinds">
+<div><p><b>محوشونده</b> <span class="en">(Vanishing)</span></p><p class="ex">\(0.5^{20} \approx 0.00000095\)<br>اثرِ ویدیوی ۲۰ قدم قبل عملاً صفر است. مدل گذشته‌ی دور را یاد نمی‌گیرد.</p></div>
+<div><p><b>انفجاری</b> <span class="en">(Exploding)</span></p><p class="ex">\(1.5^{20} \approx 3325\)<br>گرادیان خیلی بزرگ می‌شود، وزن‌ها با یک قدم پرت می‌شوند و loss به NaN می‌رسد.</p></div>
+</div>
+<p style="margin-top:12px">فقط وقتی \(W_h\) دقیقاً نزدیکِ ۱ باشد گرادیان سالم می‌ماند، که خیلی شکننده است. در RNN واقعی مشتقِ \(\tanh\) هم (که ≤ ۱ است) در هر قدم ضرب می‌شود، پس محو شدن از این هم سریع‌تر است. در حالتِ برداری، به‌جای \(W_h\) بزرگ‌ترین مقدارِ ویژه‌ی ماتریسِ \(W_h\) تعیین می‌کند کدام اتفاق بیفتد.</p>
+<div class="box">
+<canvas id="grad"></canvas>
+<div class="legend"><span>محورِ افقی: چند قدم به عقب</span><span>محورِ عمودی: \(W_h^k\)، مقیاسِ لگاریتمی</span></div>
+<label>وزنِ بازگشتی \(W_h\) <input id="gw" type="range" min="0.1" max="1.6" step="0.05" value="0.5"><b id="gwv"></b></label>
+<div class="err" id="ginfo"></div>
+</div>
+
+<h3 style="font-size:17px;margin:20px 0 6px">برای انفجار: بریدنِ گرادیان (Gradient Clipping)</h3>
+<p>اگر طولِ بردارِ گرادیان از یک سقف بیشتر شد، آن را کوچک کن تا طولش همان سقف شود. جهتش عوض نمی‌شود:</p>
+<div class="f">\[ g \leftarrow g \cdot \frac{\tau}{\lVert g \rVert} \quad \text{if } \lVert g \rVert > \tau \]</div>
+<ul class="sym">
+<li>\(g\): بردارِ گرادیان</li>
+<li>\(\lVert g \rVert\): طولِ آن</li>
+<li>\(\tau\): سقف، مثلاً ۱ یا ۵</li>
+</ul>
+<p class="ex">مثال: \(g = (30, 40)\)، طول = ۵۰، سقف = ۵. پس \(g\) در \(5/50 = 0.1\) ضرب می‌شود و \((3, 4)\) می‌شود. Clipping فقط انفجار را درمان می‌کند؛ برای محو شدن، باید معماری را عوض کرد: LSTM.</p>
+</section>
+
+<section>
+<h2>LSTM: حافظه با دریچه</h2>
+<p>LSTM <span class="en">(Long Short-Term Memory)</span> کنارِ \(h_t\) یک حافظه‌ی دوم دارد: <b>حالتِ سلول</b> \(c_t\) <span class="en">(Cell State)</span>. این حافظه مثلِ یک نوار در طولِ زمان جلو می‌رود و سه <b>دریچه</b> تصمیم می‌گیرند چه چیزی پاک شود، چه چیزی اضافه شود و چه چیزی بیرون برود. هر دریچه یک عدد بین ۰ (کاملاً بسته) و ۱ (کاملاً باز) است.</p>
+<svg class="pic" viewBox="0 0 400 200" style="max-width:600px">
+<defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>
+<g font-size="11" text-anchor="middle">
+<rect x="10" y="8" width="380" height="150" rx="12" fill="none" stroke="var(--line)"/>
+<line x1="0" y1="34" x2="80" y2="34" stroke="var(--accent)" stroke-width="2.5"/><text x="30" y="26" fill="var(--accent)">cₜ₋₁</text>
+<circle cx="92" cy="34" r="11" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><text x="92" y="38" fill="var(--ink)">×</text>
+<line x1="103" y1="34" x2="177" y2="34" stroke="var(--accent)" stroke-width="2.5"/>
+<circle cx="189" cy="34" r="11" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><text x="189" y="39" fill="var(--ink)">+</text>
+<line x1="200" y1="34" x2="398" y2="34" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#a2)"/><text x="375" y="26" fill="var(--accent)">cₜ</text>
+<text x="140" y="26" fill="var(--muted)" font-size="9">نوارِ حافظه</text>
+<rect x="68" y="108" width="48" height="26" rx="6" fill="color-mix(in srgb, var(--red) 22%, var(--card))" stroke="var(--red)"/><text x="92" y="125" fill="var(--ink)">f · σ</text>
+<line x1="92" y1="108" x2="92" y2="47" stroke="var(--muted)" marker-end="url(#a2)"/>
+<rect x="138" y="108" width="44" height="26" rx="6" fill="color-mix(in srgb, var(--blue) 22%, var(--card))" stroke="var(--blue)"/><text x="160" y="125" fill="var(--ink)">i · σ</text>
+<rect x="196" y="108" width="50" height="26" rx="6" fill="var(--soft)" stroke="var(--muted)"/><text x="221" y="125" fill="var(--ink)">c̃ · tanh</text>
+<circle cx="189" cy="80" r="11" fill="var(--card)" stroke="var(--muted)"/><text x="189" y="84" fill="var(--ink)">×</text>
+<line x1="160" y1="108" x2="182" y2="89" stroke="var(--muted)" marker-end="url(#a2)"/><line x1="221" y1="108" x2="196" y2="89" stroke="var(--muted)" marker-end="url(#a2)"/>
+<line x1="189" y1="69" x2="189" y2="47" stroke="var(--muted)" marker-end="url(#a2)"/>
+<rect x="262" y="108" width="44" height="26" rx="6" fill="color-mix(in srgb, var(--orange) 22%, var(--card))" stroke="var(--orange)"/><text x="284" y="125" fill="var(--ink)">o · σ</text>
+<line x1="330" y1="34" x2="330" y2="56" stroke="var(--muted)" marker-end="url(#a2)"/>
+<rect x="310" y="57" width="40" height="18" rx="9" fill="var(--soft)" stroke="var(--muted)"/><text x="330" y="70" fill="var(--ink)" font-size="10">tanh</text>
+<circle cx="330" cy="100" r="11" fill="var(--card)" stroke="var(--muted)"/><text x="330" y="104" fill="var(--ink)">×</text>
+<line x1="330" y1="75" x2="330" y2="88" stroke="var(--muted)" marker-end="url(#a2)"/>
+<polyline points="284,108 284,100 318,100" fill="none" stroke="var(--muted)" marker-end="url(#a2)"/>
+<line x1="341" y1="100" x2="398" y2="100" stroke="var(--ink)" stroke-width="1.5" marker-end="url(#a2)"/><text x="375" y="94" fill="var(--ink)">hₜ</text>
+<line x1="40" y1="172" x2="300" y2="172" stroke="var(--muted)"/>
+<line x1="92" y1="172" x2="92" y2="135" stroke="var(--muted)" marker-end="url(#a2)"/><line x1="160" y1="172" x2="160" y2="135" stroke="var(--muted)" marker-end="url(#a2)"/>
+<line x1="221" y1="172" x2="221" y2="135" stroke="var(--muted)" marker-end="url(#a2)"/><line x1="284" y1="172" x2="284" y2="135" stroke="var(--muted)" marker-end="url(#a2)"/>
+<text x="40" y="190" fill="var(--ink)" font-size="10">[hₜ₋₁, xₜ]</text>
+<text x="92" y="150" fill="var(--red)" font-size="9">فراموشی</text><text x="160" y="150" fill="var(--blue)" font-size="9">ورودی</text><text x="221" y="150" fill="var(--muted)" font-size="9">نامزد</text><text x="284" y="150" fill="var(--orange)" font-size="9">خروجی</text>
+</g></svg>
+<div class="kinds">
+<div><p><b style="color:var(--red)">دریچه‌ی فراموشی</b> \(f_t\)</p><p class="ex">چقدر از حافظه‌ی قبلی بماند؟ مثال: کاربر سراغِ ویدیوهای ورزشی رفته؛ علاقه‌ی قدیمی به آشپزی کمی پاک شود.</p></div>
+<div><p><b style="color:var(--blue)">دریچه‌ی ورودی</b> \(i_t\)</p><p class="ex">چقدر از اطلاعاتِ جدید \(\tilde{c}_t\) نوشته شود؟ مثال: یک ویدیوی تصادفی که فقط ۲ ثانیه دیده شده، زیاد نوشته نشود.</p></div>
+<div><p><b style="color:var(--orange)">دریچه‌ی خروجی</b> \(o_t\)</p><p class="ex">چه بخشی از حافظه الان به کار بیاید؟ مثال: الان ویدیوی آشپزی پیشنهاد می‌دهیم، پس بخشِ «آشپزی» حافظه بیرون برود.</p></div>
+</div>
+<div class="f" style="margin-top:12px">\[ \begin{aligned} f_t &= \sigma(W_f [h_{t-1}, x_t] + b_f) & i_t &= \sigma(W_i [h_{t-1}, x_t] + b_i) \\ o_t &= \sigma(W_o [h_{t-1}, x_t] + b_o) & \tilde{c}_t &= \tanh(W_c [h_{t-1}, x_t] + b_c) \\ c_t &= f_t \odot c_{t-1} + i_t \odot \tilde{c}_t & h_t &= o_t \odot \tanh(c_t) \end{aligned} \]</div>
+<ul class="sym">
+<li>\([h_{t-1}, x_t]\): دو بردار کنارِ هم چسبیده</li>
+<li>\(\sigma\): سیگموید، خروجی بین ۰ و ۱ (دریچه)</li>
+<li>\(\odot\): ضربِ عنصر به عنصر</li>
+<li>\(c_t\): حالتِ سلول (حافظه‌ی بلندمدت)</li>
+<li>\(\tilde{c}_t\): اطلاعاتِ نامزد برای نوشتن</li>
+<li>\(h_t\): حالتِ پنهان (خروجیِ این قدم)</li>
+</ul>
+<p><b>یک قدم با عدد:</b> حافظه‌ی قبلی \(c_{t-1} = 0.8\) (علاقه به آشپزی). کاربر این ویدیو را رد کرد، پس \(\tilde{c}_t = -1\). دریچه‌ها: \(f = 0.9\)، \(i = 0.2\)، \(o = 0.7\).</p>
+<div class="f">\[ c_t = 0.9 \times 0.8 + 0.2 \times (-1) = 0.52 \qquad h_t = 0.7 \times \tanh(0.52) = 0.334 \]</div>
+<p class="ex">یک «رد کرد» حافظه را از ۰٫۸ به ۰٫۵۲ آورد، ولی پاکش نکرد. در RNN ساده‌ی مثالِ بالا، یک «رد کرد» حافظه را از ۰٫۷۰ به ۰٫۰۶ رساند.</p>
+<div class="key">رازِ LSTM خطِ \(c_t = f_t \odot c_{t-1} + \dots\) است: حافظه با <b>جمع</b> به‌روز می‌شود، نه با ضرب در یک ماتریس و رد شدن از tanh. در مسیرِ مستقیمِ نوار، گرادیان در هر قدم فقط در \(f_t\) ضرب می‌شود، و مدل می‌تواند یاد بگیرد \(f_t\) را نزدیکِ ۱ نگه دارد.</div>
+<div class="box">
+<canvas id="forget"></canvas>
+<div class="legend"><span><i style="background:var(--accent)"></i>LSTM: \(f^k\)، سهمِ حافظه یا گرادیان بعد از \(k\) قدم</span><span><i style="background:var(--red)"></i>RNN ساده با \(W_h = 0.5\)</span></div>
+<label>دریچه‌ی فراموشی \(f\) <input id="fg" type="range" min="0.3" max="1" step="0.01" value="0.95"><b id="fgv"></b></label>
+<div class="err" id="finfo"></div>
+</div>
+<p class="ex" style="margin-top:8px">در عمل بایاسِ دریچه‌ی فراموشی را اول کار مثبت (مثلاً ۱) می‌گذارند تا \(f\) از اول نزدیکِ ۱ باشد و حافظه زود پاک نشود.</p>
+</section>
+
+<section>
+<h2>GRU: نسخه‌ی ساده‌تر</h2>
+<p>GRU <span class="en">(Gated Recurrent Unit)</span> حالتِ سلولِ جدا ندارد و دو دریچه دارد:</p>
+<div class="f">\[ \begin{aligned} z_t &= \sigma(W_z [h_{t-1}, x_t]) & r_t &= \sigma(W_r [h_{t-1}, x_t]) \\ \tilde{h}_t &= \tanh(W [r_t \odot h_{t-1}, x_t]) & h_t &= (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t \end{aligned} \]</div>
+<ul class="sym">
+<li>\(z_t\): دریچه‌ی به‌روزرسانی؛ چقدر حافظه عوض شود</li>
+<li>\(r_t\): دریچه‌ی بازنشانی؛ چقدر از گذشته در نامزد استفاده شود</li>
+<li>\(\tilde{h}_t\): حافظه‌ی نامزد</li>
+</ul>
+<p>\(z_t\) کارِ دو دریچه‌ی فراموشی و ورودیِ LSTM را با هم می‌کند: هرچه بیشتر بنویسد، همان‌قدر کمتر نگه می‌دارد.</p>
+<div class="kinds">
+<div><p><b>RNN ساده</b></p><p class="ex">۱ ماتریسِ وزن<br>ورودیِ ۱۰، حافظه‌ی ۲۰: <b>۶۴۰</b> پارامتر<br>حافظه‌ی کوتاه</p></div>
+<div><p><b>LSTM</b></p><p class="ex">۴ ماتریس (۳ دریچه + نامزد)<br>همان اندازه: <b>۲٬۵۶۰</b> پارامتر<br>حافظه‌ی بلند، کمی قوی‌تر روی داده‌ی زیاد</p></div>
+<div><p><b>GRU</b></p><p class="ex">۳ ماتریس (۲ دریچه + نامزد)<br>همان اندازه: <b>۱٬۹۲۰</b> پارامتر<br>سریع‌تر، معمولاً تقریباً هم‌دقتِ LSTM</p></div>
+</div>
+<p class="ex" style="margin-top:8px">شمارش مثلِ PyTorch است: هر ماتریس \(20 \times 10 + 20 \times 20\) وزن و دو بایاسِ ۲۰تایی، یعنی ۶۴۰.</p>
+</section>
+
+<section>
+<h2>سه شکلِ مسئله</h2>
+<p>RNN را می‌شود به چند شکل به ورودی و خروجی وصل کرد:</p>
+<div class="kinds">
+<div><p><b>چند به یک</b> <span class="en">(Many-to-One)</span></p><svg class="pic" id="s1" viewBox="0 0 200 120"></svg><p class="ex">کلِ دنباله ← یک جواب. فقط \(h_T\) به خروجی می‌رود.<br>مثال: تاریخچه‌ی ۲۰ ویدیو ← «این کاربر ماهِ بعد اپ را ترک می‌کند؟»</p></div>
+<div><p><b>چند به چند</b> <span class="en">(Many-to-Many)</span></p><svg class="pic" id="s2" viewBox="0 0 200 120"></svg><p class="ex">هر قدم یک جواب. هم‌طولِ ورودی.<br>مثال: بعد از هر ویدیو ← «ویدیوی بعدی کدام است؟»</p></div>
+<div><p><b>دنباله به دنباله</b> <span class="en">(Seq2Seq)</span></p><svg class="pic" id="s3" viewBox="0 0 200 120"></svg><p class="ex">یک RNN (رمزگذار) کلِ ورودی را در یک بردار خلاصه می‌کند؛ RNN دوم (رمزگشا) از آن خروجی می‌سازد. طول‌ها می‌توانند فرق کنند.<br>مثال: ترجمه‌ی «I love tea» (۳ کلمه) ← «چای دوست دارم» (۳ کلمه)، یا جمله‌ی ۵ کلمه‌ای ← ۷ کلمه.</p></div>
+</div>
+<details class="drop"><summary><b>RNN دوطرفه (Bidirectional)</b></summary>
+<p>دو RNN: یکی از اول به آخر، یکی از آخر به اول. در هر قدم دو حافظه کنارِ هم گذاشته می‌شوند، پس هر کلمه هم چپ و هم راستش را می‌بیند. برای برچسب زدنِ کلمه‌های یک جمله‌ی کامل خوب است. برای پیش‌بینیِ «ویدیوی بعدی» نمی‌شود از آن استفاده کرد، چون آینده هنوز وجود ندارد.</p>
+</details>
+</section>
+
+<section>
+<h2>محدودیت‌ها: راه به ترنسفورمر</h2>
+<div class="kinds">
+<div><p><b>کُند، چون پشتِ سرِ هم است</b></p><p class="ex">برای حساب کردنِ \(h_{100}\) باید اول \(h_{99}\) را داشت. یک جمله‌ی ۱۰۰۰ کلمه‌ای یعنی ۱۰۰۰ قدمِ پشتِ سرِ هم که روی GPU موازی نمی‌شوند. ترنسفورمر همه‌ی کلمه‌ها را <b>هم‌زمان</b> پردازش می‌کند.</p></div>
+<div><p><b>حافظه‌ی دور هنوز ضعیف است</b></p><p class="ex">حتی در LSTM، اطلاعاتِ ۵۰۰ قدم قبل باید از ۵۰۰ قدم رد شود. با \(f = 0.99\) بعد از ۱۰۰ قدم فقط \(0.99^{100} \approx 0.37\) می‌ماند. در ترنسفورمر هر کلمه مستقیم (فاصله‌ی ۱) به هر کلمه‌ی دیگر نگاه می‌کند.</p></div>
+<div><p><b>گلوگاهِ Seq2Seq</b></p><p class="ex">کلِ جمله‌ی ورودی باید در <b>یک</b> بردار جا شود. برای جمله‌ی بلند اطلاعات گم می‌شود. راه‌حل Attention بود: رمزگشا در هر قدم به همه‌ی حالت‌های رمزگذار نگاه کند. ترنسفورمر همین Attention را بدونِ RNN به کار می‌برد.</p></div>
+</div>
+<p style="margin-top:12px">RNN هنوز جا دارد: روی دستگاه‌های کوچک، برای جریانِ داده‌ی زنده (هر قدم فقط یک به‌روزرسانیِ ارزان)، و در مدل‌های جدیدِ فضای حالت <span class="en">(State Space Models, Mamba)</span> که دوباره ایده‌ی حافظه‌ی بازگشتی را با سرعتِ بیشتر زنده کرده‌اند.</p>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>گذرِ رو به جلوی RNN از صفر با NumPy:</b></p>
+<pre>import numpy as np
+
+def rnn_forward(X, Wx, Wh, b, h0):
+    """X: (T, d_in). Wx: (d_h, d_in). Wh: (d_h, d_h). b, h0: (d_h,)"""
+    h, hs = h0, []
+    for x_t in X:                          # one step at a time, same weights
+        h = np.tanh(Wx @ x_t + Wh @ h + b)
+        hs.append(h)
+    return np.stack(hs)                    # (T, d_h): every hidden state
+
+# the hand example: watched, watched, skipped
+X  = np.array([[1.0], [1.0], [-1.0]])
+hs = rnn_forward(X, Wx=np.array([[0.5]]), Wh=np.array([[0.8]]),
+                 b=np.zeros(1), h0=np.zeros(1))
+print(hs.ravel().round(3))                 # [0.462 0.701 0.061]
+
+sigmoid = lambda z: 1 / (1 + np.exp(-z))
+print(sigmoid(2 * hs[-1]).round(3))        # [0.53]  many-to-one output</pre>
+<p><b>با PyTorch و nn.LSTM</b> (چند به یک: از تاریخچه‌ی تماشا، احتمالِ دیدنِ ویدیوی بعدی):</p>
+<pre>import torch
+import torch.nn as nn
+
+class WatchModel(nn.Module):
+    def __init__(self, n_videos, emb=32, hidden=64):
+        super().__init__()
+        self.emb  = nn.Embedding(n_videos, emb)          # video id -> vector
+        self.lstm = nn.LSTM(emb, hidden, batch_first=True)
+        self.head = nn.Linear(hidden, 1)
+
+    def forward(self, ids):                              # ids: (batch, T)
+        out, (h_n, c_n) = self.lstm(self.emb(ids))       # out: (batch, T, hidden)
+        return self.head(h_n[-1]).squeeze(1)             # last hidden state -> logit
+
+model = WatchModel(n_videos=10_000)
+opt   = torch.optim.Adam(model.parameters(), lr=1e-3)
+ids   = torch.randint(0, 10_000, (8, 20))                # 8 users, 20 videos each
+y     = torch.randint(0, 2, (8,)).float()                # watched the next one?
+
+loss = nn.BCEWithLogitsLoss()(model(ids), y)
+opt.zero_grad()
+loss.backward()                                          # BPTT happens here
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)   # gradient clipping
+opt.step()</pre>
+<p class="ex">برای دنباله‌هایی با طولِ متفاوت، آن‌ها را با صفر هم‌طول کنید و با <code>nn.utils.rnn.pack_padded_sequence</code> به LSTM بدهید تا قدم‌های خالی حساب نشوند. برای GRU کافی است <code>nn.LSTM</code> را با <code>nn.GRU</code> عوض کنید (خروجی‌اش <code>out, h_n</code> است، بدونِ <code>c_n</code>).</p>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>What is an RNN and how does it differ from a feedforward network?</summary>
+<p>An RNN processes a sequence one step at a time and carries a hidden state \(h_t\) that summarises everything seen so far: \(h_t = \tanh(W_x x_t + W_h h_{t-1} + b)\). A feedforward network maps one fixed-size input to an output with no memory. The RNN uses the <b>same</b> weights at every step, so it handles any sequence length with a fixed number of parameters and can use order. Example: with \(W_x = 0.5, W_h = 0.8\), the sequences (1, 1, −1) and (−1, 1, 1) end with \(h_3 = 0.061\) and \(0.540\); their mean is identical (0.33), so an order-blind model could not tell them apart.</p>
+<p class="src">Analytics Vidhya Q1–Q2; Devinterview Q1</p></details>
+
+<details><summary>How do RNNs handle variable-length inputs?</summary>
+<p>Because the same cell is applied at every step, the loop simply runs \(T\) times for a sequence of length \(T\). In mini-batches, sequences are padded to the same length and either masked or packed (PyTorch <code>pack_padded_sequence</code>) so padded steps do not update the state or the loss. For many-to-one tasks you take the hidden state at each sequence's true last step, not at the padded end.</p>
+<p class="src">Analytics Vidhya Q4</p></details>
+
+<details><summary>What is backpropagation through time (BPTT)?</summary>
+<p>Unroll the RNN over the sequence so it becomes a deep feedforward network with one layer per time step and shared weights, then run ordinary backprop from the last step to the first. Since \(W_h\) is shared, its gradient is the sum of the contributions from every step. The gradient reaching step \(k\) from step \(T\) contains the product \(\prod_{t=k+1}^{T} W_h \,\tanh'(a_t)\). <b>Truncated BPTT</b> backpropagates only through a window (e.g. 100 steps) while still passing the hidden state forward, which saves memory and time but limits how far back dependencies can be learned.</p>
+<p class="src">Analytics Vidhya Q8; Devinterview Q7–Q8</p></details>
+
+<details><summary>Explain the vanishing and exploding gradient problems in RNNs.</summary>
+<p>The gradient from step \(T\) back to step \(k\) is a product of \(T-k\) Jacobians, roughly \(W_h\) times the tanh derivative at each step. If that factor is below 1 the product shrinks exponentially; above 1 it grows exponentially. Numbers: \(0.5^{20} \approx 9.5\times10^{-7}\) (vanishing: the model cannot learn that an event 20 steps ago matters), \(1.5^{20} \approx 3325\) (exploding: huge updates, loss becomes NaN). For matrices, the largest singular value / spectral radius of \(W_h\) plays the role of the scalar. Since \(\tanh' \le 1\), vanishing is the more common problem in practice.</p>
+<p class="src">Analytics Vidhya Q10; Devinterview Q9–Q10</p></details>
+
+<details><summary>How can these gradient problems be addressed?</summary>
+<p><b>Exploding:</b> gradient clipping (rescale if the norm exceeds a threshold), lower learning rate. <b>Vanishing:</b> gated architectures (LSTM, GRU) whose additive cell update keeps a near-identity gradient path; careful initialisation (e.g. orthogonal \(W_h\), positive forget-gate bias); layer normalisation; skip connections; shorter effective paths via attention. Truncated BPTT reduces cost but does not fix vanishing.</p>
+<p class="src">Analytics Vidhya Q11</p></details>
+
+<details><summary>What is gradient clipping and why is it essential when training RNNs?</summary>
+<p>Before the optimizer step, compute the global norm of all gradients; if \(\lVert g \rVert > \tau\), set \(g \leftarrow g\,\tau / \lVert g \rVert\). The direction is kept, only the length is capped. Example: \(g = (30, 40)\), norm 50, \(\tau = 5\) gives \((3, 4)\). RNNs need it because a single long sequence can produce an exploding gradient that would destroy the weights in one step. It does nothing for vanishing gradients. In PyTorch: <code>clip_grad_norm_(model.parameters(), 1.0)</code> after <code>backward()</code>.</p>
+<p class="src">Analytics Vidhya Q9</p></details>
+
+<details><summary>Describe the gates of an LSTM cell.</summary>
+<p>All gates are sigmoids of \([h_{t-1}, x_t]\), so each entry is between 0 and 1. <b>Forget</b> \(f_t\): how much of the old cell state to keep. <b>Input</b> \(i_t\): how much of the new candidate \(\tilde c_t = \tanh(\cdot)\) to write. <b>Output</b> \(o_t\): how much of the cell to expose. Updates: \(c_t = f_t \odot c_{t-1} + i_t \odot \tilde c_t\), \(h_t = o_t \odot \tanh(c_t)\). Example: \(c_{t-1}=0.8, f=0.9, i=0.2, \tilde c=-1, o=0.7\) gives \(c_t = 0.52\), \(h_t = 0.7\tanh(0.52) = 0.334\).</p>
+<p class="src">Analytics Vidhya Q13; Devinterview Q11–Q12</p></details>
+
+<details><summary>Why does an LSTM suffer less from vanishing gradients?</summary>
+<p>The cell state is updated additively: \(c_t = f_t \odot c_{t-1} + i_t \odot \tilde c_t\). Along this path \(\partial c_t / \partial c_{t-1} = f_t\) (element-wise), with no weight matrix and no squashing nonlinearity. If the network learns \(f_t \approx 1\), the gradient survives many steps: \(0.95^{20} \approx 0.36\), versus \(0.5^{20} \approx 10^{-6}\) for a plain RNN with \(W_h = 0.5\). The gates are input-dependent, so the model can choose when to keep and when to reset memory. It reduces, but does not eliminate, the problem: \(0.99^{100} \approx 0.37\). The forget-gate bias is often initialised to 1 so this path starts open.</p>
+<p class="src">Analytics Vidhya Q14; Devinterview Q11</p></details>
+
+<details><summary>What is the difference between an LSTM and a GRU?</summary>
+<p>A GRU has no separate cell state and two gates: update \(z_t\) and reset \(r_t\); \(h_t = (1-z_t)\odot h_{t-1} + z_t \odot \tilde h_t\). The update gate couples "forget" and "input" (writing more means keeping less), and there is no output gate. So a GRU has 3 weight blocks versus 4 for an LSTM: with input 10 and hidden 20, PyTorch counts 1,920 vs 2,560 parameters (plain RNN: 640). GRUs train a bit faster and do well on smaller data; LSTMs are sometimes slightly better on large data or very long dependencies. In practice try both.</p>
+<p class="src">Analytics Vidhya Q15; Devinterview Q13</p></details>
+
+<details><summary>Explain many-to-one, many-to-many and sequence-to-sequence setups.</summary>
+<p><b>Many-to-one:</b> read the whole sequence, predict from the final hidden state (sentiment of a review, churn from a watch history). <b>Many-to-many (aligned):</b> one output per input step (next-item prediction at every step, part-of-speech tagging). <b>Seq2seq (encoder-decoder):</b> an encoder RNN compresses the input into a context vector, a decoder RNN generates an output sequence of a different length (translation, summarisation). The single context vector is a bottleneck for long inputs, which motivated attention.</p>
+<p class="src">Analytics Vidhya Q6</p></details>
+
+<details><summary>What is a bidirectional RNN and when can you not use it?</summary>
+<p>It runs one RNN left-to-right and another right-to-left and concatenates their hidden states at each step, so each position sees both past and future context. Good for tagging or classifying complete sentences. It cannot be used when you must predict online or predict the future (language-model generation, next-video recommendation, live speech streaming), because the future inputs are not available yet. It also doubles compute.</p>
+<p class="src">Analytics Vidhya Q12; Devinterview Q15</p></details>
+
+<details><summary>Why have Transformers largely replaced RNNs?</summary>
+<p>(1) <b>Parallelism:</b> an RNN must compute \(h_{t-1}\) before \(h_t\), so a 1,000-token sequence needs 1,000 sequential steps; a Transformer processes all tokens at once on a GPU. (2) <b>Long-range dependencies:</b> in an RNN information between positions 1 and 500 passes through 500 steps; in self-attention every token attends directly to every other (path length 1). (3) No single-vector bottleneck. The cost is attention's \(O(T^2)\) memory in sequence length, whereas an RNN uses \(O(1)\) state per step at inference, which is why recurrent ideas return in state space models such as Mamba.</p>
+<p class="src">Analytics Vidhya Q16, Q22</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://www.analyticsvidhya.com/blog/2023/05/top-interview-questions-for-rnn/">Analytics Vidhya: Top 25 Interview Questions on RNN</a> · <a href="https://github.com/Devinterview-io/rnn-interview-questions">Devinterview.io: RNN interview questions</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+const arrow = (c, x1, y1, x2, y2, col) => { const a = Math.atan2(y2 - y1, x2 - x1); c.strokeStyle = c.fillStyle = col; c.lineWidth = 1.3;
+  c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+  c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - 7 * Math.cos(a - .4), y2 - 7 * Math.sin(a - .4)); c.lineTo(x2 - 7 * Math.cos(a + .4), y2 - 7 * Math.sin(a + .4)); c.fill(); };
+const rrect = (c, x, y, w, h, r) => { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); };
+
+/* ---------- 1. unrolled RNN ---------- */
+const T = 5, WX = 0.5, WY = 2, xs = [1, 1, -1, 1, -1];
+let shown = 0;
+const whI = document.getElementById('wh'), xb = document.getElementById('xbtns');
+const lab = v => v > 0 ? 'دید ✓' : v < 0 ? 'رد ✗' : 'هیچ';
+const hsOf = wh => { let h = 0; return xs.map(x => (h = Math.tanh(WX * x + wh * h))); };
+const n3 = v => (v < 0 ? '−' : '') + Math.abs(v).toFixed(3);
+const mkBtns = () => { xb.innerHTML = ''; xs.forEach((v, i) => { const b = document.createElement('button'); b.textContent = (i + 1) + ': ' + lab(v);
+  b.style.borderColor = b.style.color = v > 0 ? 'var(--blue)' : v < 0 ? 'var(--red)' : 'var(--muted)';
+  b.onclick = () => { xs[i] = v === 1 ? -1 : v === -1 ? 0 : 1; mkBtns(); drawU(); }; xb.append(b); }); };
+const drawU = () => { const wh = +whI.value, hs = hsOf(wh);
+  document.getElementById('whv').textContent = fa(wh, 1);
+  const [c, W, Ht] = mk(document.getElementById('unroll'), 0.48, 532), cw = (W - 10) / (T + 1), bw = Math.min(cw - 16, 64), yh = Ht * 0.36, yx = Ht * 0.78, bh = 30;
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  for (let j = 0; j <= T; j++) { const cx = 5 + cw * (j + 0.5), on = j <= shown, v = j === 0 ? 0 : hs[j - 1];
+    if (j > 0) { arrow(c, cx - cw + bw / 2 + 2, yh, cx - bw / 2 - 2, yh, css('muted'));
+      c.font = '10px Vazirmatn'; c.fillStyle = css('muted'); c.fillText('Wₕ', cx - cw / 2, yh - 10);
+      const x = xs[j - 1]; c.fillStyle = css(x > 0 ? 'blue' : x < 0 ? 'red' : 'muted'); c.font = '12px Vazirmatn';
+      c.fillText('x' + j + ' = ' + (x > 0 ? '+1' : x < 0 ? '−1' : '0'), cx, yx + 6);
+      arrow(c, cx, yx - 8, cx, yh + bh / 2 + 3, css('muted')); }
+    rrect(c, cx - bw / 2, yh - bh / 2, bw, bh, 7);
+    if (on && j > 0) { c.globalAlpha = 0.12 + 0.75 * Math.abs(v); c.fillStyle = css(v >= 0 ? 'blue' : 'red'); c.fill(); c.globalAlpha = 1; }
+    else { c.fillStyle = css('soft'); c.fill(); }
+    c.strokeStyle = css(j === shown && j > 0 ? 'ink' : 'line'); c.lineWidth = j === shown && j > 0 ? 2 : 1; c.stroke();
+    c.fillStyle = css('ink'); c.font = '700 12px Vazirmatn'; c.fillText(on ? n3(v) : '?', cx, yh);
+    c.font = '10px Vazirmatn'; c.fillStyle = css('muted'); c.fillText('h' + j, cx, yh - bh / 2 - 8); }
+  if (shown === T) { const cx = 5 + cw * (T + 0.5), p = 1 / (1 + Math.exp(-WY * hs[T - 1]));
+    c.fillStyle = css('accent'); c.font = '700 12px Vazirmatn'; c.fillText('p = ' + p.toFixed(2), cx, 12); }
+  const info = document.getElementById('uinfo');
+  if (shown === 0) info.innerHTML = 'دکمه‌ی «قدمِ بعد» را بزنید.';
+  else { const k = shown, hp = k === 1 ? 0 : hs[k - 2], x = xs[k - 1], a = WX * x + wh * hp;
+    let s = `قدمِ ${fa(k)}: <span class="ltr">h${k} = tanh(0.5 × ${x} + ${wh.toFixed(1)} × ${n3(hp)}) = tanh(${n3(a)}) = <b>${n3(hs[k - 1])}</b></span>`;
+    if (k === T) s += `<br>احتمالِ دیدنِ ویدیوی آشپزیِ بعدی: <span class="ltr">σ(2 × ${n3(hs[T - 1])}) = <b>${(1 / (1 + Math.exp(-WY * hs[T - 1]))).toFixed(3)}</b></span>`;
+    info.innerHTML = s; } };
+document.getElementById('stepb').onclick = () => { shown = Math.min(T, shown + 1); drawU(); };
+document.getElementById('allb').onclick = () => { shown = T; drawU(); };
+document.getElementById('resetb').onclick = () => { shown = 0; drawU(); };
+whI.oninput = drawU; mkBtns();
+
+/* ---------- 2. vanishing / exploding gradient ---------- */
+const gwI = document.getElementById('gw');
+const sci = v => v >= 1000 && v < 10000 ? Math.round(v).toString() : v >= 0.001 && v < 10000 ? (+v.toPrecision(3)).toString() : v.toExponential(2).replace('e', ' × 10^').replace('+', '');
+const drawG = () => { const w = +gwI.value, K = 20, lo = -8, hi = 4;
+  document.getElementById('gwv').textContent = fa(w, 2);
+  const [c, W, Ht] = mk(document.getElementById('grad'), 0.55, 532), L = 46, X = k => L + k / K * (W - L - 12), Y = lg => 10 + (hi - Math.max(lo, Math.min(hi, lg))) / (hi - lo) * (Ht - 34);
+  c.font = '10px Vazirmatn'; c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (let e = lo; e <= hi; e += 2) { c.strokeStyle = css(e === 0 ? 'muted' : 'line'); c.lineWidth = e === 0 ? 1.2 : 1; c.beginPath(); c.moveTo(L, Y(e)); c.lineTo(W - 12, Y(e)); c.stroke();
+    c.fillStyle = css('muted'); c.fillText(e === 0 ? '1' : '10^' + e, L - 4, Y(e)); }
+  c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+  for (let k = 0; k <= K; k += 5) c.fillText(k, X(k), Ht - 10);
+  const col = css(Math.abs(w - 1) < 1e-9 ? 'accent' : w < 1 ? 'blue' : 'red');
+  c.strokeStyle = c.fillStyle = col; c.lineWidth = 2; c.beginPath();
+  for (let k = 0; k <= K; k++) { const y = Y(k * Math.log10(w)); k ? c.lineTo(X(k), y) : c.moveTo(X(k), y); } c.stroke();
+  for (let k = 0; k <= K; k++) { c.beginPath(); c.arc(X(k), Y(k * Math.log10(w)), 2.8, 0, 7); c.fill(); }
+  const v10 = w ** 10, v20 = w ** 20, kind = Math.abs(w - 1) < 1e-9 ? 'ثابت می‌ماند' : w < 1 ? 'محو می‌شود' : 'منفجر می‌شود';
+  document.getElementById('ginfo').innerHTML = `بعد از ۱۰ قدم: <span class="ltr"><b>${sci(v10)}</b></span> · بعد از ۲۰ قدم: <span class="ltr"><b>${sci(v20)}</b></span><br>گرادیان ${kind}.` + (w ** 20 < 1e-8 || w ** 20 > 1e4 ? ' <span class="ex">(نقطه‌های بیرون از نمودار به لبه چسبیده‌اند.)</span>' : ''); };
+gwI.oninput = drawG;
+
+/* ---------- 3. forget gate ---------- */
+const fgI = document.getElementById('fg');
+const drawF = () => { const f = +fgI.value, K = 20;
+  document.getElementById('fgv').textContent = fa(f, 2);
+  const [c, W, Ht] = mk(document.getElementById('forget'), 0.42, 532), L = 30, bw = (W - L - 10) / (K + 1), Y = v => Ht - 22 - v * (Ht - 34);
+  c.font = '10px Vazirmatn'; c.textAlign = 'right'; c.textBaseline = 'middle';
+  [0, 0.5, 1].forEach(v => { c.strokeStyle = css('line'); c.beginPath(); c.moveTo(L, Y(v)); c.lineTo(W - 10, Y(v)); c.stroke(); c.fillStyle = css('muted'); c.fillText(v, L - 4, Y(v)); });
+  c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+  for (let k = 0; k <= K; k++) { const x = L + bw * k; c.fillStyle = css('accent'); c.fillRect(x + 2, Y(f ** k), bw - 4, Y(0) - Y(f ** k));
+    c.fillStyle = css('red'); c.beginPath(); c.arc(x + bw / 2, Y(0.5 ** k), 2.6, 0, 7); c.fill();
+    if (k % 5 === 0) { c.fillStyle = css('muted'); c.fillText(k, x + bw / 2, Ht - 6); } }
+  document.getElementById('finfo').innerHTML = `بعد از ۲۰ قدم، از حافظه (و گرادیانِ مسیرِ نوار) <span class="ltr"><b>${sci(f ** 20)}</b></span> می‌ماند. RNN ساده با <span class="ltr">Wₕ = 0.5</span>: <span class="ltr"><b>${sci(0.5 ** 20)}</b></span>`; };
+fgI.oninput = drawF;
+
+/* ---------- 4. sequence-type diagrams ---------- */
+const seqSvg = (id, type) => { const el = document.getElementById(id), box = (x, y, w, h, col, t) =>
+  `<rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="5" fill="color-mix(in srgb, var(--${col}) 22%, var(--card))" stroke="var(--${col})"/><text x="${x}" y="${y + 4}" font-size="10" text-anchor="middle" fill="var(--ink)">${t}</text>`,
+  ln = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--muted)" marker-end="url(#m${id})"/>`;
+  let s = `<defs><marker id="m${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--muted)"/></marker></defs>`;
+  if (type < 3) { const n = 4, xsP = [30, 75, 120, 165];
+    xsP.forEach((x, i) => { s += box(x, 100, 26, 18, 'blue', 'x' + (i + 1)) + ln(x, 91, x, 71) + box(x, 60, 30, 20, 'accent', 'h' + (i + 1));
+      if (i) s += ln(xsP[i - 1] + 15, 60, x - 15, 60);
+      if (type === 2 || i === n - 1) s += ln(x, 50, x, 30) + box(x, 20, 26, 18, 'orange', 'y' + (type === 2 ? i + 1 : '')); }); }
+  else { const enc = [20, 58, 96], dec = [140, 178];
+    enc.forEach((x, i) => { s += box(x, 100, 26, 18, 'blue', 'x' + (i + 1)) + ln(x, 91, x, 71) + box(x, 60, 28, 20, 'accent', 'e' + (i + 1)); if (i) s += ln(enc[i - 1] + 14, 60, x - 14, 60); });
+    s += ln(110, 60, 126, 60);
+    dec.forEach((x, i) => { s += box(x, 60, 28, 20, 'red', 'd' + (i + 1)) + ln(x, 50, x, 30) + box(x, 20, 26, 18, 'orange', 'y' + (i + 1)); if (i) s += ln(dec[i - 1] + 14, 60, x - 14, 60); });
+    s += `<text x="58" y="120" font-size="9" text-anchor="middle" fill="var(--muted)">رمزگذار</text><text x="159" y="90" font-size="9" text-anchor="middle" fill="var(--muted)">رمزگشا</text><text x="118" y="52" font-size="8" text-anchor="middle" fill="var(--muted)">بردار</text>`; }
+  el.innerHTML = s; };
+seqSvg('s1', 1); seqSvg('s2', 2); seqSvg('s3', 3);
+
+const drawAll = () => { drawU(); drawG(); drawF(); };
+addEventListener('resize', drawAll); drawAll();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

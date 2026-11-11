@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ترنسفورمر و Attention</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.ctl button { margin-top: 0; }
+button.on { background: var(--accent); color: var(--card); }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.words { direction: ltr; display: flex; flex-wrap: wrap; gap: 4px 6px; justify-content: center; font: 16px/1.8 Georgia, serif; margin: 6px 0; }
+.words span { cursor: pointer; padding: 0 5px; border-radius: 5px; border: 1px solid transparent; }
+.words span.sel { border-color: var(--accent); font-weight: 700; }
+.bars .bar span { width: 64px; flex: none; }
+.bars .bar i { flex: none; min-width: 4px; }
+.hm { direction: ltr; display: grid; gap: 1px; justify-content: center; font: 11px Georgia, serif; margin-top: 8px; }
+.hm div { height: 22px; display: grid; place-items: center; }
+.hm .c { cursor: pointer; border-radius: 3px; color: var(--ink); font-size: 9px; }
+.hm .rl { justify-content: end; padding-right: 4px; cursor: pointer; }
+.hm .cl { height: 64px; writing-mode: vertical-rl; transform: rotate(180deg); place-items: center start; }
+.hm .rl.sel { color: var(--accent); font-weight: 700; }
+p code { overflow-wrap: anywhere; }
+.flow { grid-template-columns: minmax(0, 1fr); }
+.flow li > div { min-width: 0; }
+.flow .ex[dir=ltr] { overflow-wrap: anywhere; text-align: left; }
+svg.pic { width: 100%; display: block; margin: 8px auto; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="rnn.html">شبکه‌ی بازگشتی (RNN)</a> · <a href="llm.html">بعدی: مدل‌های زبانی بزرگ (LLM) ←</a></p>
+<h1>ترنسفورمر و Attention <span class="en">(Transformer and Attention)</span></h1>
+<p class="sub">هر کلمه به همه‌ی کلمه‌های دیگر نگاه می‌کند و از آن‌ها چیزی برمی‌دارد. پایه‌ی GPT، BERT و تقریباً همه‌ی مدل‌های امروزی. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>جمله‌ی مثالِ این صفحه:</p>
+<p class="sent" dir="ltr">The animal didn't cross the street because <span class="w hot">it</span> was tired.</p>
+<p>«<bdi>it</bdi>» به چه چیزی اشاره می‌کند؟ ما می‌دانیم: به <b>animal</b>، چون «خسته» بودن کارِ حیوان است، نه خیابان. مدل هم باید همین را بفهمد. یعنی وقتی «<bdi>it</bdi>» را می‌خواند، باید <b>مستقیم</b> به «<bdi>animal</bdi>» نگاه کند، که ۶ کلمه عقب‌تر است.</p>
+<p>شبکه‌ی بازگشتی (RNN) کلمه‌ها را <b>یکی‌یکی</b> می‌خواند و همه‌چیز را در یک حافظه‌ی کوچک نگه می‌دارد. دو مشکل دارد:</p>
+<div class="kinds">
+<div><p><b>کند است</b></p><p class="ex">برای کلمه‌ی ۱۰۰، اول باید ۹۹ کلمه‌ی قبلی پردازش شوند. پس روی GPU نمی‌شود همه را هم‌زمان حساب کرد.</p></div>
+<div><p><b>فراموش می‌کند</b></p><p class="ex">اطلاعاتِ کلمه‌ی ۱ برای رسیدن به کلمه‌ی ۱۰۰ از ۹۹ قدم رد می‌شود. اگر هر قدم ۹۰٪ آن را نگه دارد، در آخر \(0.9^{99} \approx 0.00003\) از آن می‌ماند.</p></div>
+</div>
+<svg class="pic" viewBox="0 0 360 150" style="max-width:560px">
+<g font-size="9" text-anchor="middle">
+<text x="180" y="12" fill="var(--muted)">RNN: یکی‌یکی، از راهِ دراز</text>
+<g id="rnnrow"></g>
+<text x="180" y="88" fill="var(--muted)">Attention: همه هم‌زمان، مستقیم</text>
+<g id="attrow"></g>
+</g></svg>
+<p>ترنسفورمر <span class="en">(Transformer)</span> در سال ۲۰۱۷ با مقاله‌ی <span class="en">Attention Is All You Need</span> معرفی شد. بازگشت را کامل حذف کرد. به‌جایش از <b>Attention</b> استفاده می‌کند:</p>
+<div class="key">هر کلمه به <b>همه‌ی</b> کلمه‌های جمله نگاه می‌کند، به هر کدام یک <b>وزن</b> می‌دهد (چقدر به من مربوط است؟)، و یک <b>ترکیبِ وزن‌دار</b> از آن‌ها برمی‌دارد.</div>
+<div class="kinds">
+<div><p><b>RNN</b></p><ul class="ex"><li>فاصله‌ی «<bdi>it</bdi>» تا «<bdi>animal</bdi>»: ۶ قدم.</li><li>محاسبه پشتِ سرِ هم.</li><li>حافظه‌ی کم برای جمله‌ی بلند.</li></ul></div>
+<div><p><b>Transformer</b></p><ul class="ex"><li>فاصله‌ی هر دو کلمه: ۱ قدم.</li><li>همه‌ی کلمه‌ها هم‌زمان (موازی روی GPU).</li><li>هزینه: هر کلمه با هر کلمه، یعنی \(n^2\) جفت.</li></ul></div>
+</div>
+<p style="margin-top:10px">چرا مهم است: GPT، BERT، T5، مدل‌های ترجمه، مدل‌های تصویر (ViT)، و همه‌ی LLMها ترنسفورمرند. در مصاحبه‌ی ML تقریباً همیشه می‌پرسند: «attention را توضیح بده و از صفر بنویس.»</p>
+</section>
+
+<section>
+<h2>ایده: یک میانگینِ وزن‌دار</h2>
+<p>وقتی مدل به «<bdi>it</bdi>» می‌رسد، برای هر کلمه‌ی جمله یک وزن بین ۰ و ۱ حساب می‌کند. جمعِ وزن‌ها ۱ است. بعد نمایشِ جدیدِ «<bdi>it</bdi>» می‌شود:</p>
+<div class="f">\[ \text{new}(\text{it}) = 0.59\cdot\text{animal} + 0.08\cdot\text{street} + 0.08\cdot\text{it} + 0.08\cdot\text{tired} + \dots \]</div>
+<p>(این وزن‌ها نمونه‌ی دستی‌اند، همان وزن‌هایی که در شکلِ پایین می‌بینید.) نتیجه: بعد از این لایه، بُردارِ «<bdi>it</bdi>» پر از اطلاعاتِ «<bdi>animal</bdi>» است. لایه‌های بعدی می‌دانند «<bdi>it</bdi>» یعنی حیوان.</p>
+<div class="kinds">
+<div><p><b>اگر جمله با tired تمام شود</b></p><p class="ex">«<bdi>it</bdi>» بیشتر به <b>animal</b> نگاه می‌کند (وزنِ ۰٫۵۹).</p></div>
+<div><p><b>اگر جمله با wide تمام شود</b></p><p class="ex">«<bdi>…because it was wide</bdi>»: حالا «<bdi>it</bdi>» یعنی خیابان، و بیشتر به <b>street</b> نگاه می‌کند (وزنِ ۰٫۵۹).</p></div>
+</div>
+<p style="margin-top:8px">نکته‌ی مهم: وزن‌ها <b>ثابت نیستند</b>. برای هر جمله دوباره از روی خودِ کلمه‌ها حساب می‌شوند. RNN یا یک لایه‌ی معمولی چنین وزن‌های «وابسته به ورودی» ندارد.</p>
+</section>
+
+<section>
+<h2>نقشه‌ی توجه: روی یک کلمه کلیک کنید</h2>
+<p>هر سطر یعنی «این کلمه به کدام کلمه‌ها نگاه می‌کند». روی یک کلمه (یا یک سطر) کلیک کنید تا وزن‌هایش را ببینید. آخرِ جمله را بین tired و wide عوض کنید و سطرِ «<bdi>it</bdi>» را نگاه کنید.</p>
+<div class="box">
+<div class="ctl">آخرِ جمله:
+<button id="vt" class="on">tired</button><button id="vw">wide</button>
+<button id="cm">ماسکِ علّی (مثل GPT)</button></div>
+<div class="words" id="words"></div>
+<div class="bars" id="bars"></div>
+<div class="hm" id="hm"></div>
+<p class="ex" id="hminfo" style="margin-top:6px"></p>
+</div>
+<p class="ex" style="margin-top:8px"><b>هشدار:</b> این وزن‌ها <b>دستی و نمایشی‌اند</b>. ما برای هر کلمه چند امتیاز گذاشتیم و از softmax رد کردیم. یک مدلِ واقعی ده‌ها لایه و head دارد و هر head الگوی خودش را دارد؛ بعضی head‌ها واقعاً چنین ارجاع‌هایی را پیدا می‌کنند، ولی تصویرِ واقعی شلوغ‌تر است.</p>
+<p>با <b>ماسکِ علّی</b>، هر کلمه فقط کلمه‌های <b>قبل</b> از خودش را می‌بیند (نیمه‌ی بالای نقشه خالی می‌شود). «<bdi>it</bdi>» دیگر «<bdi>tired</bdi>» را نمی‌بیند. ولی خودِ «<bdi>tired</bdi>» هنوز می‌تواند به عقب، به «<bdi>animal</bdi>» و «<bdi>it</bdi>»، نگاه کند؛ پس مدل اطلاعات را در کلمه‌ی بعدی کامل می‌کند.</p>
+</section>
+
+<section>
+<h2>Query، Key، Value با عدد</h2>
+<p>وزن‌ها از کجا می‌آیند؟ هر کلمه سه بردار می‌سازد (هر کدام با ضربِ بردارِ کلمه در یک ماتریسِ یادگرفتنی):</p>
+<div class="kinds">
+<div><p><b>Query</b> \(q\)</p><p class="ex">«من دنبالِ چه هستم؟» مثلاً «<bdi>it</bdi>» دنبالِ یک اسمِ جان‌دار می‌گردد.</p></div>
+<div><p><b>Key</b> \(k\)</p><p class="ex">«من چه دارم؟» برچسبی که هر کلمه به خودش می‌زند.</p></div>
+<div><p><b>Value</b> \(v\)</p><p class="ex">«اگر انتخابم کردی، این را بردار.» محتوایی که منتقل می‌شود.</p></div>
+</div>
+<p style="margin-top:10px">امتیازِ «کلمه‌ی i به کلمه‌ی j» = ضربِ داخلیِ \(q_i\) و \(k_j\). هر چه همسوتر، امتیاز بیشتر. یک مثالِ خیلی کوچک: ۳ کلمه، بردارهای ۲بعدی (\(d = 2\)):</p>
+<div dir="ltr"><table>
+<tr><th>token</th><th>Query q</th><th>Key k</th><th>Value v</th></tr>
+<tr><td>animal</td><td>[1, 0]</td><td>[2, 0]</td><td>[1, 0]</td></tr>
+<tr><td>street</td><td>[0, 1]</td><td>[0, 1]</td><td>[0, 1]</td></tr>
+<tr><td>it</td><td>[2, 1]</td><td>[1, 1]</td><td>[0.5, 0.5]</td></tr>
+</table></div>
+<p style="margin-top:8px">حساب برای «<bdi>it</bdi>» (\(q = [2, 1]\)):</p>
+<ol class="flow">
+<li><span class="n">۱</span><div><p><b>امتیاز:</b> ضربِ داخلیِ q با هر k</p><p class="ex" dir="ltr">animal: 2·2 + 1·0 = 4 · street: 2·0 + 1·1 = 1 · it: 2·1 + 1·1 = 3</p></div></li>
+<li><span class="n">۲</span><div><p><b>تقسیم بر</b> \(\sqrt{d} = \sqrt{2} \approx 1.414\)</p><p class="ex" dir="ltr">[4, 1, 3] / 1.414 = [2.828, 0.707, 2.121]</p></div></li>
+<li><span class="n">۳</span><div><p><b>softmax:</b> \(e^x\) بگیر و تقسیم بر جمع کن</p><p class="ex" dir="ltr">e^x = [16.919, 2.028, 8.342], sum = 27.289 → weights = [0.620, 0.074, 0.306]</p></div></li>
+<li><span class="n">۴</span><div><p><b>جمعِ وزن‌دارِ Valueها</b></p><p class="ex" dir="ltr">0.620·[1, 0] + 0.074·[0, 1] + 0.306·[0.5, 0.5] = [0.773, 0.227]</p></div></li>
+</ol>
+<p>«<bdi>it</bdi>» ۶۲٪ از animal، ۷٪ از street و ۳۱٪ از خودش برداشت. خروجیِ جدیدش [0.773, 0.227] به Valueِ animal ([1, 0]) نزدیک شد.</p>
+<p>همین حساب برای هر سه کلمه، یک ماتریسِ ۳×۳ از وزن‌ها می‌دهد (هر سطر جمعش ۱):</p>
+<div dir="ltr"><table>
+<tr><th>query \ key</th><th>animal</th><th>street</th><th>it</th><th>output</th></tr>
+<tr><td>animal</td><td>0.576</td><td>0.140</td><td>0.284</td><td>[0.718, 0.282]</td></tr>
+<tr><td>street</td><td>0.198</td><td>0.401</td><td>0.401</td><td>[0.398, 0.602]</td></tr>
+<tr><td>it</td><td>0.620</td><td>0.074</td><td>0.306</td><td>[0.773, 0.227]</td></tr>
+</table></div>
+<p class="ex" style="margin-top:8px">کلِ این کار برای همه‌ی کلمه‌ها با <b>یک ضربِ ماتریسی</b> انجام می‌شود، پس روی GPU خیلی سریع است.</p>
+</section>
+
+<section>
+<h2>فرمول: Scaled Dot-Product Attention</h2>
+<div class="f">\[ \text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right) V \]</div>
+<div class="f">\[ Q = XW_Q,\qquad K = XW_K,\qquad V = XW_V \]</div>
+<ul class="sym">
+<li>\(X\): ورودی، \(n \times d_{\text{model}}\) (هر سطر یک کلمه)</li>
+<li>\(n\): تعدادِ کلمه‌ها (توکن‌ها)</li>
+<li>\(W_Q, W_K, W_V\): ماتریس‌های یادگرفتنی</li>
+<li>\(Q, K\): \(n \times d_k\)؛ \(V\): \(n \times d_v\)</li>
+<li>\(QK^\top\): ماتریسِ \(n \times n\) امتیازها</li>
+<li>\(d_k\): طولِ بردارهای Query و Key</li>
+<li>softmax: روی هر <b>سطر</b>؛ وزن‌ها مثبت و جمعشان ۱</li>
+<li>ضرب در \(V\): میانگینِ وزن‌دارِ Valueها</li>
+<li>خروجی: \(n \times d_v\)، یک بردارِ جدید برای هر کلمه</li>
+</ul>
+<div class="kinds">
+<div><p><b>Self-Attention</b></p><p class="ex">Q، K و V همه از <b>همان</b> جمله می‌آیند. مثال: «<bdi>it</bdi>» به کلمه‌های همان جمله نگاه می‌کند.</p></div>
+<div><p><b>Cross-Attention</b></p><p class="ex">Q از یک دنباله، K و V از دنباله‌ی <b>دیگر</b>. مثال: در ترجمه، کلمه‌ی فارسیِ در حالِ تولید به کلمه‌های جمله‌ی انگلیسی نگاه می‌کند.</p></div>
+</div>
+</section>
+
+<section>
+<h2>چرا تقسیم بر √d؟</h2>
+<p>ضربِ داخلیِ دو بردارِ تصادفی با \(d\) مؤلفه، جمعِ \(d\) عدد است. اگر مؤلفه‌ها میانگین ۰ و واریانس ۱ داشته باشند، واریانسِ ضرب‌داخلی می‌شود \(d\)، یعنی اندازه‌ی معمولِ امتیازها \(\sqrt{d}\) است:</p>
+<div class="f">\[ \text{Var}(q\cdot k) = \sum_{i=1}^{d} \text{Var}(q_i k_i) = d \quad\Rightarrow\quad \text{Var}\!\left(\frac{q\cdot k}{\sqrt{d}}\right) = 1 \]</div>
+<p>امتیازهای بزرگ softmax را <b>اشباع</b> می‌کنند: تقریباً همه‌ی وزن به یک کلمه می‌رسد و بقیه نزدیکِ صفر می‌شوند. آن‌وقت گرادیان هم تقریباً صفر است (مشتقِ softmax حدودِ \(w(1-w)\) است: با \(w = 0.95\) می‌شود ۰٫۰۴۷۵، با \(w = 0.35\) می‌شود ۰٫۲۲۷۵) و یادگیری کند می‌شود.</p>
+<div class="box">
+<label>\(d\) (طولِ بردار) <input id="dsl" type="range" min="1" max="10" step="1" value="2"><b id="dv"></b></label>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>بدونِ تقسیم</b></p><div class="bars" id="b0"></div></div>
+<div><p><b>با تقسیم بر √d</b></p><div class="bars" id="b1"></div></div>
+</div>
+<div class="err" id="dinfo"></div>
+</div>
+<p class="ex" style="margin-top:8px">یک Query و ۸ Key، با مؤلفه‌های تصادفیِ نرمال. بالا: یک نمونه. پایین: میانگینِ «بزرگ‌ترین وزن» روی ۲۰۰ نمونه. با \(d = 4\): بدونِ تقسیم ۰٫۵۴، با تقسیم ۰٫۳۵. با \(d = 64\): ۰٫۸۹ در برابرِ ۰٫۳۶. با \(d = 512\): ۰٫۹۵ در برابرِ ۰٫۳۵. با تقسیم، توزیعِ وزن‌ها برای هر \(d\) تقریباً یکسان می‌ماند.</p>
+</section>
+
+<section>
+<h2>Multi-Head Attention: چند نگاه هم‌زمان</h2>
+<p>یک attention فقط یک نوع رابطه را خوب می‌گیرد. ولی کلمه‌ها چند جور رابطه دارند. برای «<bdi>it</bdi>»:</p>
+<ul>
+<li>یک head دنبالِ <b>مرجعِ ضمیر</b> است (animal).</li>
+<li>یک head به <b>فعلِ</b> نزدیک نگاه می‌کند (was).</li>
+<li>یک head به <b>کلمه‌ی قبلی</b> نگاه می‌کند (because).</li>
+</ul>
+<p>پس به‌جای یک attention بزرگ، \(h\) تا attention کوچک موازی اجرا می‌کنیم، هر کدام با \(W_Q, W_K, W_V\) خودش، و خروجی‌ها را کنار هم می‌چسبانیم:</p>
+<div class="f">\[ \text{head}_i = \text{Attention}(XW_Q^{(i)}, XW_K^{(i)}, XW_V^{(i)}),\qquad \text{MHA}(X) = \text{concat}(\text{head}_1,\dots,\text{head}_h)\,W_O \]</div>
+<ul class="sym">
+<li>\(h\): تعدادِ headها</li>
+<li>\(d_k = d_{\text{model}} / h\): طولِ هر head</li>
+<li>\(W_O\): ماتریسِ خروجی، \(d_{\text{model}} \times d_{\text{model}}\)</li>
+</ul>
+<svg class="pic" viewBox="0 0 360 120" style="max-width:520px;direction:ltr">
+<g font-size="9" text-anchor="middle">
+<rect x="130" y="4" width="100" height="20" rx="5" fill="var(--soft)" stroke="var(--muted)"/><text x="180" y="18">X: 10 × 512</text>
+<g id="heads"></g>
+<rect x="105" y="92" width="150" height="22" rx="5" fill="var(--soft)" stroke="var(--muted)"/><text x="180" y="107">concat → 10 × 512 → W_O</text>
+</g></svg>
+<p>عددِ مقاله‌ی اصلی: \(d_{\text{model}} = 512\)، \(h = 8\)، پس هر head طولِ \(64\) دارد. هزینه تقریباً با یک head بزرگ برابر است، چون \(8 \times 64 = 512\). تعدادِ پارامترها: چهار ماتریسِ \(512 \times 512\) به‌علاوه‌ی بایاس = \(4 \cdot 512^2 + 4 \cdot 512 = 1{,}050{,}624\) (همان عددی که PyTorch در کدِ پایین چاپ می‌کند).</p>
+</section>
+
+<section>
+<h2>ترتیبِ کلمه‌ها: Positional Encoding</h2>
+<p>Attention <b>ترتیب را نمی‌بیند</b>. فقط مجموعه‌ای از بردارها و ضرب‌داخلی‌هایشان است. اگر کلمه‌ها را جابه‌جا کنید، خروجیِ هر کلمه همان می‌ماند (فقط جایش عوض می‌شود):</p>
+<div class="kinds">
+<div><p class="sent" dir="ltr">dog bites man</p></div>
+<div><p class="sent" dir="ltr">man bites dog</p></div>
+</div>
+<p style="margin-top:8px">بدونِ اطلاعاتِ جایگاه، attention این دو را یکی می‌بیند. راه‌حل: به بردارِ هر کلمه یک بردارِ «جایگاه» <b>اضافه</b> کن. مقاله‌ی اصلی از سینوس و کسینوس با بسامدهای مختلف استفاده کرد:</p>
+<div class="f">\[ PE(pos, 2i) = \sin\!\left(\frac{pos}{10000^{2i/d}}\right),\qquad PE(pos, 2i+1) = \cos\!\left(\frac{pos}{10000^{2i/d}}\right) \]</div>
+<ul class="sym">
+<li>\(pos\): جایگاهِ کلمه (۰، ۱، ۲، …)</li>
+<li>\(i\): شماره‌ی جفتِ مؤلفه</li>
+<li>\(d\): طولِ بردار (همان \(d_{\text{model}}\))</li>
+</ul>
+<p>مثال با \(d = 4\):</p>
+<div dir="ltr"><table>
+<tr><th>pos</th><th>sin(pos)</th><th>cos(pos)</th><th>sin(pos/100)</th><th>cos(pos/100)</th></tr>
+<tr><td>1</td><td>0.8415</td><td>0.5403</td><td>0.0100</td><td>1.0000</td></tr>
+<tr><td>2</td><td>0.9093</td><td>−0.4161</td><td>0.0200</td><td>0.9998</td></tr>
+</table></div>
+<p class="ex" style="margin-top:6px">مؤلفه‌های اول تند عوض می‌شوند (مثلِ عقربه‌ی ثانیه‌شمار)، مؤلفه‌های آخر خیلی آهسته (مثلِ عقربه‌ی ساعت). با هم، هر جایگاه یک اثرِ انگشتِ یکتا دارد.</p>
+<div class="box">
+<canvas id="pe"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>مقدارِ مثبت</span><span><i style="background:var(--red)"></i>مقدارِ منفی</span><span>افقی: مؤلفه (۰ تا ۳۱) · عمودی: جایگاه (۰ تا ۴۹)</span></div>
+<label>جایگاه <input id="pos" type="range" min="0" max="49" step="1" value="10"><b id="posv"></b></label>
+<canvas id="pesim"></canvas>
+<div class="legend"><span><i style="background:var(--accent)"></i>ضربِ داخلیِ PE(جایگاهِ انتخابی) با PE(هر جایگاه)</span></div>
+</div>
+<p class="ex" style="margin-top:8px">با \(d = 32\): ضربِ داخلیِ یک جایگاه با خودش ۱۶ است، با همسایه‌ی ۱ قدم آن‌طرف‌تر ۱۵٫۳۱، با ۲ قدم ۱۳٫۷۳، با ۳ قدم ۱۲٫۲۷. دورتر، کمتر می‌شود ولی نه کاملاً یکنواخت. این عدد فقط به <b>فاصله</b> بستگی دارد: جایگاه‌های ۳ و ۸ همان ۱۱٫۷۸ را می‌دهند که ۴۰ و ۴۵. پس مدل می‌تواند «فاصله‌ی نسبی» را یاد بگیرد.</p>
+<div class="kinds">
+<div><p><b>سینوسی (ثابت)</b></p><p class="ex">ترنسفورمرِ اصلی. پارامتر ندارد.</p></div>
+<div><p><b>یادگرفتنی (learned)</b></p><p class="ex">BERT و GPT-2: یک بردار برای هر جایگاه، تا یک طولِ حداکثر (مثلاً ۵۱۲ یا ۱۰۲۴).</p></div>
+<div><p><b>چرخشی (RoPE)</b></p><p class="ex">Llama و بیشترِ LLMهای امروزی: Q و K را بسته به جایگاه می‌چرخاند، تا ضربِ داخلی مستقیم به فاصله وابسته شود.</p></div>
+</div>
+</section>
+
+<section>
+<h2>بلوکِ ترنسفورمر</h2>
+<p>یک لایه‌ی ترنسفورمر دو قسمت دارد، هر کدام با یک میان‌بُر (residual) و نرمال‌سازی:</p>
+<svg class="pic" viewBox="0 0 300 250" style="max-width:420px">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs>
+<g font-size="10" text-anchor="middle">
+<rect x="70" y="214" width="160" height="26" rx="6" fill="var(--soft)" stroke="var(--muted)"/><text x="150" y="231">کلمه + جایگاه (embedding + PE)</text>
+<line x1="150" y1="214" x2="150" y2="186" stroke="var(--muted)" marker-end="url(#ar)"/>
+<rect x="70" y="160" width="160" height="26" rx="6" fill="var(--l1)" stroke="var(--muted)"/><text x="150" y="177">Multi-Head Attention</text>
+<line x1="150" y1="160" x2="150" y2="142" stroke="var(--muted)" marker-end="url(#ar)"/>
+<rect x="70" y="118" width="160" height="24" rx="6" fill="var(--l3)" stroke="var(--muted)"/><text x="150" y="134">Add &amp; LayerNorm</text>
+<line x1="150" y1="118" x2="150" y2="96" stroke="var(--muted)" marker-end="url(#ar)"/>
+<rect x="70" y="70" width="160" height="26" rx="6" fill="var(--l2)" stroke="var(--muted)"/><text x="150" y="87">Feed-Forward (512→2048→512)</text>
+<line x1="150" y1="70" x2="150" y2="52" stroke="var(--muted)" marker-end="url(#ar)"/>
+<rect x="70" y="28" width="160" height="24" rx="6" fill="var(--l3)" stroke="var(--muted)"/><text x="150" y="44">Add &amp; LayerNorm</text>
+<line x1="150" y1="28" x2="150" y2="8" stroke="var(--muted)" marker-end="url(#ar)"/>
+<path d="M150,200 H50 V130 H68" fill="none" stroke="var(--accent)" stroke-dasharray="3 3" marker-end="url(#ar)"/>
+<path d="M150,108 H50 V40 H68" fill="none" stroke="var(--accent)" stroke-dasharray="3 3" marker-end="url(#ar)"/>
+<text x="30" y="168" fill="var(--accent)" font-size="9">میان‌بُر</text><text x="30" y="76" fill="var(--accent)" font-size="9">میان‌بُر</text>
+<path d="M240,28 h14 v214 h-14" fill="none" stroke="var(--muted)"/><text x="276" y="140" font-size="12">× N</text>
+</g></svg>
+<ol class="flow">
+<li><span class="n">۱</span><div><p><b>Attention</b>: کلمه‌ها با هم حرف می‌زنند (اطلاعات بینِ کلمه‌ها جابه‌جا می‌شود).</p></div></li>
+<li><span class="n">۲</span><div><p><b>Add &amp; Norm</b>: \(\text{LN}(x + \text{Attn}(x))\). میان‌بُر نمی‌گذارد گرادیان در لایه‌های عمیق گم شود.</p></div></li>
+<li><span class="n">۳</span><div><p><b>Feed-Forward</b>: یک شبکه‌ی دولایه، <b>جداگانه روی هر کلمه</b>:</p><div class="f">\[ \text{FFN}(x) = W_2\,\text{ReLU}(W_1 x + b_1) + b_2 \]</div><p>این‌جا هر کلمه روی اطلاعاتی که جمع کرده «فکر» می‌کند.</p></div></li>
+<li><span class="n">۴</span><div><p><b>Add &amp; Norm</b> دوباره. بعد همین بلوک \(N\) بار تکرار می‌شود (مقاله‌ی اصلی: ۶ بار).</p></div></li>
+</ol>
+<p class="ex">با \(d_{\text{model}} = 512\) و \(d_{\text{ff}} = 2048\): FFN دارای <span dir="ltr">2 × 512 × 2048 + 2048 + 512 = 2,099,712</span> پارامتر است، تقریباً دو برابرِ <bdi>attention</bdi> (۱٬۰۵۰٬۶۲۴). یعنی بیشترِ پارامترهای ترنسفورمر در FFN است.</p>
+<details class="drop"><summary><b>Post-LN یا Pre-LN؟</b></summary>
+<p>مقاله‌ی اصلی LayerNorm را <b>بعد</b> از جمع گذاشت (Post-LN، شکلِ بالا). GPT-2 و تقریباً همه‌ی LLMهای امروزی آن را <b>قبل</b> از attention و FFN می‌گذارند: \(x + \text{Attention}(\text{LN}(x))\). Pre-LN آموزشِ مدل‌های خیلی عمیق را پایدارتر می‌کند و به warmup کمتری نیاز دارد.</p>
+</details>
+</section>
+
+<section>
+<h2>Encoder، Decoder، یا هر دو</h2>
+<p>همان بلوک، به سه شکل استفاده می‌شود. فرقِ اصلی: هر کلمه <b>کدام</b> کلمه‌ها را می‌بیند.</p>
+<div class="kinds">
+<div><p><b>فقط Encoder</b>: BERT</p><ul class="ex"><li>هر کلمه <b>همه</b> را می‌بیند (چپ و راست).</li><li>آموزش: کلمه‌ی پنهان را حدس بزن: «The animal didn't [MASK] the street».</li><li>کاربرد: دسته‌بندیِ متن، جست‌وجو، embedding.</li><li>متن تولید نمی‌کند.</li></ul></div>
+<div><p><b>فقط Decoder</b>: GPT</p><ul class="ex"><li>هر کلمه فقط <b>قبلی‌ها</b> را می‌بیند (ماسکِ علّی).</li><li>آموزش: کلمه‌ی بعدی را حدس بزن: «<bdi>The animal didn't</bdi>» ← cross.</li><li>کاربرد: تولیدِ متن، چت، کد.</li><li>همه‌ی LLMهای بزرگِ امروزی.</li></ul></div>
+<div><p><b>Encoder-Decoder</b>: T5</p><ul class="ex"><li>Encoder ورودی را کامل می‌خواند؛ Decoder با ماسکِ علّی تولید می‌کند و با cross-attention به Encoder نگاه می‌کند.</li><li>آموزش: متن به متن: «translate English to German: …».</li><li>کاربرد: ترجمه، خلاصه‌سازی. (ترنسفورمرِ اصلیِ ۲۰۱۷ هم همین بود.)</li></ul></div>
+</div>
+<p style="margin-top:12px"><b>ماسکِ علّی</b> <span class="en">(Causal Mask)</span>: در Decoder، کلمه‌ی \(i\) نباید کلمه‌های بعد از خودش را ببیند؛ وگرنه موقعِ آموزش جوابِ «کلمه‌ی بعدی» را از قبل می‌دید. پیش از softmax، امتیازِ خانه‌های آینده را \(-\infty\) می‌گذاریم تا وزنشان دقیقاً ۰ شود:</p>
+<div class="two">
+<svg class="pic" viewBox="0 0 220 200" style="max-width:300px" id="masksvg" direction="ltr"></svg>
+<div><div class="f">\[ \text{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}} + M\right) \]</div><div class="f">\[ M_{ij} = \begin{cases} 0 & j \le i \\ -\infty & j > i \end{cases} \]</div>
+<p class="ex">سطر = کلمه‌ای که نگاه می‌کند. ستون = کلمه‌ای که دیده می‌شود. خانه‌های خاکستری (بالای قطر) بسته‌اند. سطرِ «<bdi>cross</bdi>» فقط <bdi>The</bdi>، <bdi>animal</bdi>، <bdi>didn't</bdi> و خودش را می‌بیند.</p>
+<p class="ex">مزیت: با یک ماتریس، پیش‌بینیِ «کلمه‌ی بعدی» برای <b>همه‌ی</b> جایگاه‌ها هم‌زمان آموزش داده می‌شود.</p></div>
+</div>
+</section>
+
+<section>
+<h2>هزینه: O(n²)</h2>
+<p>ماتریسِ امتیازها \(n \times n\) است: هر کلمه با هر کلمه. اگر طولِ متن ۲ برابر شود، این ماتریس ۴ برابر می‌شود.</p>
+<div class="f">\[ \text{time per layer} = O(n^2 d + n d^2),\qquad \text{memory for scores} = O(n^2) \]</div>
+<ul class="sym">
+<li>\(n^2 d\): ضربِ \(QK^\top\) و ضرب در \(V\)</li>
+<li>\(n d^2\): ساختنِ Q، K، V و FFN</li>
+<li>برای متنِ بلند (\(n \gg d\)) جمله‌ی \(n^2\) غالب است</li>
+</ul>
+<div class="box">
+<label>طولِ متن \(n\) <input id="nsl" type="range" min="7" max="17" step="1" value="12"><b id="nv"></b></label>
+<div class="err" id="ninfo"></div>
+</div>
+<p class="ex" style="margin-top:8px">حافظه‌ی ماتریسِ امتیازها با اعدادِ ۱۶بیتی (۲ بایت): برای ۴۰۹۶ توکن، ۱۶٬۷۷۷٬۲۱۶ امتیاز = ۳۲ مگابایت برای <b>هر head</b>؛ با ۳۲ head، ۱ گیگابایت برای هر لایه. برای ۱۳۱٬۰۷۲ توکن (۱۲۸K)، ۳۲ گیگابایت برای فقط یک head.</p>
+<p>چرا مهم است: LLMهای امروزی متن‌های صدهزار توکنی می‌خوانند. راه‌هایی که استفاده می‌شود:</p>
+<div class="kinds">
+<div><p><b>FlashAttention</b></p><p class="ex">ماتریسِ \(n \times n\) را هرگز کامل در حافظه‌ی GPU نمی‌سازد؛ تکه‌تکه حساب می‌کند. جواب دقیقاً همان است، حافظه \(O(n)\) و خیلی سریع‌تر؛ ولی محاسبه هنوز \(O(n^2)\).</p></div>
+<div><p><b>Attention پنجره‌ای یا پراکنده</b></p><p class="ex">هر کلمه فقط به \(w\) کلمه‌ی نزدیک (مثلاً ۴۰۹۶) نگاه کند: هزینه \(O(n w)\). کمی دقت را فدای سرعت می‌کند (Longformer، Mistral).</p></div>
+<div><p><b>KV Cache</b> (موقعِ تولید)</p><p class="ex">K و V کلمه‌های قبلی را نگه دار تا برای هر کلمه‌ی جدید فقط یک سطرِ تازه حساب شود. محاسبه کم می‌شود، ولی حافظه با طولِ متن زیاد می‌شود.</p></div>
+</div>
+</section>
+
+<section>
+<h2>خوبی‌ها و بدی‌ها</h2>
+<div class="kinds">
+<div><p><b>خوبی‌ها</b></p><ul class="ex">
+<li>موازی: کلِ جمله هم‌زمان روی GPU.</li>
+<li>هر دو کلمه با فاصله‌ی ۱ به هم وصل‌اند؛ وابستگیِ دور را راحت می‌گیرد.</li>
+<li>با داده و پارامترِ بیشتر خوب بزرگ می‌شود (scaling).</li>
+<li>برای متن، تصویر، صدا، کد، همه یک معماری.</li></ul></div>
+<div><p><b>بدی‌ها</b></p><ul class="ex">
+<li>هزینه‌ی \(O(n^2)\) در طولِ متن.</li>
+<li>ترتیب را خودش نمی‌فهمد؛ positional encoding لازم است.</li>
+<li>داده‌ی خیلی زیاد می‌خواهد؛ روی داده‌ی کم، CNN یا RNN گاهی بهترند.</li>
+<li>تولیدِ متن هنوز کلمه‌به‌کلمه است (فقط آموزش موازی است).</li></ul></div>
+</div>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>Scaled dot-product attention از صفر با NumPy</b> (همان مثالِ ۳ کلمه‌ای):</p>
+<pre>import numpy as np
+
+def softmax(x, axis=-1):
+    x = x - x.max(axis=axis, keepdims=True)     # for numerical stability
+    e = np.exp(x)
+    return e / e.sum(axis=axis, keepdims=True)
+
+def attention(Q, K, V, causal=False):
+    d = Q.shape[-1]
+    scores = Q @ K.T / np.sqrt(d)               # (n, n)
+    if causal:                                  # hide future tokens
+        n = scores.shape[0]
+        scores = np.where(np.triu(np.ones((n, n)), k=1) == 1, -np.inf, scores)
+    W = softmax(scores)                         # each row sums to 1
+    return W @ V, W
+
+Q = np.array([[1, 0], [0, 1], [2, 1]], float)   # animal, street, it
+K = np.array([[2, 0], [0, 1], [1, 1]], float)
+V = np.array([[1, 0], [0, 1], [.5, .5]], float)
+out, W = attention(Q, K, V)
+print(W.round(3))    # last row: [0.62  0.074 0.306]
+print(out.round(3))  # last row: [0.773 0.227]</pre>
+<p><b>با PyTorch</b> (Multi-Head، با ماسکِ علّی):</p>
+<pre>import torch, torch.nn as nn
+
+torch.manual_seed(0)
+n, d_model, heads = 10, 512, 8                 # 10 tokens, 8 heads of size 64
+x = torch.randn(1, n, d_model)                 # (batch, seq, d_model)
+
+mha = nn.MultiheadAttention(d_model, heads, batch_first=True)
+causal = torch.triu(torch.ones(n, n, dtype=torch.bool), diagonal=1)  # True = blocked
+
+out, w = mha(x, x, x, attn_mask=causal)        # self-attention: Q, K, V all from x
+print(out.shape)        # torch.Size([1, 10, 512])
+print(w.shape)          # torch.Size([1, 10, 10])  (averaged over heads)
+print(w[0, 2])          # row 2: only positions 0..2 are non-zero
+print(sum(p.numel() for p in mha.parameters()))   # 1050624</pre>
+<p class="ex">در PyTorch 2 تابعِ آماده‌ی <code>torch.nn.functional.scaled_dot_product_attention(q, k, v, is_causal=True)</code> هم هست که خودکار از FlashAttention استفاده می‌کند.</p>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview reports. Click a question to see the answer.</p>
+
+<details><summary>Explain self-attention / scaled dot-product attention.</summary>
+<p>Each token is projected into a query \(q = xW_Q\), key \(k = xW_K\) and value \(v = xW_V\). The score between token \(i\) and token \(j\) is \(q_i \cdot k_j\). Scores are divided by \(\sqrt{d_k}\), passed through a row-wise softmax to get weights that sum to 1, and the output for token \(i\) is the weighted sum of all values: \(\text{softmax}(QK^\top/\sqrt{d_k})V\). Example with \(d = 2\): \(q_{\text{it}} = [2,1]\), keys \([2,0],[0,1],[1,1]\) give scores \([4,1,3]\), scaled \([2.83, 0.71, 2.12]\), weights \([0.620, 0.074, 0.306]\), output 0.620·[1, 0] + 0.074·[0, 1] + 0.306·[0.5, 0.5] = [0.773, 0.227].</p></details>
+
+<details><summary>Why do we divide by √d_k?</summary>
+<p>If query and key components are roughly independent with mean 0 and variance 1, then \(q \cdot k\) is a sum of \(d_k\) terms with variance \(d_k\), so typical scores grow like \(\sqrt{d_k}\). Large scores push softmax into saturation: one weight near 1, the rest near 0, and the gradients (about \(w(1-w)\)) become tiny. Dividing by \(\sqrt{d_k}\) keeps the score variance near 1 for any \(d_k\). In a simulation with 8 random keys, the average largest weight is 0.54 at \(d=4\) but 0.95 at \(d=512\) without scaling; with scaling it stays near 0.35 in both cases.</p>
+<p class="src">LetsDataScience, "50 LLM and AI engineer interview questions" (Q1)</p></details>
+
+<details><summary>What are Q, K and V, and why three separate projections?</summary>
+<p>Query: what this token is looking for. Key: what this token offers, used for matching. Value: the content that is actually passed on when the token is attended to. Separate learned matrices let the model decouple "how to match" from "what to send". With a single shared projection, the score matrix would be symmetric (\(i\) attends to \(j\) exactly as much as \(j\) to \(i\)) and the copied content would be tied to the matching features. In self-attention all three come from the same sequence; in cross-attention Q comes from the decoder and K, V from the encoder.</p></details>
+
+<details><summary>Why multi-head attention? Does it cost more?</summary>
+<p>One softmax gives one weighted average per token, so a single head tends to capture one kind of relation. With \(h\) heads, each with its own \(W_Q, W_K, W_V\) in a smaller subspace (\(d_k = d_{\text{model}}/h\)), different heads can track coreference, syntax, nearby tokens and so on; the outputs are concatenated and mixed with \(W_O\). Because the head size shrinks, the cost is about the same as one full-size head. Original Transformer: \(d_{\text{model}} = 512\), \(h = 8\), \(d_k = 64\); parameters \(4 \cdot 512^2 + 4 \cdot 512 = 1{,}050{,}624\).</p></details>
+
+<details><summary>Why do Transformers need positional encoding? Sinusoidal vs learned vs RoPE?</summary>
+<p>Self-attention is permutation-equivariant: shuffle the tokens and each token's output is unchanged, just moved. So "dog bites man" and "man bites dog" look the same without position information. Sinusoidal encoding adds \(\sin(pos/10000^{2i/d})\) and \(\cos(\cdot)\) at many frequencies; it has no parameters, and the dot product of two encodings depends only on their distance (with \(d=32\): 16 for distance 0, 15.31 for distance 1, 13.73 for distance 2). Learned absolute embeddings (BERT, GPT-2) are simple but limited to the maximum trained length. RoPE (Llama and most modern LLMs) rotates Q and K by a position-dependent angle so \(q_i \cdot k_j\) depends on \(i - j\) directly, and it extends better to longer contexts.</p></details>
+
+<details><summary>What is causal masking, and what other masks are there?</summary>
+<p>In a decoder, token \(i\) must not see tokens \(j > i\), otherwise during training it could read the answer it is supposed to predict. We add \(-\infty\) to those scores before softmax so their weights are exactly 0 (an upper-triangular mask). This also lets one forward pass train next-token prediction at every position in parallel. A padding mask is different: it hides padding tokens in a batch of sequences with different lengths, in both encoders and decoders.</p></details>
+
+<details><summary>Encoder-only vs decoder-only vs encoder-decoder (BERT vs GPT vs T5)?</summary>
+<p><b>Encoder-only (BERT):</b> bidirectional attention, trained with masked language modelling; good for classification, retrieval and embeddings, not for generation. <b>Decoder-only (GPT, Llama):</b> causal attention, trained on next-token prediction; generates text and is the standard for LLMs because one simple objective scales to huge unlabeled data. <b>Encoder-decoder (T5, original Transformer, BART):</b> the encoder reads the full input bidirectionally; the decoder generates causally and uses cross-attention to the encoder; natural for translation and summarization.</p></details>
+
+<details><summary>What is the complexity of self-attention, and how do you handle long contexts?</summary>
+<p>Per layer: \(O(n^2 d)\) time for \(QK^\top\) and the multiplication by \(V\), plus \(O(n d^2)\) for projections and the FFN; \(O(n^2)\) memory for the score matrix if it is materialised. Example: 4,096 tokens give 16.8M scores, 32 MB per head in fp16, 1 GB per layer with 32 heads. Remedies: FlashAttention (tiles the computation in on-chip memory, exact result, \(O(n)\) memory, still \(O(n^2)\) compute), sliding-window or sparse attention (\(O(nw)\)), linear-attention approximations, and at inference a KV cache plus MQA/GQA to shrink it.</p>
+<p class="src">PracHub, "Transformer Complexity, Inference Optimization, GQA and FlashAttention"</p></details>
+
+<details><summary>What is the KV cache and why is reusing past keys and values valid?</summary>
+<p>In autoregressive decoding with a causal mask, the keys and values of earlier tokens never change when a new token is appended (they only depend on tokens at or before their position). So we store them and, for each new token, compute only its own \(q, k, v\) and one row of attention: per-token cost drops from recomputing the whole prefix to \(O(n d)\). The price is memory: 2 × layers × kv_heads × d_head × n × bytes. For 32 layers, 32 heads of size 128, 4,096 tokens in fp16: \(2 \cdot 32 \cdot 32 \cdot 128 \cdot 4096 \cdot 2 \approx 2.1\) GB per sequence. Grouped-query attention shares K/V across heads to cut this.</p></details>
+
+<details><summary>What do residual connections, LayerNorm and the feed-forward layer do in a Transformer block?</summary>
+<p>Residuals (\(x + \text{sublayer}(x)\)) give gradients a direct path through deep stacks and let each layer learn a small update. LayerNorm normalises each token vector, keeping activations in a stable range; modern LLMs use Pre-LN (\(x + \text{sublayer}(\text{LN}(x))\)), which trains more stably than the original Post-LN. The FFN, \(W_2\,\text{ReLU}(W_1x + b_1) + b_2\) applied to each token separately, adds non-linearity and per-token processing; attention mixes information across tokens, the FFN transforms it. With \(d_{\text{model}} = 512\), \(d_{\text{ff}} = 2048\) the FFN has 2,099,712 parameters, about twice the attention layer.</p></details>
+
+<details><summary>Why did Transformers replace RNNs/LSTMs?</summary>
+<p>RNNs process tokens one after another, so training cannot be parallelised over the sequence, and information between distant tokens must survive many steps (path length \(O(n)\)), which causes vanishing gradients and forgetting. Self-attention connects any two tokens in one step (path length \(O(1)\)) and processes all positions in parallel with matrix multiplications that GPUs are built for. The cost is \(O(n^2)\) in sequence length, and generation is still sequential at inference time.</p></details>
+
+<details><summary>Implement masked multi-head self-attention from scratch.</summary>
+<p>Project \(X\) with \(W_Q, W_K, W_V\) to shape (batch, n, d_model); reshape to (batch, h, n, d_k); compute scores \(QK^\top/\sqrt{d_k}\) of shape (batch, h, n, n); set entries above the diagonal to \(-\infty\) (and padding positions); softmax over the last axis; multiply by V; transpose and reshape back to (batch, n, d_model); apply \(W_O\). The NumPy function above is the single-head core; mention numerical stability (subtract the row max before exp) and that dropout is usually applied to the attention weights.</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://arxiv.org/abs/1706.03762">Vaswani et al., "Attention Is All You Need" (2017)</a> · <a href="https://letsdatascience.com/blog/50-llm-and-ai-engineer-interview-questions-for-2026">LetsDataScience</a> · <a href="https://prachub.com/interview-questions/transformer-complexity-inference-optimization-gqa-and-flashattention">PracHub: complexity, GQA, FlashAttention</a> · <a href="https://prachub.com/interview-questions/transformer-attention-computing-q-k-and-v-and-how-a-kv-cache-speeds-up-decoding">PracHub: Q, K, V and KV cache</a> · <a href="https://prachub.com/interview-questions/implement-masked-multi-head-self-attention">PracHub: implement masked multi-head self-attention</a> · <a href="https://prachub.com/interview-questions/explain-transformers-and-qkv-matrices">PracHub: transformers and QKV matrices</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+const softmax = a => { const m = Math.max(...a), e = a.map(x => Math.exp(x - m)), s = e.reduce((p, q) => p + q, 0); return e.map(x => x / s); };
+const NS = 'http://www.w3.org/2000/svg';
+const svgEl = (tag, at, txt) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (txt != null) e.textContent = txt; return e; };
+
+// --- RNN vs attention picture
+(() => {
+  const T = ['The', 'animal', '…', 'because', 'it', 'was'], xs = T.map((_, i) => 40 + i * 56);
+  const r1 = document.getElementById('rnnrow'), r2 = document.getElementById('attrow');
+  T.forEach((t, i) => {
+    r1.append(svgEl('rect', { x: xs[i] - 24, y: 30, width: 48, height: 20, rx: 5, fill: 'var(--soft)', stroke: 'var(--muted)' }), svgEl('text', { x: xs[i], y: 44 }, t));
+    if (i) r1.append(svgEl('line', { x1: xs[i - 1] + 24, y1: 40, x2: xs[i] - 24, y2: 40, stroke: 'var(--muted)' }));
+    r2.append(svgEl('rect', { x: xs[i] - 24, y: 120, width: 48, height: 20, rx: 5, fill: i === 4 ? 'var(--l1)' : 'var(--soft)', stroke: 'var(--muted)' }), svgEl('text', { x: xs[i], y: 134 }, t));
+    if (i !== 4) r2.append(svgEl('path', { d: `M${xs[4]},120 Q${(xs[4] + xs[i]) / 2},${96 - Math.abs(4 - i) * 2} ${xs[i]},120`, fill: 'none', stroke: i === 1 ? 'var(--accent)' : 'var(--muted)', 'stroke-width': i === 1 ? 2.5 : 1 }));
+  });
+  r1.append(svgEl('path', { d: `M${xs[1]},52 Q${(xs[1] + xs[4]) / 2},78 ${xs[4]},52`, fill: 'none', stroke: 'var(--red)', 'stroke-dasharray': '3 3' }), svgEl('text', { x: (xs[1] + xs[4]) / 2, y: 74, fill: 'var(--red)', 'font-size': 8 }, 'چند قدم'));
+})();
+
+// --- attention heatmap (hand-set illustrative scores)
+const TOK = ['The', 'animal', "didn't", 'cross', 'the', 'street', 'because', 'it', 'was', 'tired'];
+const boosts = v => { const t = v === 'tired'; return [
+  { 0: 1, 1: 2 }, { 0: 1.5, 1: 1, 3: 1, 9: t ? 1.5 : 0 }, { 1: 1.5, 2: 1, 3: 2 }, { 1: 1.5, 2: 1, 3: 1, 5: 2 }, { 3: 1, 4: 1, 5: 2.5 },
+  { 3: 1.5, 4: 1.5, 5: 1, 9: t ? 0 : 1.5 }, { 2: 1, 3: 1, 6: 1, 9: 1.5 }, { 1: t ? 3 : 1, 5: t ? 1 : 3, 7: 1, 9: 1 }, { 7: 2, 8: 1, 9: 1.5 },
+  t ? { 1: 2, 7: 2, 9: 1 } : { 5: 2.5, 7: 1.5, 9: 1 }]; };
+const attW = (v, causal) => boosts(v).map((b, i) => softmax(TOK.map((_, j) => causal && j > i ? -Infinity : (b[j] || 0))));
+let hv = 'tired', hc = false, hsel = 7;
+const drawHM = () => {
+  const toks = TOK.slice(0, 9).concat([hv]), W = attW(hv, hc);
+  const words = document.getElementById('words'); words.innerHTML = '';
+  toks.forEach((t, i) => { const s = document.createElement('span'); s.textContent = t; if (i === hsel) s.className = 'sel';
+    s.style.background = `color-mix(in srgb, var(--accent) ${Math.round(W[hsel][i] * 100)}%, transparent)`; s.onclick = () => { hsel = i; drawHM(); }; words.append(s); });
+  document.getElementById('bars').innerHTML = toks.map((t, j) => `<div class="bar"><span>${t}</span><i style="width:${(W[hsel][j] * 60).toFixed(1)}%"></i><b>${W[hsel][j].toFixed(2)}</b></div>`).join('');
+  const hm = document.getElementById('hm'); hm.style.gridTemplateColumns = `56px repeat(10, minmax(18px, 26px))`; hm.innerHTML = '';
+  hm.append(document.createElement('div'));
+  toks.forEach(t => { const d = document.createElement('div'); d.className = 'cl'; d.textContent = t; hm.append(d); });
+  toks.forEach((t, i) => { const l = document.createElement('div'); l.className = 'rl' + (i === hsel ? ' sel' : ''); l.textContent = t; l.onclick = () => { hsel = i; drawHM(); }; hm.append(l);
+    W[i].forEach(w => { const c = document.createElement('div'); c.className = 'c';
+      c.style.background = hc && w === 0 ? 'var(--line)' : `color-mix(in srgb, var(--accent) ${Math.round(w * 100)}%, var(--card))`;
+      if (i === hsel) c.style.outline = '1px solid var(--ink)'; c.onclick = () => { hsel = i; drawHM(); }; hm.append(c); }); });
+  const top = W[hsel].map((w, j) => [w, j]).sort((a, b) => b[0] - a[0])[0];
+  document.getElementById('hminfo').innerHTML = `«<bdi>${toks[hsel]}</bdi>» بیشترین توجه را به «<b><bdi>${toks[top[1]]}</bdi></b>» دارد (وزنِ ${fa(top[0], 2)}). جمعِ وزن‌های هر سطر = ۱.` + (hc ? ' خانه‌های خاکستری: آینده، بسته با ماسک.' : '');
+  document.getElementById('vt').classList.toggle('on', hv === 'tired'); document.getElementById('vw').classList.toggle('on', hv === 'wide'); document.getElementById('cm').classList.toggle('on', hc);
+};
+document.getElementById('vt').onclick = () => { hv = 'tired'; drawHM(); };
+document.getElementById('vw').onclick = () => { hv = 'wide'; drawHM(); };
+document.getElementById('cm').onclick = () => { hc = !hc; drawHM(); };
+drawHM();
+
+// --- sqrt(d) demo: seeded random query and 8 keys
+const simD = (d, sd) => { let seed = sd; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const g = () => Math.sqrt(-2 * Math.log(rnd())) * Math.cos(2 * Math.PI * rnd());
+  const q = Array.from({ length: d }, g), ks = Array.from({ length: 8 }, () => Array.from({ length: d }, g));
+  const s = ks.map(k => k.reduce((a, x, i) => a + x * q[i], 0));
+  return { s, w0: softmax(s), w1: softmax(s.map(x => x / Math.sqrt(d))) }; };
+const avgMax = d => { let a = 0, b = 0; for (let s = 1; s <= 200; s++) { const o = simD(d, s * 7919 + 3); a += Math.max(...o.w0); b += Math.max(...o.w1); } return [a / 200, b / 200]; };
+const dsl = document.getElementById('dsl');
+const drawD = () => { const d = 2 ** +dsl.value, o = simD(d, 7), [a, b] = avgMax(d);
+  const bars = w => w.map((x, j) => `<div class="bar"><span>key ${j + 1}</span><i style="width:${(x * 50).toFixed(1)}%"></i><b>${x.toFixed(2)}</b></div>`).join('');
+  document.getElementById('dv').textContent = fa(d);
+  document.getElementById('b0').innerHTML = bars(o.w0); document.getElementById('b1').innerHTML = bars(o.w1);
+  const sd = Math.sqrt(o.s.reduce((p, x) => p + x * x, 0) / 8);
+  document.getElementById('dinfo').innerHTML = `اندازه‌ی معمولِ امتیازها در این نمونه: ${fa(sd, 1)} (حدودِ √d = ${fa(Math.sqrt(d), 1)})<br>میانگینِ بزرگ‌ترین وزن روی ۲۰۰ نمونه: بدونِ تقسیم <b>${fa(a, 2)}</b> · با تقسیم <b>${fa(b, 2)}</b>`; };
+dsl.oninput = drawD; drawD();
+
+// --- multi-head picture
+(() => { const g = document.getElementById('heads');
+  for (let i = 0; i < 8; i++) { const x = 18 + i * 42;
+    g.append(svgEl('line', { x1: 180, y1: 24, x2: x + 17, y2: 42, stroke: 'var(--muted)' }), svgEl('rect', { x, y: 42, width: 34, height: 30, rx: 4, fill: 'var(--l' + (i % 5 + 1) + ')', stroke: 'var(--muted)' }),
+      svgEl('text', { x: x + 17, y: 55, 'font-size': 8 }, 'head ' + (i + 1)), svgEl('text', { x: x + 17, y: 66, 'font-size': 7, fill: 'var(--muted)' }, '10×64'),
+      svgEl('line', { x1: x + 17, y1: 72, x2: 180, y2: 92, stroke: 'var(--muted)' })); } })();
+
+// --- causal mask picture
+(() => { const s = document.getElementById('masksvg'), T = ['The', 'animal', "didn't", 'cross', 'the', 'street'], c = 26, x0 = 54, y0 = 40;
+  T.forEach((t, i) => { s.append(svgEl('text', { x: x0 - 4, y: y0 + i * c + 17, 'font-size': 9, 'text-anchor': 'end' }, t),
+    svgEl('text', { x: x0 + i * c + 13, y: y0 - 6, 'font-size': 8, 'text-anchor': 'start', transform: `rotate(-45 ${x0 + i * c + 13} ${y0 - 6})` }, t));
+    T.forEach((_, j) => { const on = j <= i; s.append(svgEl('rect', { x: x0 + j * c, y: y0 + i * c, width: c - 2, height: c - 2, rx: 3, fill: on ? 'color-mix(in srgb, var(--accent) 45%, var(--card))' : 'var(--line)' }));
+      if (!on) s.append(svgEl('text', { x: x0 + j * c + 12, y: y0 + i * c + 17, 'font-size': 10, 'text-anchor': 'middle', fill: 'var(--muted)' }, '−∞')); }); }); })();
+
+// --- positional encoding
+const PD = 32, PN = 50;
+const pe = p => Array.from({ length: PD }, (_, i) => { const a = p / 10000 ** (2 * Math.floor(i / 2) / PD); return i % 2 ? Math.cos(a) : Math.sin(a); });
+const PE = Array.from({ length: PN }, (_, p) => pe(p));
+const posSl = document.getElementById('pos');
+const drawPE = () => { const P = +posSl.value;
+  const [c, W, H] = mk(document.getElementById('pe'), 0.62, 520), cw = (W - 20) / PD, ch = (H - 6) / PN;
+  for (let p = 0; p < PN; p++) for (let i = 0; i < PD; i++) { const v = PE[p][i]; c.globalAlpha = Math.abs(v); c.fillStyle = css(v >= 0 ? 'blue' : 'red'); c.fillRect(10 + i * cw, 3 + p * ch, cw + 0.5, ch + 0.5); }
+  c.globalAlpha = 1; c.strokeStyle = css('ink'); c.lineWidth = 1.5; c.strokeRect(10, 3 + P * ch, W - 20, ch);
+  const sims = PE.map(v => v.reduce((a, x, i) => a + x * PE[P][i], 0));
+  const [c2, W2, H2] = mk(document.getElementById('pesim'), 0.32, 520), X = p => 14 + p / (PN - 1) * (W2 - 24), lo = Math.min(...sims), Y = v => H2 - 14 - (v - lo) / (16 - lo) * (H2 - 26);
+  c2.strokeStyle = css('line'); c2.beginPath(); c2.moveTo(X(0), H2 - 14); c2.lineTo(X(PN - 1), H2 - 14); c2.stroke();
+  c2.strokeStyle = css('accent'); c2.lineWidth = 2; c2.beginPath(); sims.forEach((v, p) => p ? c2.lineTo(X(p), Y(v)) : c2.moveTo(X(p), Y(v))); c2.stroke();
+  c2.fillStyle = css('accent'); c2.beginPath(); c2.arc(X(P), Y(16), 4, 0, 7); c2.fill();
+  c2.fillStyle = css('muted'); c2.font = '11px Vazirmatn'; c2.textAlign = 'center'; c2.fillText('جایگاه →', W2 / 2, H2 - 1);
+  document.getElementById('posv').textContent = fa(P); };
+posSl.oninput = drawPE;
+
+// --- O(n^2) slider
+const nsl = document.getElementById('nsl');
+const drawN = () => { const n = 2 ** +nsl.value, s = n * n, mb = s * 2 / 2 ** 20;
+  const sz = x => x >= 1024 ? fa(x / 1024, 1) + ' گیگابایت' : fa(x, 1) + ' مگابایت';
+  document.getElementById('nv').textContent = fa(n);
+  document.getElementById('ninfo').innerHTML = `تعدادِ امتیازها: ‎<b>${s.toLocaleString('fa-IR')}</b><br>حافظه برای یک head (۱۶بیتی): <b>${sz(mb)}</b> · با ۳۲ head در یک لایه: <b>${sz(mb * 32)}</b>`; };
+nsl.oninput = drawN; drawN();
+
+const redraw = () => { drawPE(); };
+addEventListener('resize', redraw); redraw();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

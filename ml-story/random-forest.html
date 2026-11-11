@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>جنگل تصادفی</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.bag { display: flex; flex-wrap: wrap; gap: 4px; direction: ltr; justify-content: center; margin: 6px 0; }
+.bag span { width: 30px; height: 30px; border-radius: 6px; display: grid; place-items: center; font-size: 13px; background: var(--soft); border: 1px solid var(--line); }
+.bag span.dup { background: color-mix(in srgb, var(--blue) 25%, var(--card)); }
+.bag span.out { background: color-mix(in srgb, var(--red) 22%, var(--card)); }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="decision-tree.html">درخت تصمیم</a> · <a href="gradient-boosting.html">بعدی: گرادیان بوستینگ ←</a></p>
+<h1>جنگل تصادفی <span class="en">(Random Forest)</span></h1>
+<p class="sub">صدها درختِ کمی متفاوت، که با هم رأی می‌دهند. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>یک درختِ تصمیم یک مشکلِ بزرگ دارد: <b>ناپایدار</b> است. داده کمی عوض شود، درختِ کاملاً متفاوتی ساخته می‌شود، و زود بیش‌برازش می‌کند.</p>
+<p><b>ایده‌ی جنگل تصادفی:</b> به‌جای یک درخت، <b>صدها</b> درخت بساز. هر کدام را کمی متفاوت بساز (با تکه‌ی متفاوتی از داده و ویژگی‌ها). بعد از همه بپرس و <b>رأیِ اکثریت</b> (یا میانگین) را جواب بده.</p>
+<div class="key">اشتباه‌های تصادفیِ هر درخت با هم خنثی می‌شوند؛ چیزی که همه‌ی درخت‌ها درست فهمیده‌اند، می‌ماند.</div>
+<p>چرا مهم است: روی داده‌ی جدولی یکی از قوی‌ترین مدل‌هاست، با تنظیماتِ پیش‌فرض هم خوب کار می‌کند، و تقریباً بیش‌برازش نمی‌کند. در مصاحبه تقریباً همیشه همراه با <b>Boosting</b> پرسیده می‌شود.</p>
+</section>
+
+<section>
+<h2>مشکل: درخت‌ها ناپایدارند</h2>
+<p>سه درخت، هر کدام روی یک نمونه‌ی کمی متفاوت از <b>همان</b> داده‌ی وام (بخشِ درخت تصمیم) ساخته شده‌اند:</p>
+<div class="kinds">
+<div><p><b>درختِ ۱</b></p><canvas id="t1"></canvas></div>
+<div><p><b>درختِ ۲</b></p><canvas id="t2"></canvas></div>
+<div><p><b>درختِ ۳</b></p><canvas id="t3"></canvas></div>
+</div>
+<p class="ex">مرزها خیلی با هم فرق دارند، مخصوصاً جاهایی که داده کم یا شلوغ است. هر درخت بخشی از «نویز» را حفظ کرده. ولی جاهایی که هر سه هم‌نظرند (پایین‌چپ قرمز، بالا‌راست آبی)، همان الگوی واقعی است.</p>
+</section>
+
+<section>
+<h2>قدم ۱: هر درخت با نمونه‌ی متفاوتی از داده (Bagging)</h2>
+<p>از داده‌ی اصلی، به همان اندازه، <b>با جایگذاری</b> نمونه برمی‌داریم <span class="en">(Bootstrap)</span>. یعنی یک نمونه ممکن است چند بار انتخاب شود و یک نمونه اصلاً انتخاب نشود.</p>
+<p><b>مثال:</b> ۱۰ خانه داریم (شماره‌ی ۱ تا ۱۰). یک نمونه‌ی bootstrap:</p>
+<div class="bag"><span>3</span><span class="dup">7</span><span>1</span><span class="dup">7</span><span>9</span><span class="dup">3</span><span>10</span><span>2</span><span class="dup">7</span><span>5</span></div>
+<p class="ex">خانه‌ی ۷ سه بار و خانه‌ی ۳ دو بار آمده‌اند (آبی). این خانه‌ها <b>اصلاً</b> نیامده‌اند:</p>
+<div class="bag"><span class="out">4</span><span class="out">6</span><span class="out">8</span></div>
+<p>هر درخت روی نمونه‌ی bootstrap خودش ساخته می‌شود. به‌طور متوسط هر نمونه حدود <b>۶۳٪</b> از داده‌های متفاوت را دارد و ۳۷٪ بیرون می‌ماند.</p>
+<p>اگر فقط همین کار را بکنیم (بدون قدم ۲)، اسمش <b>Bagging</b> است <span class="en">(Bootstrap AGGregatING)</span>.</p>
+</section>
+
+<section>
+<h2>قدم ۲: هر سؤال فقط از بینِ چند ویژگیِ تصادفی</h2>
+<p><b>مشکلِ Bagging تنها:</b> فرض کنید یک ویژگی خیلی قوی است (مثلاً درآمد). همه‌ی درخت‌ها سؤالِ اولشان را با همان می‌پرسند، پس درخت‌ها <b>شبیهِ هم</b> می‌شوند و اشتباه‌هایشان هم شبیه است. میانگین گرفتن از چیزهای شبیه، چیزی را خنثی نمی‌کند.</p>
+<p><b>راه‌حل:</b> در هر گره، درخت فقط از بینِ چند ویژگیِ <b>تصادفی</b> می‌تواند سؤال بپرسد <span class="en">(max_features)</span>. گاهی ویژگیِ قوی در دسترس نیست و درخت مجبور است از ویژگی‌های دیگر هم یاد بگیرد. درخت‌ها <b>متفاوت‌تر</b> می‌شوند.</p>
+<div class="kinds">
+<div><p><b>دسته‌بندی</b></p><p class="ex">معمولاً \(\sqrt{p}\) ویژگی در هر گره (با ۱۰۰ ویژگی، ۱۰ تا).</p></div>
+<div><p><b>رگرسیون</b></p><p class="ex">معمولاً \(p/3\) ویژگی، یا در scikit-learn همه‌ی ویژگی‌ها.</p></div>
+</div>
+<details class="drop"><summary><b>چرا متفاوت بودنِ درخت‌ها این‌قدر مهم است؟ (فرمول)</b></summary>
+<p>اگر \(B\) درخت داشته باشیم، هر کدام با واریانسِ \(\sigma^2\)، و هم‌بستگیِ بینِ دو درخت \(\rho\) باشد، واریانسِ میانگینشان:</p>
+<div class="f">\[ \text{Var} = \rho\,\sigma^2 + \frac{1 - \rho}{B}\,\sigma^2 \]</div>
+<p>تکه‌ی دوم با درختِ بیشتر (\(B\) بزرگ) کم می‌شود. ولی تکه‌ی اول، \(\rho\,\sigma^2\)، با هیچ تعدادی از درخت کم نمی‌شود؛ فقط با <b>کم کردنِ هم‌بستگیِ درخت‌ها</b>. این دقیقاً کارِ قدم ۲ است.</p>
+<p class="ex">مثال: σ² = ۱. اگر درخت‌ها کاملاً هم‌بسته باشند (ρ = ۱)، واریانس همیشه ۱ می‌ماند. اگر ρ = ۰٫۳ و ۱۰۰ درخت: ۰٫۳ + ۰٫۷/۱۰۰ ≈ ۰٫۳۱.</p>
+</details>
+</section>
+
+<section>
+<h2>قدم ۳: رأی‌گیری</h2>
+<div class="kinds">
+<div><p><b>دسته‌بندی</b></p><p class="ex">هر درخت یک دسته می‌گوید؛ دسته‌ای که بیشترین رأی را دارد برنده است. سهمِ رأی‌ها (مثلاً ۷۰ از ۱۰۰ درخت) را می‌شود به‌عنوان احتمال گزارش کرد.</p></div>
+<div><p><b>رگرسیون</b></p><p class="ex">میانگینِ عددهای همه‌ی درخت‌ها.</p></div>
+</div>
+<p style="margin-top:12px"><b>خودتان ببینید:</b> تعدادِ درخت‌ها را زیاد کنید. هر درخت تا آخر رشد کرده (بیش‌برازش‌شده)، ولی جنگل مرزی آرام‌تر می‌کشد:</p>
+<div class="box">
+<canvas id="forest"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>خوش‌حساب</span><span><i style="background:var(--red)"></i>بدحساب</span><span>رنگِ زمینه = سهمِ رأیِ درخت‌ها</span></div>
+<label>تعدادِ درخت‌ها <input id="nt" type="range" min="1" max="100" step="1" value="1"><b id="ntv"></b></label>
+<div class="err" id="finfo"></div>
+</div>
+<p class="ex">برای مقایسه: یک درختِ تنها که تا آخر رشد کرده، روی داده‌ی جدید <b>۷۵٪</b> درست است؛ جنگل با ۳۰ درخت یا بیشتر حدود <b>۷۹٪</b>. سقفِ واقعی در این داده حدود ۸۸٪ است، چون ۱۲٪ برچسب‌ها عمداً به هم ریخته‌اند.</p>
+</section>
+
+<section>
+<h2>یک سنجشِ رایگان: Out-of-Bag</h2>
+<p>یادتان هست هر درخت حدود ۳۷٪ داده را <b>ندیده</b>؟ برای هر نمونه، فقط از درخت‌هایی که آن را ندیده‌اند بپرس. این پیش‌بینی برای آن نمونه مثلِ پیش‌بینی روی داده‌ی جدید است.</p>
+<p>دقتِ همه‌ی این پیش‌بینی‌ها را <b>OOB Score</b> می‌گویند: یک تخمین از دقت روی داده‌ی جدید، <b>بدون</b> کنار گذاشتنِ داده‌ی سنجش.</p>
+<p class="ex">در scikit-learn: <code>RandomForestClassifier(oob_score=True)</code> و بعد <code>model.oob_score_</code>.</p>
+</section>
+
+<section>
+<h2>تنظیم‌های مهم</h2>
+<div class="kinds">
+<div><p><b>n_estimators</b></p><p class="ex">تعدادِ درخت‌ها. بیشتر تقریباً همیشه بهتر یا برابر است (بیش‌برازش نمی‌کند)، فقط کندتر. معمولاً چند صد.</p></div>
+<div><p><b>max_features</b></p><p class="ex">چند ویژگی در هر گره. کمتر ← درخت‌ها متفاوت‌تر (واریانسِ کمتر) ولی هر درخت ضعیف‌تر. مهم‌ترین تنظیم.</p></div>
+<div><p><b>max_depth / min_samples_leaf</b></p><p class="ex">عمقِ هر درخت. معمولاً درخت‌ها را عمیق می‌گذارند و می‌گذارند میانگین‌گیری کارِ کنترلِ بیش‌برازش را بکند؛ ولی با داده‌ی خیلی پرنویز، محدود کردن کمک می‌کند.</p></div>
+</div>
+</section>
+
+<section>
+<h2>خوبی‌ها و بدی‌ها</h2>
+<div class="kinds">
+<div><p><b>خوبی‌ها</b></p><ul class="ex">
+<li>با تنظیماتِ پیش‌فرض هم خیلی خوب است.</li>
+<li>خیلی کمتر از یک درخت بیش‌برازش می‌کند.</li>
+<li>هم‌مقیاس کردنِ ویژگی‌ها لازم نیست.</li>
+<li>درخت‌ها مستقل‌اند، پس <b>موازی</b> ساخته می‌شوند (سریع روی چند هسته).</li>
+<li>OOB Score و اهمیتِ ویژگی‌ها را مجانی می‌دهد.</li></ul></div>
+<div><p><b>بدی‌ها</b></p><ul class="ex">
+<li>صدها درخت را نمی‌شود مثلِ یک درخت کشید و توضیح داد.</li>
+<li>مدلِ بزرگ و پیش‌بینیِ کندتر از یک درخت.</li>
+<li>بیرون از محدوده‌ی داده پیش‌بینی نمی‌کند (مثلِ درخت).</li>
+<li>معمولاً کمی ضعیف‌تر از Boosting خوب‌تنظیم‌شده.</li></ul></div>
+</div>
+</section>
+
+<section>
+<h2>جنگل تصادفی در برابر Boosting</h2>
+<div class="kinds">
+<div><p><b>جنگل تصادفی (Bagging)</b></p><ul class="ex">
+<li>درخت‌ها <b>هم‌زمان و مستقل</b> ساخته می‌شوند.</li>
+<li>هر درخت <b>عمیق و قوی</b> ولی پرنوسان است.</li>
+<li>میانگین‌گیری <b>واریانس</b> را کم می‌کند.</li>
+<li>تنظیمِ کم لازم دارد.</li></ul></div>
+<div><p><b>Boosting</b> (مثلاً XGBoost، LightGBM)</p><ul class="ex">
+<li>درخت‌ها <b>یکی پس از دیگری</b>؛ هر درخت اشتباه‌های قبلی‌ها را درست می‌کند.</li>
+<li>هر درخت <b>کم‌عمق و ضعیف</b> است.</li>
+<li>جمع کردنِ درخت‌ها <b>بایاس</b> را کم می‌کند.</li>
+<li>معمولاً دقیق‌تر، ولی به تنظیم حساس‌تر و راحت‌تر بیش‌برازش می‌کند.</li></ul></div>
+</div>
+<p class="ex" style="margin-top:8px"><a href="gradient-boosting.html">Boosting</a> موضوعِ صفحه‌ی بعد است.</p>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>جنگل از صفر</b> (با درختِ scikit-learn به‌عنوانِ درختِ پایه):</p>
+<pre>import numpy as np
+from sklearn.tree import DecisionTreeClassifier
+
+def fit_forest(X, y, n_trees=100, max_features="sqrt", seed=0):
+    rng = np.random.default_rng(seed)
+    trees = []
+    for _ in range(n_trees):
+        idx = rng.integers(0, len(X), len(X))        # bootstrap: sample with replacement
+        t = DecisionTreeClassifier(max_features=max_features,
+                                   random_state=int(rng.integers(1e9)))
+        trees.append(t.fit(X[idx], y[idx]))
+    return trees
+
+def predict_forest(trees, X):
+    votes = np.mean([t.predict(X) for t in trees], axis=0)   # share of trees voting 1
+    return (votes >= 0.5).astype(int)</pre>
+<p><b>با scikit-learn:</b></p>
+<pre>from sklearn.ensemble import RandomForestClassifier
+from sklearn.inspection import permutation_importance
+
+rf = RandomForestClassifier(n_estimators=300, max_features="sqrt",
+                            oob_score=True, n_jobs=-1, random_state=0)
+rf.fit(X_train, y_train)
+print(rf.oob_score_, rf.score(X_test, y_test))
+print(permutation_importance(rf, X_test, y_test).importances_mean)</pre>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>How does a random forest work?</summary>
+<p>It trains many decision trees and combines them. Two sources of randomness make the trees different: (1) each tree is trained on a <b>bootstrap sample</b> (sampling rows with replacement); (2) at each split, only a <b>random subset of features</b> is considered. Prediction is a majority vote (classification) or an average (regression). Each tree overfits in its own way; averaging cancels much of that noise.</p></details>
+
+<details><summary>What is bagging, and why does it reduce variance?</summary>
+<p>Bagging (bootstrap aggregating) trains the same model on many bootstrap samples and averages them. If each model has variance \(\sigma^2\) and the pairwise correlation is \(\rho\), the average of \(B\) models has variance</p>
+<div class="f">\[ \rho\,\sigma^2 + \frac{1-\rho}{B}\,\sigma^2 \]</div>
+<p>More models shrink the second term toward 0. The bias stays about the same as one model, so bagging works best with low-bias, high-variance models such as deep trees.</p>
+<p class="src">PracHub (ensemble trade-offs; bias-variance); Analytics Vidhya (bagging questions)</p></details>
+
+<details><summary>What is the difference between bagging and a random forest? Why does max_features matter?</summary>
+<p>A random forest is bagging plus <b>feature subsampling</b> at every split. In the variance formula, more trees only shrink the second term; the first term \(\rho\sigma^2\) can only shrink by lowering \(\rho\). If one feature is very strong, all bagged trees split on it first and become correlated. Restricting each split to a random subset (typically \(\sqrt{p}\) for classification, about \(p/3\) for regression) decorrelates the trees. Smaller <code>max_features</code> means less correlation but weaker individual trees: it is the main hyperparameter to tune.</p>
+<p class="src">kindatechnical.com; TechPrep</p></details>
+
+<details><summary>What is the out-of-bag (OOB) error?</summary>
+<p>Each bootstrap sample leaves out about \((1 - 1/n)^n \approx e^{-1} \approx 37\%\) of the rows. For each row, predict using only the trees that did not see it, and compare with the true label. The resulting accuracy (or error) is an almost unbiased estimate of test performance, obtained without a separate validation set. Useful when data is scarce.</p></details>
+
+<details><summary>Can a random forest overfit? Does adding more trees cause overfitting?</summary>
+<p>Adding trees does <b>not</b> cause overfitting: the error converges as \(B\) grows; more trees only cost time and memory. But the forest can still overfit if each tree memorises noise and the trees are highly correlated, e.g. very noisy data with a few strong features. Then limit depth or <code>min_samples_leaf</code>, or lower <code>max_features</code>.</p>
+<p class="src">dshandbook (Random Forest Q&amp;A)</p></details>
+
+<details><summary>Random forest vs gradient boosting: what is the difference, and when would you use each?</summary>
+<p><b>Random forest:</b> trees built independently and in parallel on bootstrap samples; deep trees; averaging reduces <b>variance</b>; robust with default settings and hard to overfit by adding trees.</p>
+<p><b>Gradient boosting:</b> trees built sequentially, each fitting the errors (gradients) of the current ensemble; shallow trees; summing reduces <b>bias</b>; usually more accurate when tuned, but sensitive to learning rate, number of trees and depth, and can overfit if trained too long.</p>
+<p>Rule of thumb: random forest for a strong, low-effort baseline; gradient boosting (XGBoost, LightGBM, CatBoost) when you need the best accuracy and can tune it.</p>
+<p class="src">PracHub (XGBoost vs Random Forest; compare trees, RF and gradient boosting)</p></details>
+
+<details><summary>How is feature importance computed in a random forest? What are its problems?</summary>
+<p>Mean decrease in impurity: average, over all trees, the impurity reduction from splits on each feature. It is fast but biased toward features with many unique values and is computed on training data. With correlated features, importance is split between them, so each looks less important. Permutation importance on held-out data (shuffle a feature and measure the score drop) is more reliable; SHAP values give per-prediction explanations.</p></details>
+
+<details><summary>Does a random forest need feature scaling? Can it extrapolate?</summary>
+<p>No scaling: splits depend only on the order of values. No extrapolation: every prediction is an average of training targets in some leaves, so for inputs beyond the training range it predicts roughly the value at the edge of the data. For trends that continue past the data (e.g. prices over time), a linear model or added trend features may be needed.</p></details>
+
+<details><summary>How would you handle class imbalance with a random forest?</summary>
+<p>Use <code>class_weight="balanced"</code> or <code>"balanced_subsample"</code> (weights recomputed per bootstrap sample), balanced bootstrap sampling (undersample the majority class in each tree), tune the decision threshold on the vote share, and evaluate with precision, recall, F1 or PR-AUC instead of accuracy.</p></details>
+
+<details><summary>What are the main hyperparameters and how do you tune them?</summary>
+<p><code>n_estimators</code>: increase until the OOB or validation score stops improving (hundreds). <code>max_features</code>: the most important; try \(\sqrt{p}\), \(\log_2 p\), and fractions like 0.3 to 0.5. <code>min_samples_leaf</code> / <code>max_depth</code>: raise or limit for noisy data. Tune with OOB score or cross-validated random search.</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://dshandbook.substack.com/p/random-forest-interview-questions">DS Handbook</a> · <a href="https://www.techprep.app/blog/random-forests-interview-questions">TechPrep</a> · <a href="https://prachub.com/interview-questions/explain-random-forests-bagging-and-evaluation">PracHub (RF, bagging)</a> · <a href="https://prachub.com/resources/xgboost-vs-random-forest">PracHub (XGBoost vs RF)</a> · <a href="https://prachub.com/interview-questions/ensemble-learning-trade-offs-and-why-bagging-reduces-overfitting">PracHub (why bagging works)</a> · <a href="https://www.analyticsvidhya.com/blog/2022/12/interview-questions-on-bagging-algorithms-in-machine-learning/">Analytics Vidhya</a> · <a href="https://kindatechnical.com/data-science/decision-trees-information-gain.html">kindatechnical</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(200, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+
+// same data as the decision-tree page
+let seed = 33; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const label = (x, y) => (x > 4 && y > 4) || (x > 7.5 && y > 2) ? 1 : 0;
+const gen = n => Array.from({ length: n }, () => { const x = rnd() * 10, y = rnd() * 10; let l = label(x, y); if (rnd() < 0.12) l = 1 - l; return [x, y, l]; });
+const TR = gen(90), TE = gen(200);
+let s2 = 7; const r2 = () => (s2 = (s2 * 16807) % 2147483647) / 2147483647;
+const giniOf = p => { if (!p.length) return 0; const q = p.filter(v => v[2]).length / p.length; return 1 - q * q - (1 - q) * (1 - q); };
+const build = (pts, d, maxD, rf) => { const ones = pts.filter(q => q[2]).length, node = { leaf: true, cls: ones / pts.length };
+  if (d >= maxD || ones === 0 || ones === pts.length || pts.length < 2) return node;
+  let best = null; const fs = rf ? [r2() < .5 ? 0 : 1] : [0, 1];
+  for (const f of fs) { const vs = [...new Set(pts.map(q => q[f]))].sort((a, b) => a - b);
+    for (let i = 0; i < vs.length - 1; i++) { const t = (vs[i] + vs[i + 1]) / 2, L = pts.filter(q => q[f] <= t), R = pts.filter(q => q[f] > t);
+      const g = (L.length * giniOf(L) + R.length * giniOf(R)) / pts.length; if (!best || g < best.g) best = { f, t, g, L, R }; } }
+  if (!best || best.g >= giniOf(pts) - 1e-12) return node;
+  return { leaf: false, f: best.f, t: best.t, l: build(best.L, d + 1, maxD, rf), r: build(best.R, d + 1, maxD, rf) }; };
+const pr = (n, x, y) => n.leaf ? n.cls : (([x, y][n.f] <= n.t) ? pr(n.l, x, y) : pr(n.r, x, y));
+const boot = () => Array.from({ length: TR.length }, () => TR[Math.floor(r2() * TR.length)]);
+const TREES = Array.from({ length: 100 }, () => build(boot(), 0, 99, true));
+const vote = (k, x, y) => TREES.slice(0, k).reduce((a, t) => a + (pr(t, x, y) >= .5 ? 1 : 0), 0) / k;
+const acc = (f, D) => D.filter(([x, y, l]) => (f(x, y) >= .5 ? 1 : 0) === l).length / D.length;
+
+const field = (cv, ratio, maxw, f, cell) => { const [c, W, Ht] = mk(cv, ratio, maxw), X = x => 10 + x / 10 * (W - 18), Y = y => Ht - 10 - y / 10 * (Ht - 18);
+  for (let px = X(0); px < X(10); px += cell) for (let py = Y(10); py < Y(0); py += cell) {
+    const x = (px + cell / 2 - X(0)) / (X(10) - X(0)) * 10, y = (Y(0) - py - cell / 2) / (Y(0) - Y(10)) * 10, p = f(x, y);
+    c.fillStyle = css(p >= .5 ? 'blue' : 'red'); c.globalAlpha = 0.05 + 0.3 * Math.abs(p - .5) * 2; c.fillRect(px, py, cell + .5, cell + .5); }
+  c.globalAlpha = 1; TR.forEach(([x, y, l]) => { c.fillStyle = css(l ? 'blue' : 'red'); c.beginPath(); c.arc(X(x), Y(y), 3, 0, 7); c.fill(); }); };
+
+const singles = () => [0, 1, 2].forEach(i => field(document.getElementById('t' + (i + 1)), 0.8, 260, (x, y) => pr(TREES[i], x, y) >= .5 ? 1 : 0, 5));
+const nt = document.getElementById('nt');
+const forestDraw = () => { const k = +nt.value; field(document.getElementById('forest'), 0.65, 532, (x, y) => vote(k, x, y), 5);
+  document.getElementById('ntv').textContent = fa(k);
+  document.getElementById('finfo').innerHTML = `دقت روی آموزش: <b>${fa(acc((x, y) => vote(k, x, y), TR) * 100)}٪</b> · روی داده‌ی جدید: <b>${fa(acc((x, y) => vote(k, x, y), TE) * 100)}٪</b>`; };
+nt.oninput = forestDraw;
+const all = () => { singles(); forestDraw(); }; addEventListener('resize', all); all();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Embedding</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.ctl button { margin-top: 0; padding: 3px 10px; font-size: 14px; }
+.ctl button.on { background: var(--accent); color: var(--card); }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.vec { direction: ltr; unicode-bidi: isolate; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+.sent .w { cursor: pointer; padding: 0 3px; border-radius: 4px; }
+.sent .w.ctx { background: color-mix(in srgb, var(--blue) 22%, transparent); }
+.pairs { direction: ltr; text-align: left; font: 13px/1.7 ui-monospace, Consolas, monospace; }
+#map, #train, #ana { cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="neural-network.html">شبکه‌ی عصبی</a> · <a href="cnn.html">بعدی: شبکه‌ی کانولوشنی (CNN) ←</a></p>
+<h1>Embedding: کلمه‌ها به بردار <span class="en">(Embeddings)</span></h1>
+<p class="sub">هر چیزِ دسته‌ای (کلمه، کاربر، ویدیو) را به یک بردارِ کوتاه از عدد تبدیل می‌کنیم، طوری که چیزهای شبیه، بردارهای نزدیک بگیرند. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>مثالِ این صفحه: یک اپِ ویدیوی کوتاه، مثل TikTok. این اپ می‌خواهد حدس بزند کاربر کدام ویدیو را دوست دارد.</p>
+<p>مشکل: مدل‌ها فقط با <b>عدد</b> کار می‌کنند. ولی خیلی از ورودی‌ها <b>دسته</b> هستند، نه عدد:</p>
+<ul>
+<li>کلمه‌های کپشن: «گربه»، «پیتزا»، «فوتبال»</li>
+<li>شناسه‌ی کاربر: کاربرِ شماره‌ی ۸۱۲۳۴</li>
+<li>شناسه‌ی ویدیو: ویدیوی شماره‌ی ۵۵۰۰۱۲</li>
+<li>هشتگ، کشور، زبان</li>
+</ul>
+<p>نمی‌شود به «گربه» عددِ ۱ و به «سگ» عددِ ۲ داد؛ آن‌وقت مدل فکر می‌کند سگ «دو برابرِ» گربه است. راه‌حل: به هر دسته یک <b>بردار</b> (فهرستی از چند عدد) بدهیم، و این عددها را <b>از روی داده یاد بگیریم</b>.</p>
+<div class="key">Embedding یعنی یک جدول: هر کلمه یا کاربر یا ویدیو یک سطر دارد، و هر سطر یک بردارِ کوتاه است. این جدول طوری آموزش می‌بیند که چیزهای شبیه، بردارهای نزدیک داشته باشند.</div>
+<p>چرا مهم است: تقریباً همه‌ی سیستم‌های بزرگِ امروز روی embedding ساخته شده‌اند:</p>
+<ul>
+<li>پیشنهادِ ویدیو در TikTok و YouTube</li>
+<li>جست‌وجوی معنایی و RAG برای مدل‌های زبانی</li>
+<li>ورودیِ هر Transformer و هر مدلِ زبانی</li>
+</ul>
+<p>در مصاحبه‌ی ML تقریباً همیشه درباره‌ی embedding، cosine similarity، word2vec، مدلِ دوبرجی و جست‌وجوی نزدیک‌ترین همسایه سؤال می‌آید.</p>
+</section>
+
+<section>
+<h2>One-hot در برابر Embedding</h2>
+<p>ساده‌ترین راه برای عدد کردنِ یک دسته <b>One-hot</b> است: یک بردار به طولِ کلِ واژگان، همه صفر، فقط خانه‌ی همان کلمه ۱.</p>
+<p>فرض کنید واژگانِ کپشن‌ها <b>۵۰٬۰۰۰</b> کلمه دارد:</p>
+<div class="kinds">
+<div><p><b>One-hot</b></p>
+<p class="vec">cat &nbsp;= [0, 0, 1, 0, …, 0]<br>dog &nbsp;= [0, 0, 0, 1, …, 0]</p>
+<ul class="ex">
+<li>طول: <b>۵۰٬۰۰۰</b>، فقط یک خانه غیرصفر.</li>
+<li>هیچ چیزی یاد گرفته نمی‌شود.</li>
+<li>«گربه» و «سگ» همان‌قدر دورند که «گربه» و «فوتبال».</li>
+<li>کلمه‌ی جدید یعنی طولِ همه‌ی بردارها عوض می‌شود.</li></ul></div>
+<div><p><b>Embedding (چگال)</b></p>
+<p class="vec">cat &nbsp;= [0.21, −0.53, 0.08, …] (300)<br>dog &nbsp;= [0.26, −0.47, 0.02, …] (300)</p>
+<ul class="ex">
+<li>طول: <b>۳۰۰</b>، همه‌ی خانه‌ها عدد دارند.</li>
+<li>عددها یاد گرفته می‌شوند.</li>
+<li>«گربه» و «سگ» نزدیک‌اند، «فوتبال» دور است.</li>
+<li>جدولِ کامل: ۵۰٬۰۰۰ × ۳۰۰ = ۱۵ میلیون عدد، حدود <b>۶۰ مگابایت</b> با float32.</li></ul></div>
+</div>
+<p style="margin-top:10px"><b>چرا در one-hot همه به یک اندازه دورند؟</b> هر دو بردارِ one-hotِ متفاوت در هیچ خانه‌ای با هم ۱ ندارند. پس:</p>
+<div class="f">\[ e_{\text{cat}} \cdot e_{\text{dog}} = 0, \qquad \lVert e_{\text{cat}} - e_{\text{dog}} \rVert = \sqrt{1^2 + 1^2} = \sqrt{2} \approx 1.414 \]</div>
+<p>این برای <b>هر</b> دو کلمه‌ای درست است. one-hot هیچ اطلاعی درباره‌ی شباهت ندارد. مدل باید برای هر کلمه همه‌چیز را از صفر یاد بگیرد، و چیزی که درباره‌ی «گربه» یاد گرفته به «سگ» نمی‌رسد.</p>
+</section>
+
+<section>
+<h2>ایده‌ی اصلی: چیزهای شبیه، بردارهای نزدیک</h2>
+<p>در embedding هر بُعد یک «ویژگیِ پنهان» است که مدل خودش پیدا کرده. در یک مثالِ اسباب‌بازی با دو بُعد، فرض کنید بُعدِ اول «چقدر ورزشی است» و بُعدِ دوم «چقدر خوراکی است»:</p>
+<div dir="ltr"><table>
+<tr><th>video</th><th>dim 1</th><th>dim 2</th></tr>
+<tr><td>football</td><td>0.90</td><td>0.25</td></tr>
+<tr><td>basketball</td><td>0.80</td><td>0.45</td></tr>
+<tr><td>pizza</td><td>−0.20</td><td>0.90</td></tr>
+<tr><td>cat</td><td>−0.75</td><td>−0.55</td></tr>
+</table></div>
+<p class="ex">در embeddingِ واقعی، بُعدها معمولاً معنیِ روشنی ندارند؛ فقط فاصله‌ها و جهت‌ها معنی دارند.</p>
+<p>برای اندازه گرفتنِ شباهت معمولاً از <b>شباهتِ کسینوسی</b> <span class="en">(Cosine Similarity)</span> استفاده می‌کنیم: کسینوسِ زاویه‌ی بینِ دو بردار.</p>
+<div class="f">\[ \cos(a, b) = \frac{a \cdot b}{\lVert a \rVert \, \lVert b \rVert} = \frac{\sum_i a_i b_i}{\sqrt{\sum_i a_i^2}\,\sqrt{\sum_i b_i^2}} \]</div>
+<ul class="sym">
+<li>\(a, b\): دو بردار</li>
+<li>\(a \cdot b\): ضربِ داخلی؛ جمعِ ضربِ خانه‌به‌خانه</li>
+<li>\(\lVert a \rVert\): طولِ بردار</li>
+<li>\(+1\): هم‌جهت (خیلی شبیه)</li>
+<li>\(0\): عمود (بی‌ربط)</li>
+<li>\(-1\): خلافِ هم</li>
+</ul>
+<p><b>مثال با عدد:</b> فوتبال و بسکتبال.</p>
+<ul class="ex">
+<li>ضربِ داخلی: ۰٫۹ × ۰٫۸ + ۰٫۲۵ × ۰٫۴۵ = ۰٫۸۳۲۵</li>
+<li>طول‌ها: ۰٫۹۳۴ و ۰٫۹۱۸</li>
+<li>کسینوس: ۰٫۸۳۲۵ ÷ (۰٫۹۳۴ × ۰٫۹۱۸) = <b>۰٫۹۷۱</b>؛ زاویه حدودِ ۱۴ درجه.</li>
+</ul>
+<p>همین حساب برای فوتبال و پیتزا <b>۰٫۰۵</b> می‌دهد (تقریباً عمود)، و برای فوتبال و گربه <b>۰٫۹۴−</b>.</p>
+</section>
+
+<section>
+<h2>نقشه‌ی ویدیوها: خودتان امتحان کنید</h2>
+<p>هشت ویدیو روی یک نقشه‌ی دوبعدی. روی <b>دو</b> ویدیو کلیک کنید تا شباهتشان را ببینید. بعد دکمه‌ی one-hot را بزنید و ببینید همان دو ویدیو در one-hot چه شباهتی دارند.</p>
+<div class="box">
+<canvas id="map"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>ورزشی</span><span><i style="background:var(--orange)"></i>آشپزی</span><span><i style="background:var(--red)"></i>حیوانات</span></div>
+<div class="ctl" id="chips"></div>
+<div class="ctl"><button id="ohBtn">نمایش با one-hot</button></div>
+<div class="err" id="mapInfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>هم‌گروه</b></p><p class="ex">پیتزا و پاستا: کسینوس ۰٫۹۹. گربه و سگ: ۰٫۹۷. زاویه‌ی کوچک.</p></div>
+<div><p><b>گروهِ دیگر</b></p><p class="ex">فوتبال و پیتزا: ۰٫۰۵. فوتبال و گربه: ۰٫۹۴−. زاویه‌ی بزرگ.</p></div>
+<div><p><b>با one-hot</b></p><p class="ex">هر دو ویدیوی متفاوت: کسینوس <b>۰</b> و فاصله‌ی <b>۱٫۴۱۴</b>. هیچ فرقی بینِ «شبیه» و «بی‌ربط» نیست.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">در دو بُعد، جای کافی نیست و گروه‌های بی‌ربط مجبورند روبه‌روی هم بیفتند (کسینوسِ منفی). در ۲۰۰ تا ۱۰۰۰ بُعدِ واقعی جا زیاد است و چیزهای بی‌ربط معمولاً کسینوسی نزدیکِ صفر دارند.</p>
+</section>
+
+<section>
+<h2>حسابِ برداری: شاه − مرد + زن ≈ ملکه</h2>
+<p>یک کشفِ معروفِ word2vec: «تفاوتِ» دو بردار هم معنی دارد. فاصله‌ی «مرد» تا «زن» تقریباً همان فاصله‌ی «شاه» تا «ملکه» است. پس:</p>
+<div class="f">\[ v_{\text{king}} - v_{\text{man}} + v_{\text{woman}} \approx v_{\text{queen}} \]</div>
+<p>یک مثالِ <b>اسباب‌بازی</b> که با عدد درست کار می‌کند. بُعدِ اول «مرد (+) یا زن (−)»، بُعدِ دوم «بزرگسال و صاحب‌مقام (+) یا بچه (−)». عددها را خودمان ساخته‌ایم:</p>
+<div dir="ltr"><table>
+<tr><th>word</th><th>man</th><th>woman</th><th>king</th><th>queen</th><th>boy</th><th>girl</th><th>apple</th></tr>
+<tr><td>vector</td><td>(0.80, 0.10)</td><td>(−0.75, 0.15)</td><td>(0.85, 0.90)</td><td>(−0.65, 1.00)</td><td>(0.70, −0.60)</td><td>(−0.65, −0.55)</td><td>(0.05, −0.15)</td></tr>
+</table></div>
+<ul class="ex" style="margin-top:8px">
+<li>king − man = (0.05, 0.80)؛ یعنی «مقام».</li>
+<li>king − man + woman = (−0.70, 0.95)</li>
+<li>queen = (−0.65, 1.00)؛ نزدیک ولی نه دقیقاً برابر. فاصله ۰٫۰۷۱، کسینوس <b>۰٫۹۹۸</b>.</li>
+<li>بینِ کلمه‌های دیگر (به‌جز سه کلمه‌ی ورودی)، نزدیک‌ترین به این نتیجه «queen» است.</li>
+</ul>
+<div class="box">
+<canvas id="ana"></canvas>
+<div class="ctl dir-ltr" style="direction:ltr;justify-content:center">
+<select id="aA"></select> − <select id="aB"></select> + <select id="aC"></select>
+</div>
+<div class="ctl" style="justify-content:center">
+<button data-p="king,man,woman">king − man + woman</button>
+<button data-p="girl,woman,man">girl − woman + man</button>
+<button data-p="king,boy,girl">king − boy + girl</button>
+</div>
+<div class="legend"><span><i style="background:var(--muted)"></i>کلمه‌ها</span><span><i style="background:var(--blue)"></i>ورودی‌ها</span><span><i style="background:var(--accent)"></i>نتیجه‌ی حساب</span><span><i style="background:var(--red)"></i>نزدیک‌ترین کلمه</span></div>
+<div class="err" id="anaInfo"></div>
+</div>
+<p class="ex" style="margin-top:8px">در embeddingهای واقعی این حساب فقط <b>گاهی</b> کار می‌کند، و معمولاً نتیجه از نظرِ عددی به خودِ «king» نزدیک‌تر است؛ برای همین در آزمون‌های analogy سه کلمه‌ی ورودی را از جواب‌ها حذف می‌کنند. این ترفند را به‌عنوانِ «نشانه‌ی ساختار» ببینید، نه یک ابزارِ مطمئن.</p>
+</section>
+
+<section>
+<h2>جدولِ Embedding: یک لایه‌ی قابلِ یادگیری</h2>
+<p>در عمل embedding یک ماتریس است به اسمِ \(W\): یک سطر برای هر کلمه یا ویدیو. «گرفتنِ embedding» یعنی <b>خواندنِ یک سطر</b> <span class="en">(Lookup)</span>.</p>
+<p>مثال: واژگانِ ۴ کلمه‌ای، بُعدِ ۳.</p>
+<div class="two">
+<div dir="ltr"><table>
+<tr><th>id</th><th>word</th><th colspan="3">row of W</th></tr>
+<tr><td>0</td><td>cat</td><td>0.2</td><td>−0.5</td><td>0.1</td></tr>
+<tr><td>1</td><td>dog</td><td>0.3</td><td>−0.4</td><td>0.0</td></tr>
+<tr><td><b>2</b></td><td><b>pizza</b></td><td><b>−0.6</b></td><td><b>0.8</b></td><td><b>0.3</b></td></tr>
+<tr><td>3</td><td>football</td><td>0.9</td><td>0.1</td><td>−0.2</td></tr>
+</table></div>
+<div><p>ضربِ one-hotِ «pizza» در \(W\):</p>
+<div class="f">\[ [0,0,1,0] \cdot W = [-0.6,\ 0.8,\ 0.3] \]</div>
+<p class="ex">دقیقاً سطرِ شماره‌ی ۲. پس لایه‌ی embedding همان یک لایه‌ی خطی روی one-hot است، فقط به‌جای ضربِ ماتریسیِ پرهزینه، مستقیم سطر را برمی‌داریم.</p></div>
+</div>
+<div class="f">\[ \text{emb}(i) = W[i], \qquad W \in \mathbb{R}^{V \times d} \]</div>
+<ul class="sym">
+<li>\(i\): شناسه‌ی کلمه یا ویدیو</li>
+<li>\(V\): اندازه‌ی واژگان (تعدادِ دسته‌ها)</li>
+<li>\(d\): بُعدِ embedding</li>
+</ul>
+<p>\(W\) مثلِ هر وزنِ دیگری در شبکه، با گرادیان کاهشی یاد گرفته می‌شود. نکته‌ی مهم: در هر قدم، فقط سطرهایی که در آن دسته‌ی داده آمده‌اند گرادیان می‌گیرند. اگر در یک batch فقط ۳ ویدیو از ۱۰۰ میلیون ویدیو باشد، فقط همان ۳ سطر عوض می‌شوند (گرادیانِ <b>تُنُک</b> <span class="en">(Sparse)</span>).</p>
+<div class="kinds">
+<div><p><b>یاد گرفتن همراهِ مدلِ اصلی</b></p><p class="ex">جدول بخشی از مدلِ پیشنهاد یا دسته‌بندی است و با همان هدف (مثلاً «کاربر ویدیو را تا آخر دید؟») آموزش می‌بیند.</p></div>
+<div><p><b>پیش‌آموزش جدا</b></p><p class="ex">اول embedding را با یک کارِ کمکی (مثلِ word2vec) روی داده‌ی زیاد یاد می‌گیریم، بعد در مدل‌های دیگر استفاده می‌کنیم.</p></div>
+</div>
+</section>
+
+<section>
+<h2>word2vec: کلمه را از همسایه‌هایش بشناس</h2>
+<p>ایده‌ی پشتِ word2vec (سال ۲۰۱۳) یک جمله است: <b>کلمه‌هایی که همسایه‌های مشابه دارند، معنیِ مشابه دارند</b>. «گربه» و «سگ» هر دو کنارِ «بامزه»، «پشمالو» و «ویدیو» می‌آیند.</p>
+<p>نسخه‌ی <b>Skip-gram</b>: از روی کلمه‌ی وسط، همسایه‌هایش را حدس بزن. پنجره <span class="en">(Window)</span> می‌گوید تا چند کلمه این‌طرف و آن‌طرف همسایه حساب شود.</p>
+<p>کپشنِ یک ویدیو را در نظر بگیرید. روی یک کلمه کلیک کنید و اندازه‌ی پنجره را عوض کنید:</p>
+<div class="box">
+<div class="sent" id="sent"></div>
+<label>اندازه‌ی پنجره <input id="win" type="range" min="1" max="3" step="1" value="2"><b id="winv"></b></label>
+<div class="legend"><span><i style="background:var(--accent)"></i>کلمه‌ی وسط</span><span><i style="background:var(--blue)"></i>همسایه‌ها</span></div>
+<div class="pairs" id="pairs"></div>
+<div class="err" id="sgInfo"></div>
+</div>
+<p style="margin-top:10px">هر جفتِ (کلمه‌ی وسط، همسایه) یک نمونه‌ی آموزشی است. با پنجره‌ی ۲ این جمله‌ی ۶ کلمه‌ای <b>۱۸</b> جفت می‌سازد؛ با پنجره‌ی ۱، <b>۱۰</b> جفت؛ با پنجره‌ی ۳، <b>۲۴</b> جفت. داده‌ی برچسب‌دار لازم نیست؛ خودِ متن برچسب می‌سازد.</p>
+<p>هر کلمه <b>دو</b> بردار دارد: \(v\) وقتی کلمه‌ی وسط است، و \(u\) وقتی همسایه است. احتمالِ این‌که \(o\) همسایه‌ی \(c\) باشد با softmax:</p>
+<div class="f">\[ P(o \mid c) = \frac{\exp(u_o \cdot v_c)}{\sum_{w=1}^{V} \exp(u_w \cdot v_c)} \]</div>
+<ul class="sym">
+<li>\(c\): کلمه‌ی وسط</li>
+<li>\(o\): یک همسایه‌ی واقعی</li>
+<li>\(v_c\): بردارِ «وسط» برای \(c\)</li>
+<li>\(u_o\): بردارِ «همسایه» برای \(o\)</li>
+<li>\(V\): اندازه‌ی واژگان</li>
+</ul>
+<p>بعد از آموزش، معمولاً بردارهای \(v\) را به‌عنوانِ embedding نگه می‌داریم.</p>
+<div class="kinds">
+<div><p><b>Skip-gram</b></p><p class="ex">ورودی: «video». هدف: «funny»، «cat»، «makes»، «me». برای کلمه‌های کم‌تکرار بهتر است.</p></div>
+<div><p><b>CBOW</b></p><p class="ex">برعکس. ورودی: میانگینِ «funny»، «cat»، «makes»، «me». هدف: «video». سریع‌تر است.</p></div>
+</div>
+</section>
+
+<section>
+<h2>Negative Sampling: به‌جای ۵۰٬۰۰۰ مقایسه، ۶ تا</h2>
+<p>مشکلِ softmaxِ بالا: مخرج روی <b>همه‌ی</b> واژگان جمع می‌زند. با ۵۰٬۰۰۰ کلمه، هر جفتِ آموزشی ۵۰٬۰۰۰ ضربِ داخلی لازم دارد.</p>
+<p>راه‌حل: مسئله را به یک دسته‌بندیِ دودویی تبدیل کن. برای هر جفتِ واقعی، \(k\) کلمه‌ی <b>تصادفی</b> هم بردار (نمونه‌ی منفی)، و به مدل یاد بده: «جفتِ واقعی ← بله، جفت‌های تصادفی ← نه».</p>
+<div class="f">\[ L = -\log \sigma(u_o \cdot v_c) \;-\; \sum_{j=1}^{k} \log \sigma(-\,u_{n_j} \cdot v_c) \]</div>
+<ul class="sym">
+<li>\(\sigma\): سیگموید، \(1/(1+e^{-x})\)</li>
+<li>\(n_j\): کلمه‌ی منفیِ \(j\)-ام</li>
+<li>\(k\): تعدادِ منفی‌ها، معمولاً ۵ تا ۲۰</li>
+</ul>
+<p><b>مثال با عدد</b> (\(k = 2\)):</p>
+<ul class="ex">
+<li>جفتِ واقعی (video, cat): ضربِ داخلی ۲ ← σ(۲) = ۰٫۸۸۱ ← سهم در خطا: ۰٫۱۲۷</li>
+<li>منفیِ اول (video, tax): ضربِ داخلی ۱− ← σ(۱) = ۰٫۷۳۱ ← سهم: ۰٫۳۱۳</li>
+<li>منفیِ دوم (video, engine): ضربِ داخلی ۰٫۵ ← σ(۰٫۵−) = ۰٫۳۷۸ ← سهم: <b>۰٫۹۷۴</b> (این یکی هنوز زیادی شبیه است؛ گرادیانِ بزرگی می‌گیرد)</li>
+<li>جمعِ خطا: ۱٫۴۱۴. فقط <b>۳</b> ضربِ داخلی به‌جای ۵۰٬۰۰۰ (با \(k=5\) می‌شود ۶).</li>
+</ul>
+<p>کلمه‌های منفی از توزیعِ تکرارِ کلمه‌ها <b>به توانِ ۰٫۷۵</b> برداشته می‌شوند. این کار کلمه‌های پرتکرار را کمی کم‌رنگ و کم‌تکرارها را کمی پررنگ می‌کند:</p>
+<div dir="ltr"><table>
+<tr><th>word</th><th>the</th><th>video</th><th>cat</th><th>pizza</th></tr>
+<tr><td>frequency</td><td>0.500</td><td>0.300</td><td>0.150</td><td>0.050</td></tr>
+<tr><td>sampling prob (freq<sup>0.75</sup>, normalised)</td><td>0.442</td><td>0.301</td><td>0.179</td><td>0.079</td></tr>
+</table></div>
+<p class="ex" style="margin-top:8px">word2vec علاوه بر این، کلمه‌های خیلی پرتکرار (مثلِ «the») را در متنِ آموزشی گاهی دور می‌اندازد <span class="en">(Subsampling)</span>، چون اطلاعاتِ کمی دارند.</p>
+</section>
+
+<section>
+<h2>آموزش را ببینید: embeddingِ ویدیوها از روی تاریخچه‌ی تماشا</h2>
+<p>همین روش روی ویدیوها هم کار می‌کند <span class="en">(item2vec)</span>. «جمله» یعنی ترتیبِ ویدیوهایی که یک کاربر در یک نشست دید. ویدیوهایی که در یک نشست کنارِ هم دیده می‌شوند، همسایه‌اند.</p>
+<p>داده‌ی ساختگی: ۱۲ ویدیو در ۳ موضوع (ورزش S1–S4، آشپزی F1–F4، حیوانات P1–P4)، ۱۵۰ نشستِ ۶ ویدیویی. در هر نشست ۸۵٪ ویدیوها از یک موضوع‌اند. embeddingِ ۲ بُعدی، پنجره‌ی ۲، ۵ نمونه‌ی منفی، نرخ یادگیری ۰٫۰۰۵. بردارها در شروع تصادفی و خیلی کوچک‌اند. تعدادِ دورها را زیاد کنید:</p>
+<div class="box">
+<canvas id="train"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>ورزش</span><span><i style="background:var(--orange)"></i>آشپزی</span><span><i style="background:var(--red)"></i>حیوانات</span><span>(مقیاسِ محورها خودکار است)</span></div>
+<label>تعدادِ دورِ آموزش <input id="ep" type="range" min="0" max="30" step="1" value="0"><b id="epv"></b></label>
+<div class="err" id="trInfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>دورهای ۲ تا ۴</b></p><p class="ex">همه‌ی بردارها با هم به یک طرف می‌روند. کسینوسِ بینِ گروه‌ها هم به ۰٫۹۵ تا ۰٫۹۹ می‌رسد؛ هنوز چیزی جدا نشده.</p></div>
+<div><p><b>از دورِ ۱۱ به بعد</b></p><p class="ex">گروه‌ها جدا شده‌اند: کسینوسِ هم‌گروه حدودِ ۱٫۰۰، بین‌گروه حدودِ ۰٫۶. نزدیک‌ترین همسایه‌ی <b>هر ۱۲</b> ویدیو از موضوعِ خودش است. خطا از ۴٫۱۵ (دورِ ۱) به ۲٫۴۴ (دورِ ۳۰) می‌رسد.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">به مدل هیچ‌وقت نگفتیم کدام ویدیو چه موضوعی دارد. فقط از «چه چیزی کنارِ چه چیزی دیده شد» این را پیدا کرد.</p>
+</section>
+
+<section>
+<h2>Embeddingِ وابسته به متن: یک کلمه، چند معنی</h2>
+<p>word2vec به هر کلمه <b>یک</b> بردارِ ثابت می‌دهد. ولی «bank» دو معنی دارد:</p>
+<ul>
+<li>I deposited money at the <b>bank</b>. (بانک)</li>
+<li>We sat on the river <b>bank</b>. (ساحلِ رودخانه)</li>
+</ul>
+<p>مثالِ اسباب‌بازی: معنیِ «پول» = (1, 0)، معنیِ «رودخانه» = (0, 1). اگر ۷۰٪ مواردِ متن معنیِ پول باشد، بردارِ ثابت جایی حدودِ (0.7, 0.3) می‌نشیند: کسینوس با «پول» ۰٫۹۲ و با «رودخانه» فقط ۰٫۳۹. معنیِ دوم تقریباً گم می‌شود.</p>
+<div class="kinds">
+<div><p><b>ثابت (Static)</b></p><p class="ex">word2vec، GloVe، fastText. یک جدول؛ «bank» همیشه یک بردار. سریع و سبک.</p></div>
+<div><p><b>وابسته به متن (Contextual)</b></p><p class="ex">ELMo، BERT، GPT. اول از جدول یک بردارِ اولیه برمی‌دارد، بعد لایه‌های Transformer آن را با کلمه‌های اطرافش عوض می‌کنند. «bank» در دو جمله دو بردارِ متفاوت می‌گیرد.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">حتی مدل‌های زبانیِ بزرگ با یک جدولِ embedding شروع می‌کنند: سطرِ هر توکن، به‌اضافه‌ی اطلاعاتِ جایگاه. «وابسته به متن» بودن کارِ لایه‌های بعدی است.</p>
+</section>
+
+<section>
+<h2>فراتر از کلمه: کاربر، ویدیو، تصویر، جمله</h2>
+<p>هر چیزی که بشود برایش «شبیه بودن» تعریف کرد، می‌تواند embedding داشته باشد.</p>
+<p><b>۱. پیشنهاد با مدلِ دوبرجی</b> <span class="en">(Two-Tower Model)</span>: یک شبکه کاربر را به بردار تبدیل می‌کند، یک شبکه‌ی دیگر ویدیو را، و امتیاز ضربِ داخلیِ این دو است.</p>
+<svg viewBox="0 0 360 190" style="width:100%;max-width:520px;display:block;margin:8px auto">
+<g font-size="10" text-anchor="middle">
+<rect x="10" y="150" width="140" height="30" rx="6" fill="var(--l1)" stroke="var(--muted)"/><text x="80" y="163">شناسه‌ی کاربر، سن، کشور،</text><text x="80" y="175">ویدیوهای دیده‌شده</text>
+<rect x="210" y="150" width="140" height="30" rx="6" fill="var(--l3)" stroke="var(--muted)"/><text x="280" y="163">شناسه‌ی ویدیو، هشتگ،</text><text x="280" y="175">سازنده، صدا</text>
+<line x1="80" y1="150" x2="80" y2="128" stroke="var(--muted)"/><line x1="280" y1="150" x2="280" y2="128" stroke="var(--muted)"/>
+<rect x="30" y="98" width="100" height="30" rx="6" fill="var(--soft)" stroke="var(--accent)"/><text x="80" y="117">برجِ کاربر (MLP)</text>
+<rect x="230" y="98" width="100" height="30" rx="6" fill="var(--soft)" stroke="var(--accent)"/><text x="280" y="117">برجِ ویدیو (MLP)</text>
+<line x1="80" y1="98" x2="80" y2="76" stroke="var(--muted)"/><line x1="280" y1="98" x2="280" y2="76" stroke="var(--muted)"/>
+<rect x="40" y="56" width="80" height="20" rx="6" fill="color-mix(in srgb, var(--blue) 25%, var(--card))"/><text x="80" y="70">بردارِ کاربر u</text>
+<rect x="240" y="56" width="80" height="20" rx="6" fill="color-mix(in srgb, var(--orange) 25%, var(--card))"/><text x="280" y="70">بردارِ ویدیو v</text>
+<line x1="120" y1="66" x2="160" y2="30" stroke="var(--muted)"/><line x1="240" y1="66" x2="200" y2="30" stroke="var(--muted)"/>
+<circle cx="180" cy="22" r="16" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><text x="180" y="26" font-size="11" font-weight="700">u·v</text>
+<text x="240" y="16" font-size="9" fill="var(--muted)">امتیاز</text>
+</g></svg>
+<p>مثالِ اسباب‌بازی با بردارهای نقشه‌ی بالا. کاربری که ورزش دوست دارد: \(u = (1.0,\ 0.2)\).</p>
+<ul class="ex">
+<li>فوتبال: \(u \cdot v\) = ۰٫۹۵</li>
+<li>بسکتبال: ۰٫۸۹</li>
+<li>پیتزا: ۰٫۰۲−</li>
+<li>گربه: ۰٫۸۶−</li>
+</ul>
+<p>چرا دو برج؟ چون بردارِ همه‌ی ویدیوها را <b>از قبل</b> حساب می‌کنیم و در یک پایگاه‌داده‌ی برداری می‌گذاریم. وقتی کاربر اپ را باز می‌کند، فقط برجِ کاربر اجرا می‌شود و بعد چند صد ویدیوی با بیشترین \(u \cdot v\) از بینِ میلیون‌ها ویدیو پیدا می‌شود (مرحله‌ی <b>بازیابیِ نامزدها</b> <span class="en">(Candidate Retrieval)</span>). یک مدلِ سنگین‌تر بعداً همین چند صد تا را دقیق‌تر رتبه‌بندی می‌کند.</p>
+<p class="ex">آموزش: جفت‌های (کاربر، ویدیوی دیده‌شده) مثبت‌اند. برای منفی‌ها معمولاً از ویدیوهای بقیه‌ی کاربرانِ همان batch استفاده می‌شود <span class="en">(In-batch Negatives)</span>: با batchِ ۵۱۲ تایی، هر کاربر ۵۱۱ منفیِ رایگان دارد.</p>
+<div class="kinds">
+<div><p><b>۲. تصویر</b></p><p class="ex">لایه‌ی یکی‌مانده به آخرِ یک CNN یا ViT، مثلاً بردارِ ۵۱۲ تایی. دو عکسِ گربه بردارهای نزدیک دارند. برای پیدا کردنِ ویدیوهای تکراری یا عکس‌های مشابه.</p></div>
+<div><p><b>۳. جمله و سند</b></p><p class="ex">یک Transformer کلِ جمله را به یک بردار تبدیل می‌کند (مثلاً میانگینِ بردارِ توکن‌ها). سؤال «طرز تهیه‌ی پاستا» نزدیکِ سندِ «دستور پخت پاستا» می‌افتد، حتی بدونِ کلمه‌ی مشترک.</p></div>
+<div><p><b>۴. متن و تصویر با هم</b></p><p class="ex">CLIP متن و عکس را در <b>یک</b> فضا می‌برد. «a cat on a sofa» نزدیکِ عکسِ گربه روی مبل می‌افتد.</p></div>
+</div>
+<p style="margin-top:10px"><b>جست‌وجوی معنایی و RAG</b> با embeddingِ جمله:</p>
+<ol class="flow">
+<li><span class="n">۱</span><div><p>همه‌ی سندها را تکه‌تکه کن (مثلاً ۳۰۰ کلمه‌ای) و برای هر تکه یک بردار بساز.</p></div></li>
+<li><span class="n">۲</span><div><p>بردارها را در یک پایگاه‌داده‌ی برداری بگذار.</p></div></li>
+<li><span class="n">۳</span><div><p>سؤالِ کاربر را با <b>همان</b> مدل به بردار تبدیل کن، و نزدیک‌ترین تکه‌ها را پیدا کن.</p></div></li>
+<li><span class="n">۴</span><div><p>(RAG) آن تکه‌ها را همراهِ سؤال به مدلِ زبانی بده تا با تکیه بر آن‌ها جواب بدهد.</p></div></li>
+</ol>
+<p class="ex">مثالِ اسباب‌بازی: سؤال (−0.3, 0.9). تکه‌ی «طرز تهیه‌ی خمیر پیتزا» (−0.2, 0.9): کسینوس ۰٫۹۹۵. تکه‌ی «قوانین فوتبال» (0.9, 0.25): ۰٫۰۵−. اولی برمی‌گردد.</p>
+</section>
+
+<section>
+<h2>جست‌وجوی شباهت و پایگاه‌داده‌ی برداری</h2>
+<p>سؤال: از بینِ ۱۰۰ میلیون ویدیو، کدام ۱۰۰ تا به بردارِ این کاربر نزدیک‌ترند؟</p>
+<div class="kinds">
+<div><p><b>جست‌وجوی کامل (دقیق)</b></p><p class="ex">با همه مقایسه کن. با بُعدِ ۶۴: ۱۰۰ میلیون × ۶۴ = <b>۶٫۴ میلیارد</b> ضرب برای <b>هر</b> درخواست. حافظه‌ی بردارها: ۲۵٫۶ گیگابایت (float32). برای چند میلیون درخواست در ثانیه خیلی کند.</p></div>
+<div><p><b>نزدیک‌ترین همسایه‌ی تقریبی (ANN)</b></p><p class="ex">کمی دقت را می‌دهیم و سرعتِ زیادی می‌گیریم. مثلاً ۹۵٪ از ۱۰۰ همسایه‌ی واقعی را پیدا می‌کنیم (recall@100 = ۰٫۹۵)، ولی صدها برابر سریع‌تر.</p></div>
+</div>
+<p style="margin-top:10px">سه روشِ رایجِ ANN:</p>
+<div class="kinds">
+<div><p><b>IVF (خوشه‌بندی)</b></p><p class="ex">بردارها را با k-means در ۱۰٬۰۰۰ خوشه می‌گذاریم. برای هر درخواست، اول ۱۰٬۰۰۰ مرکز را چک می‌کنیم، بعد فقط ۱۰ خوشه‌ی نزدیک (حدودِ ۱۰۰٬۰۰۰ بردار) را. حدودِ ۷ میلیون ضرب به‌جای ۶٫۴ میلیارد: حدودِ <b>۹۰۰ برابر</b> کمتر. خطر: همسایه‌ای که در خوشه‌ی دیگری افتاده، پیدا نمی‌شود.</p></div>
+<div><p><b>HNSW (گراف)</b></p><p class="ex">هر بردار به چند همسایه‌ی نزدیکش وصل است، در چند طبقه. از طبقه‌ی بالا (پرش‌های بلند) شروع می‌کنیم و حریصانه به سمتِ درخواست قدم برمی‌داریم. خیلی سریع و دقیق، ولی حافظه‌ی زیادی برای یال‌ها می‌خواهد.</p></div>
+<div><p><b>PQ (فشرده‌سازی)</b></p><p class="ex">بردار را به چند تکه تقسیم می‌کنیم و هر تکه را با شماره‌ی نزدیک‌ترین «کدِ» یک کتاب‌کد ذخیره می‌کنیم. مثلاً ۶۴ عددِ float32 (۲۵۶ بایت) ← ۸ بایت. برای میلیاردها بردار، معمولاً همراهِ IVF.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">کتابخانه‌ها و سرویس‌ها: FAISS، ScaNN، Milvus، Pinecone، pgvector، Elasticsearch. اگر فیلتر داده را خیلی کوچک کند (مثلاً فقط ۸٬۰۰۰ ویدیوی یک سازنده)، جست‌وجوی کامل روی همان‌ها ساده‌تر و دقیق‌تر است.</p>
+</section>
+
+<section>
+<h2>Cosine یا ضربِ داخلی؟</h2>
+<div class="f">\[ a \cdot b = \lVert a \rVert \, \lVert b \rVert \cos\theta \]</div>
+<p>ضربِ داخلی هم به <b>زاویه</b> بستگی دارد هم به <b>طولِ</b> بردارها. کسینوس فقط به زاویه. مثال: کاربرِ ورزشی \(u = (1.0,\ 0.2)\) و دو ویدیو:</p>
+<div class="kinds">
+<div><p><b>ویدیوی A: فوتبالِ معمولی</b> (0.9, 0.25)</p><ul class="ex"><li>ضربِ داخلی: ۰٫۹۵</li><li>کسینوس: <b>۰٫۹۹۷</b></li><li>طول: ۰٫۹۳</li></ul></div>
+<div><p><b>ویدیوی B: ویدیوی خیلی پربازدید</b> (1.6, 0.9)</p><ul class="ex"><li>ضربِ داخلی: <b>۱٫۷۸</b></li><li>کسینوس: ۰٫۹۵۱</li><li>طول: ۱٫۸۴</li></ul></div>
+</div>
+<p style="margin-top:10px">با کسینوس، A برنده است (جهتش به کاربر نزدیک‌تر است). با ضربِ داخلی، B برنده است چون طولش بیشتر است.</p>
+<div class="kinds">
+<div><p><b>Cosine</b></p><p class="ex">وقتی فقط «جهت» مهم است: شباهتِ متن، جست‌وجوی معنایی. اگر همه‌ی بردارها را به طولِ ۱ برسانیم (نرمال کنیم)، کسینوس و ضربِ داخلی <b>یکی</b> می‌شوند.</p></div>
+<div><p><b>ضربِ داخلی</b></p><p class="ex">وقتی طول هم معنی دارد: در مدل‌های پیشنهاد، طولِ بردارِ ویدیو اغلب با محبوبیت بزرگ می‌شود. سریع‌تر است (تقسیم ندارد). خطر: ویدیوهای پربازدید همه‌جا بالا می‌آیند.</p></div>
+<div><p><b>فاصله‌ی اقلیدسی</b></p><p class="ex">برای بردارهای نرمال: \(\lVert a-b \rVert^2 = 2 - 2\cos\theta\). پس رتبه‌بندی‌اش همان کسینوس است.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">قانون: از همان معیاری استفاده کنید که مدلِ embedding با آن آموزش دیده.</p>
+</section>
+
+<section>
+<h2>بُعدِ Embedding را چطور انتخاب کنیم؟</h2>
+<div class="kinds">
+<div><p><b>بُعدِ کوچک (مثلاً ۸ تا ۳۲)</b></p><p class="ex">کم‌حافظه، سریع، کمتر بیش‌برازش. ولی جای کافی برای همه‌ی تفاوت‌ها نیست. برای ویژگی‌های کم‌دسته (کشور، زبان) کافی است.</p></div>
+<div><p><b>بُعدِ بزرگ (مثلاً ۲۵۶ تا ۱۰۲۴)</b></p><p class="ex">جزئیاتِ بیشتر، ولی حافظه و زمانِ جست‌وجو بیشتر، و برای دسته‌های کم‌داده بیش‌برازش. ۱۰۰ میلیون ویدیو × ۶۴ بُعد = ۲۵٫۶ گیگابایت؛ با ۲۵۶ بُعد، ۴ برابر.</p></div>
+</div>
+<p style="margin-top:10px">عددهای رایج:</p>
+<ul>
+<li>word2vec و GloVe: ۱۰۰ تا ۳۰۰</li>
+<li>BERT-base: ۷۶۸</li>
+<li>مدل‌های embeddingِ جمله: ۳۸۴ تا ۳۰۷۲</li>
+<li>ID کاربر و ویدیو در سیستم‌های پیشنهاد: معمولاً ۳۲ تا ۲۵۶</li>
+</ul>
+<p>یک قاعده‌ی سرانگشتیِ قدیمی: بُعد ≈ ریشه‌ی چهارمِ تعدادِ دسته‌ها. برای ۵۰٬۰۰۰ کلمه می‌شود حدودِ <b>۱۵</b>. این فقط نقطه‌ی شروع است؛ در عمل بُعد را مثلِ هر ابرپارامترِ دیگری با داده‌ی سنجش تنظیم می‌کنند.</p>
+<details class="drop"><summary><b>Matryoshka: یک بردار، چند اندازه</b></summary>
+<p>بعضی مدل‌های جدید طوری آموزش می‌بینند که <b>ابتدای</b> بردار به‌تنهایی هم خوب باشد. مثلاً از بردارِ ۷۶۸ تایی فقط ۱۲۸ عددِ اول را نگه می‌دارید: ۶ برابر حافظه‌ی کمتر، با کمی افتِ دقت. برای جست‌وجوی سریعِ اولیه با بردارِ کوتاه و رتبه‌بندیِ دوباره با بردارِ کامل مفید است.</p>
+</details>
+</section>
+
+<section>
+<h2>اشتباه‌های رایج</h2>
+<div class="kinds">
+<div><p><b>شروعِ سرد (Cold Start)</b></p><p class="ex">ویدیویی که همین الان آپلود شده، هنوز سطرِ آموزش‌دیده ندارد. راه: برجِ ویدیو را از ویژگی‌های محتوا (متن، تصویر، صدا) هم تغذیه کن، نه فقط از شناسه.</p></div>
+<div><p><b>کلمه‌ی خارج از واژگان (OOV)</b></p><p class="ex">word2vec برای کلمه‌ی جدید برداری ندارد. fastText بردار را از تکه‌های کلمه (n-gram حروف) می‌سازد، و Transformerها کلمه را به زیرکلمه‌ها می‌شکنند.</p></div>
+<div><p><b>قاطی کردنِ دو مدل</b></p><p class="ex">بردارِ سؤال از مدلِ A و بردارِ سندها از مدلِ B قابلِ مقایسه نیستند؛ هر مدل فضای خودش را دارد. با عوض کردنِ مدل، همه‌ی سندها را دوباره embed کن.</p></div>
+<div><p><b>فراموش کردنِ نرمال‌سازی</b></p><p class="ex">اگر مدل برای کسینوس ساخته شده ولی با ضربِ داخلیِ بردارهای نرمال‌نشده جست‌وجو کنید، بردارهای بلند (اغلب پرتکرار) بی‌دلیل بالا می‌آیند.</p></div>
+<div><p><b>سوگیری در داده</b></p><p class="ex">embedding هر سوگیریِ متن را هم یاد می‌گیرد (مثلاً شغل‌ها و جنسیت). در محصول باید بررسی شود.</p></div>
+</div>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>لایه‌ی Embedding در PyTorch:</b></p>
+<pre>import torch, torch.nn as nn
+
+emb = nn.Embedding(num_embeddings=50_000, embedding_dim=300)
+ids = torch.tensor([[12, 7, 431]])      # one caption, 3 word ids
+print(emb(ids).shape)                   # torch.Size([1, 3, 300])
+print(emb.weight.shape)                 # (50000, 300): 15,000,000 learnable numbers</pre>
+<p><b>یک skip-gram کوچک با negative sampling:</b></p>
+<pre>import torch, torch.nn as nn, torch.nn.functional as F
+
+sentence = "funny cat video makes me laugh".split()
+vocab = {w: i for i, w in enumerate(sorted(set(sentence)))}
+ids = [vocab[w] for w in sentence]
+window, dim, k = 2, 16, 3
+
+pairs = [(ids[i], ids[j]) for i in range(len(ids))
+         for j in range(max(0, i - window), min(len(ids), i + window + 1)) if i != j]
+center  = torch.tensor([c for c, _ in pairs])        # 18 pairs
+context = torch.tensor([o for _, o in pairs])
+
+V = nn.Embedding(len(vocab), dim)    # "center" vectors: the embeddings we keep
+U = nn.Embedding(len(vocab), dim)    # "context" vectors
+opt = torch.optim.Adam(list(V.parameters()) + list(U.parameters()), lr=0.01)
+
+for step in range(200):
+    v = V(center)                                            # (18, dim)
+    pos = (v * U(context)).sum(-1)                           # (18,)
+    neg_ids = torch.randint(0, len(vocab), (len(pairs), k))  # real word2vec: unigram^0.75
+    neg = torch.bmm(U(neg_ids), v.unsqueeze(-1)).squeeze(-1) # (18, k)
+    loss = -(F.logsigmoid(pos) + F.logsigmoid(-neg).sum(-1)).mean()
+    opt.zero_grad(); loss.backward(); opt.step()</pre>
+<p><b>شباهتِ کسینوسی با NumPy:</b></p>
+<pre>import numpy as np
+
+def cosine(a, b):
+    return a @ b / (np.linalg.norm(a) * np.linalg.norm(b))
+
+print(cosine(np.array([0.9, 0.25]), np.array([0.8, 0.45])))   # 0.971 (football vs basketball)
+
+# top-5 most similar rows of E (n, d) to query q (d,)
+E_n = E / np.linalg.norm(E, axis=1, keepdims=True)
+q_n = q / np.linalg.norm(q)
+scores = E_n @ q_n                     # cosine for every row at once
+top5 = np.argsort(-scores)[:5]</pre>
+<p><b>word2vec با gensim:</b></p>
+<pre>from gensim.models import Word2Vec
+
+# sentences: list of token lists, e.g. captions or watch sessions of video ids
+model = Word2Vec(sentences, vector_size=100, window=5, min_count=5,
+                 sg=1, negative=5, epochs=5)        # sg=1: skip-gram
+model.wv.most_similar("cat", topn=5)
+model.wv.most_similar(positive=["king", "woman"], negative=["man"], topn=1)</pre>
+<p><b>embeddingِ جمله و جست‌وجو با sentence-transformers و FAISS:</b></p>
+<pre>from sentence_transformers import SentenceTransformer
+import faiss
+
+model = SentenceTransformer("all-MiniLM-L6-v2")             # 384-dim vectors
+docs = ["How to make pizza dough", "Football rules explained", "Cute cat compilation"]
+D = model.encode(docs, normalize_embeddings=True)           # unit length, so dot = cosine
+
+index = faiss.IndexHNSWFlat(D.shape[1], 32, faiss.METRIC_INNER_PRODUCT)   # ANN graph
+index.add(D)
+q = model.encode(["pasta recipe"], normalize_embeddings=True)
+scores, idx = index.search(q, 2)                            # 2 nearest docs</pre>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from ML interview prep material. Click a question to see the answer.</p>
+
+<details><summary>What is an embedding, and why not just use one-hot encoding?</summary>
+<p>An embedding maps a categorical item (word, user, video id) to a dense, learned vector of size \(d\), stored as a table \(W \in \mathbb{R}^{V \times d}\); looking up item \(i\) returns row \(W[i]\). One-hot vectors have length \(V\) (e.g. 50,000), carry no notion of similarity (every pair has dot product 0 and distance \(\sqrt{2}\)), and nothing learned about one item transfers to another. A 300-dim embedding is ~167x shorter, and training places similar items close together, so the model generalises across them. Mathematically an embedding layer equals a linear layer applied to the one-hot vector; the lookup just skips the multiplication.</p></details>
+
+<details><summary>Explain word2vec skip-gram. How does it differ from CBOW?</summary>
+<p>Skip-gram slides a window over text and creates (center, context) pairs; for "funny cat video makes me laugh" with window 2 there are 18 pairs, e.g. (video, cat). It learns two vectors per word, \(v\) (center) and \(u\) (context), and maximises \(P(o\mid c) = \exp(u_o\cdot v_c) / \sum_w \exp(u_w \cdot v_c)\). Words with similar contexts end up with similar \(v\) vectors (distributional hypothesis). CBOW does the reverse: it averages the context vectors and predicts the center word. CBOW is faster and smooths over context; skip-gram does better on rare words because each occurrence produces several training pairs.</p></details>
+
+<details><summary>What is negative sampling and why is it needed?</summary>
+<p>The full softmax normalises over the whole vocabulary, so each training pair costs \(V\) dot products (50,000+). Negative sampling replaces it with binary classification: push \(\sigma(u_o \cdot v_c)\) toward 1 for the true pair and \(\sigma(u_{n}\cdot v_c)\) toward 0 for \(k\) random words: \(L = -\log\sigma(u_o\cdot v_c) - \sum_{j}\log\sigma(-u_{n_j}\cdot v_c)\). With \(k=5\), that is 6 dot products instead of 50,000. Example: positive dot 2 gives loss 0.127; a negative with dot 0.5 gives 0.974, so the "too similar" negative gets a large gradient. Negatives are drawn from unigram frequency raised to 0.75, which boosts rare words (a 5% word goes to ~7.9% in a 4-word example). The same idea appears as in-batch negatives in two-tower and contrastive models.</p></details>
+
+<details><summary>Cosine similarity vs dot product vs Euclidean distance: when to use which?</summary>
+<p>\(a\cdot b = \lVert a\rVert\lVert b\rVert\cos\theta\). Cosine ignores length and measures only direction; dot product also rewards long vectors. Example: user \(u=(1,0.2)\); video A \((0.9,0.25)\) has dot 0.95, cosine 0.997; video B \((1.6,0.9)\) has dot 1.78, cosine 0.951. Dot product ranks B first, cosine ranks A first. In recommenders the norm often encodes popularity, so dot product may be wanted (or may cause popularity bias). For unit-normalised vectors all three agree on ranking: dot = cosine and \(\lVert a-b\rVert^2 = 2-2\cos\theta\). Rule: use the metric the model was trained with; many vector DBs implement cosine as inner product on normalised vectors.</p></details>
+
+<details><summary>Why does king − man + woman ≈ queen work, and what are the caveats?</summary>
+<p>Training on co-occurrence makes consistent relations appear as roughly constant offsets: \(v_{\text{woman}} - v_{\text{man}} \approx v_{\text{queen}} - v_{\text{king}}\). In a toy 2-D space with man (0.80, 0.10), woman (−0.75, 0.15), king (0.85, 0.90), the result is (−0.70, 0.95), cosine 0.998 with queen (−0.65, 1.00). Caveats: the evaluation excludes the three input words (otherwise the answer is often "king" itself), it works for some relations (gender, capital-country, tense) and fails for many others, and it reflects biases in the corpus (e.g. occupation and gender).</p></details>
+
+<details><summary>What is the difference between static and contextual embeddings?</summary>
+<p>Static embeddings (word2vec, GloVe, fastText) give each word type one vector, so "bank" (money) and "bank" (river) share a vector that is a frequency-weighted mix of senses; in a toy 70/30 mix the vector has cosine 0.92 with the money sense and only 0.39 with the river sense. Contextual models (ELMo, BERT, GPT) start from a token embedding table and pass it through layers (Transformer attention) that mix in the surrounding words, so each occurrence gets its own vector. Contextual embeddings are better for downstream NLP but cost a forward pass per sentence; static ones are a cheap lookup.</p></details>
+
+<details><summary>How does a two-tower model work for recommendation retrieval?</summary>
+<p>A user tower maps user features (id embedding, history, context) to \(u\); an item tower maps item features (id, text, creator, audio) to \(v\); the score is \(u\cdot v\) (or cosine). Training uses positive (user, watched item) pairs and negatives, commonly in-batch: with batch size \(B\) you compute the \(B\times B\) score matrix and apply softmax cross-entropy with the diagonal as positives (each user gets \(B-1\) negatives; popular items appear as negatives more often, so a log-frequency correction is often applied). Because the towers do not interact, item vectors are precomputed and indexed in an ANN index; at request time only the user tower runs and the top few hundred items are retrieved from millions in milliseconds, then passed to a heavier ranking model. Weakness: no feature crossing between user and item before the dot product, so it is used for retrieval, not final ranking.</p></details>
+
+<details><summary>How does approximate nearest neighbour (ANN) search work? Compare IVF, HNSW and PQ.</summary>
+<p>Exact search over 100M 64-dim vectors costs 6.4 billion multiply-adds per query. ANN trades a little recall for big speedups. <b>IVF</b>: k-means into e.g. 10,000 lists; compare to centroids, then scan only the nearest <code>nprobe</code> lists (10 lists ≈ 100k vectors ≈ 7M multiply-adds, ~900x fewer); misses neighbours in unprobed lists. <b>HNSW</b>: a multi-layer proximity graph searched greedily from coarse to fine layers; high recall and low latency, but large memory for edges and slower inserts. <b>PQ</b>: split each vector into sub-vectors and store codebook ids (e.g. 256 bytes to 8 bytes); approximate distances from lookup tables; used with IVF for billion-scale data. Tune with recall@k vs latency (e.g. <code>nprobe</code>, <code>efSearch</code>). If a filter leaves only a few thousand candidates, exact search on them is simpler.</p></details>
+
+<details><summary>How do you choose the embedding dimension?</summary>
+<p>It is a hyperparameter: larger \(d\) gives more capacity but more memory, slower ANN search and more overfitting for rare categories. Memory is \(V \times d \times 4\) bytes in float32: 50,000 × 300 ≈ 60 MB; 100M videos × 64 = 25.6 GB. A classic heuristic is \(d \approx V^{1/4}\) (about 15 for 50,000), but in practice common values are 100–300 for word2vec, 32–256 for recommender ids, and 384–1024+ for sentence encoders. Choose by validation metrics (e.g. recall@k), and consider Matryoshka-style training or PCA if you need shorter vectors later.</p></details>
+
+<details><summary>How do you handle new items or unknown words (cold start / OOV)?</summary>
+<p>An id embedding for an unseen item is untrained. Options: (1) build the item vector from content features (title text, image, audio embeddings, creator) so a new video gets a sensible vector immediately; (2) hash ids into a fixed number of buckets so unseen ids still map to a trained row (with collisions); (3) for words, use subword models: fastText sums character n-gram vectors, Transformers use subword tokenisers (BPE/WordPiece), so "catfluencer" is built from known pieces; (4) for new users, use context (country, device, first few interactions) and exploration.</p></details>
+
+<details><summary>How do you evaluate embeddings?</summary>
+<p><b>Intrinsic</b>: word similarity benchmarks (correlation between cosine and human ratings), analogy accuracy, nearest-neighbour inspection, and clustering of known groups. <b>Extrinsic</b> (what matters): plug them into the real task and measure, e.g. retrieval recall@k (if 85 of the 100 relevant videos are in the top 500, recall@500 = 0.85), downstream classification accuracy, or online A/B metrics like watch time. Intrinsic scores often do not predict downstream performance well, so always check the target task.</p></details>
+
+<details><summary>How are sentence embeddings for semantic search / RAG trained and used?</summary>
+<p>A Transformer encodes the text, and token vectors are pooled (mean pooling or the [CLS] token) into one vector. Models are fine-tuned contrastively on (query, relevant passage) pairs with in-batch negatives, so matching pairs have high cosine. For RAG: chunk documents (e.g. 200–500 tokens), embed each chunk with the same model, store in a vector DB, embed the query, retrieve the top-k chunks by cosine (often followed by a cross-encoder re-ranker), and give them to the LLM as context. Pitfalls: mixing embedding models between indexing and querying, chunks too large or too small, and forgetting normalisation.</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://arxiv.org/abs/1310.4546">Mikolov et al. 2013 (word2vec, negative sampling)</a> · <a href="https://arxiv.org/pdf/1402.3722">Goldberg &amp; Levy, word2vec Explained</a> · <a href="https://arxiv.org/pdf/1411.2738">Rong, word2vec Parameter Learning Explained</a> · <a href="https://www.educative.io/courses/grokking-the-machine-learning-system-design-interview/video-recommendation-candidate-retrieval-architecture">Educative: candidate retrieval (two-tower)</a> · <a href="https://dataford.io/questions/lists/two-tower-questions">Dataford: two-tower questions</a> · <a href="https://prachub.com/resources/vector-database-interview-questions-hnsw-ivf-filtering-and-recall-vs-latency">PracHub: vector database interview questions</a> · <a href="https://www.designgurus.io/system-design-interview/questions/vector-search">DesignGurus: vector search</a> · <a href="https://faceprep.in/article/embeddings-and-vector-database-interview-questions-2026/">FACE Prep: embeddings and vector DB questions</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0), nrm = a => Math.hypot(...a), cosv = (a, b) => dot(a, b) / nrm(a) / nrm(b);
+const arrow = (c, x0, y0, x1, y1, col, w) => { c.strokeStyle = c.fillStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+  const a = Math.atan2(y1 - y0, x1 - x0); c.beginPath(); c.moveTo(x1, y1); c.lineTo(x1 - 8 * Math.cos(a - .4), y1 - 8 * Math.sin(a - .4)); c.lineTo(x1 - 8 * Math.cos(a + .4), y1 - 8 * Math.sin(a + .4)); c.fill(); };
+
+/* ---------- 1. video map ---------- */
+const VID = [['فوتبال', [0.9, 0.25], 'blue'], ['بسکتبال', [0.8, 0.45], 'blue'], ['تنیس', [0.95, -0.05], 'blue'],
+  ['پیتزا', [-0.2, 0.9], 'orange'], ['پاستا', [-0.35, 0.85], 'orange'], ['کیک', [-0.05, 0.95], 'orange'],
+  ['گربه', [-0.75, -0.55], 'red'], ['سگ', [-0.6, -0.7], 'red']];
+let sel = [0, 1], oneHot = false, mapPts = [];
+const chips = document.getElementById('chips');
+VID.forEach((v, i) => { const b = document.createElement('button'); b.textContent = v[0]; b.onclick = () => pick(i); chips.appendChild(b); });
+const pick = i => { if (sel.includes(i)) sel = sel.filter(j => j !== i); else sel = sel.length >= 2 ? [i] : [...sel, i]; drawMap(); };
+const drawMap = () => {
+  const [c, W, H] = mk(document.getElementById('map'), 0.8, 532), s = Math.min(W, H) / 2.5, ox = W / 2, oy = H / 2;
+  const X = x => ox + x * s, Y = y => oy - y * s;
+  c.strokeStyle = css('line'); c.lineWidth = 1; c.beginPath(); c.moveTo(8, oy); c.lineTo(W - 8, oy); c.moveTo(ox, 8); c.lineTo(ox, H - 8); c.stroke();
+  c.beginPath(); c.arc(ox, oy, s, 0, 7); c.setLineDash([3, 4]); c.stroke(); c.setLineDash([]);
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'left'; c.fillText('بُعدِ ۱ →', W - 60, oy - 6); c.fillText('↑ بُعدِ ۲', ox + 6, 18);
+  mapPts = VID.map(v => [X(v[1][0]), Y(v[1][1])]);
+  sel.forEach(i => arrow(c, ox, oy, mapPts[i][0], mapPts[i][1], css('accent'), 2.5));
+  if (sel.length === 2) { const a1 = Math.atan2(VID[sel[0]][1][1], VID[sel[0]][1][0]), a2 = Math.atan2(VID[sel[1]][1][1], VID[sel[1]][1][0]);
+    let d = a2 - a1; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+    c.strokeStyle = css('accent'); c.lineWidth = 1.5; c.beginPath(); c.arc(ox, oy, 26, -a1, -(a1 + d), d > 0); c.stroke(); }
+  VID.forEach((v, i) => { const [x, y] = mapPts[i]; c.fillStyle = css(v[2]); c.beginPath(); c.arc(x, y, sel.includes(i) ? 8 : 6, 0, 7); c.fill();
+    c.fillStyle = css('ink'); c.font = (sel.includes(i) ? '700 ' : '') + '13px Vazirmatn'; c.textAlign = 'center'; c.fillText(v[0], x, y - 11); });
+  [...chips.children].forEach((b, i) => b.classList.toggle('on', sel.includes(i)));
+  document.getElementById('ohBtn').classList.toggle('on', oneHot);
+  const info = document.getElementById('mapInfo');
+  if (sel.length < 2) { info.innerHTML = 'دو ویدیو انتخاب کنید.'; return; }
+  const [a, b] = sel.map(i => VID[i][1]), na = VID[sel[0]][0], nb = VID[sel[1]][0];
+  if (oneHot) { info.innerHTML = `با one-hot (طولِ ۸): <b>${na}</b> و <b>${nb}</b> · کسینوس: <b>${fa(0, 3)}</b> · فاصله: <b>${fa(Math.SQRT2, 3)}</b><br><span class="ex">برای هر دو ویدیوی دیگری هم دقیقاً همین عددها.</span>`; return; }
+  const cs = cosv(a, b);
+  info.innerHTML = `<b>${na}</b> و <b>${nb}</b> · کسینوس: <b>${fa(cs, 3)}</b> · زاویه: ${fa(Math.acos(Math.max(-1, Math.min(1, cs))) * 180 / Math.PI)}° · ضربِ داخلی: ${fa(dot(a, b), 3)} · فاصله: ${fa(nrm(a.map((x, i) => x - b[i])), 3)}`; };
+document.getElementById('map').addEventListener('click', e => { const r = e.target.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  let best = -1, bd = 22; mapPts.forEach((p, i) => { const d = Math.hypot(p[0] - x, p[1] - y); if (d < bd) { bd = d; best = i; } }); if (best >= 0) pick(best); });
+document.getElementById('ohBtn').onclick = () => { oneHot = !oneHot; drawMap(); };
+
+/* ---------- 2. analogy ---------- */
+const WD = { man: [0.8, 0.1], woman: [-0.75, 0.15], king: [0.85, 0.9], queen: [-0.65, 1.0], boy: [0.7, -0.6], girl: [-0.65, -0.55], apple: [0.05, -0.15] };
+const sA = document.getElementById('aA'), sB = document.getElementById('aB'), sC = document.getElementById('aC');
+[sA, sB, sC].forEach(s => { Object.keys(WD).forEach(w => s.add(new Option(w, w))); s.onchange = drawAna; });
+const setAna = p => { [sA.value, sB.value, sC.value] = p.split(','); drawAna(); };
+document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => setAna(b.dataset.p));
+function drawAna() {
+  const a = sA.value, b = sB.value, cc = sC.value, r = WD[a].map((x, i) => x - WD[b][i] + WD[cc][i]);
+  const cand = Object.keys(WD).filter(w => ![a, b, cc].includes(w)).map(w => [w, cosv(r, WD[w])]).sort((p, q) => q[1] - p[1]);
+  const [c, W, H] = mk(document.getElementById('ana'), 0.75, 532);
+  const all = [...Object.values(WD), r], m = Math.max(1.1, ...all.map(v => Math.max(Math.abs(v[0]), Math.abs(v[1])))) * 1.12;
+  const s = Math.min(W, H) / 2 / m, ox = W / 2, oy = H / 2, X = x => ox + x * s, Y = y => oy - y * s;
+  c.strokeStyle = css('line'); c.lineWidth = 1; c.beginPath(); c.moveTo(8, oy); c.lineTo(W - 8, oy); c.moveTo(ox, 8); c.lineTo(ox, H - 8); c.stroke();
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; c.fillText('← زن · مرد →', ox, H - 4); c.save(); c.translate(12, oy); c.rotate(-Math.PI / 2); c.fillText('← بچه · بزرگسال/صاحب‌مقام →', 0, 0); c.restore();
+  const off = [WD[cc][0] - WD[b][0], WD[cc][1] - WD[b][1]];
+  c.setLineDash([4, 4]); arrow(c, X(WD[b][0]), Y(WD[b][1]), X(WD[cc][0]), Y(WD[cc][1]), css('muted'), 1.5); c.setLineDash([]);
+  arrow(c, X(WD[a][0]), Y(WD[a][1]), X(WD[a][0] + off[0]), Y(WD[a][1] + off[1]), css('accent'), 2.5);
+  Object.entries(WD).forEach(([w, v]) => { const isIn = [a, b, cc].includes(w), isBest = w === cand[0][0];
+    c.fillStyle = css(isBest ? 'red' : isIn ? 'blue' : 'muted'); c.beginPath(); c.arc(X(v[0]), Y(v[1]), isBest || isIn ? 6 : 4.5, 0, 7); c.fill();
+    c.fillStyle = css('ink'); c.font = (isBest ? '700 ' : '') + '12px Georgia'; c.textAlign = 'center'; c.fillText(w, X(v[0]), Y(v[1]) - 10); });
+  c.strokeStyle = css('accent'); c.lineWidth = 2.5; c.beginPath(); c.arc(X(r[0]), Y(r[1]), 9, 0, 7); c.stroke();
+  const f2 = v => v.map(x => x.toFixed(2)).join(', ');
+  document.getElementById('anaInfo').innerHTML = `<span class="vec">${a} − ${b} + ${cc} = (${f2(r)})</span><br>نزدیک‌ترین کلمه (به‌جز ورودی‌ها): <b class="vec">${cand[0][0]}</b> با کسینوسِ <b>${fa(cand[0][1], 3)}</b> · دومی: <span class="vec">${cand[1][0]}</span> (${fa(cand[1][1], 3)})`; }
+setAna('king,man,woman');
+
+/* ---------- 3. skip-gram window ---------- */
+const SENT = 'funny cat video makes me laugh'.split(' ');
+let center = 2; const winEl = document.getElementById('win'), sentEl = document.getElementById('sent');
+const drawSG = () => { const w = +winEl.value; document.getElementById('winv').textContent = fa(w);
+  sentEl.innerHTML = SENT.map((t, i) => `<span class="w${i === center ? ' hot' : (Math.abs(i - center) <= w ? ' ctx' : '')}" data-i="${i}">${t}</span>`).join(' ');
+  const pr = []; for (let j = Math.max(0, center - w); j <= Math.min(SENT.length - 1, center + w); j++) if (j !== center) pr.push(`(${SENT[center]}, ${SENT[j]})`);
+  let tot = 0; for (let i = 0; i < SENT.length; i++) tot += Math.min(SENT.length - 1, i + w) - Math.max(0, i - w);
+  document.getElementById('pairs').innerHTML = pr.join('<br>');
+  document.getElementById('sgInfo').innerHTML = `جفت‌ها برای این کلمه: <b>${fa(pr.length)}</b> · برای کلِ جمله با این پنجره: <b>${fa(tot)}</b>`; };
+sentEl.addEventListener('click', e => { if (e.target.dataset.i) { center = +e.target.dataset.i; drawSG(); } });
+winEl.oninput = drawSG; drawSG();
+
+/* ---------- 4. item2vec training ---------- */
+const TR = (() => { let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const N = 12, S = [];
+  for (let s = 0; s < 150; s++) { const t = Math.floor(rnd() * 3), q = []; for (let i = 0; i < 6; i++) q.push(rnd() < 0.85 ? t * 4 + Math.floor(rnd() * 4) : Math.floor(rnd() * N)); S.push(q); }
+  const V = [], U = []; for (let i = 0; i < N; i++) { V.push([(rnd() - .5) * .2, (rnd() - .5) * .2]); U.push([(rnd() - .5) * .2, (rnd() - .5) * .2]); }
+  const sg = x => 1 / (1 + Math.exp(-x)), d2 = (a, b) => a[0] * b[0] + a[1] * b[1], lr = 0.005, K = 5, win = 2;
+  const snaps = [{ V: V.map(v => [...v]), loss: null }];
+  for (let ep = 1; ep <= 30; ep++) { let L = 0, n = 0;
+    for (const q of S) for (let i = 0; i < q.length; i++) for (let j = Math.max(0, i - win); j <= Math.min(q.length - 1, i + win); j++) { if (i === j) continue;
+      const v = V[q[i]], g = [0, 0], tg = [[q[j], 1]]; for (let k = 0; k < K; k++) tg.push([Math.floor(rnd() * N), 0]);
+      for (const [w, l] of tg) { const u = U[w], p = sg(d2(u, v)); L += l ? -Math.log(p) : -Math.log(1 - p); const e = p - l;
+        g[0] += e * u[0]; g[1] += e * u[1]; u[0] -= lr * e * v[0]; u[1] -= lr * e * v[1]; }
+      v[0] -= lr * g[0]; v[1] -= lr * g[1]; n++; }
+    snaps.push({ V: V.map(v => [...v]), loss: L / n }); }
+  return snaps; })();
+const TOP = i => Math.floor(i / 4), TCOL = ['blue', 'orange', 'red'], TLAB = ['S', 'F', 'P'];
+const epEl = document.getElementById('ep');
+const drawTrain = () => { const e = +epEl.value, sn = TR[e], V = sn.V; document.getElementById('epv').textContent = fa(e);
+  const [c, W, H] = mk(document.getElementById('train'), 0.75, 532), m = Math.max(...V.map(v => Math.max(Math.abs(v[0]), Math.abs(v[1])))) * 1.25;
+  const s = Math.min(W, H) / 2 / m, ox = W / 2, oy = H / 2, X = x => ox + x * s, Y = y => oy - y * s;
+  c.strokeStyle = css('line'); c.lineWidth = 1; c.beginPath(); c.moveTo(8, oy); c.lineTo(W - 8, oy); c.moveTo(ox, 8); c.lineTo(ox, H - 8); c.stroke();
+  V.forEach((v, i) => { c.strokeStyle = css(TCOL[TOP(i)]); c.globalAlpha = .35; c.lineWidth = 1; c.beginPath(); c.moveTo(ox, oy); c.lineTo(X(v[0]), Y(v[1])); c.stroke(); c.globalAlpha = 1;
+    c.fillStyle = css(TCOL[TOP(i)]); c.beginPath(); c.arc(X(v[0]), Y(v[1]), 6, 0, 7); c.fill();
+    c.fillStyle = css('ink'); c.font = '11px Georgia'; c.textAlign = 'center'; c.fillText(TLAB[TOP(i)] + (i % 4 + 1), X(v[0]) + (i % 2 ? 12 : -12), Y(v[1]) - 6); });
+  let w = 0, nw = 0, a = 0, na = 0, ok = 0;
+  for (let i = 0; i < 12; i++) { let b = -1, bc = -9; for (let j = 0; j < 12; j++) { if (j === i) continue; const cs = cosv(V[i], V[j]);
+      if (j > i) { if (TOP(i) === TOP(j)) { w += cs; nw++; } else { a += cs; na++; } } if (cs > bc) { bc = cs; b = j; } } if (TOP(b) === TOP(i)) ok++; }
+  document.getElementById('trInfo').innerHTML = `خطا: <b>${sn.loss === null ? '—' : fa(sn.loss, 2)}</b> · میانگینِ کسینوسِ هم‌گروه: <b>${fa(w / nw, 2)}</b> · بین‌گروه: <b>${fa(a / na, 2)}</b><br>ویدیوهایی که نزدیک‌ترین همسایه‌شان هم‌موضوع است: <b>${fa(ok)}</b> از ۱۲`; };
+epEl.oninput = drawTrain;
+
+addEventListener('resize', () => { drawMap(); drawAna(); drawTrain(); });
+drawMap(); drawTrain();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مدل چیست؟</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<style>
+:root { --orange: #d9731c; --bg: #fbfaf7; --card: #ffffff; --ink: #1d2228; --muted: #5f6873; --line: #dcd8d0; --soft: #f0ede6; --accent: #2f6f66; --blue: #2563d9; --red: #c53030; }
+@media (prefers-color-scheme: dark) { :root { --bg: #12161b; --card: #181d24; --ink: #ecedee; --muted: #9aa3ad; --line: #2e3440; --soft: #1c2229; --accent: #8cc4bc; --blue: #6b9bff; --red: #ff6b6b; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.9 "Vazirmatn", Tahoma, sans-serif; }
+main { max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+h1 { font-size: clamp(22px, 2.6vw, 30px); line-height: 1.4; margin: 0 0 4px; }
+.sub { color: var(--muted); margin: 0 0 24px; }
+section { padding: 28px 0; border-top: 1px solid var(--line); }
+.kinds { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.kinds > div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; }
+.quote { color: var(--muted); font-style: italic; }
+h2 { font-size: 20px; margin: 0 0 8px; color: var(--accent); }
+p { margin: 0 0 12px; }
+.en { color: var(--muted); font-size: .8em; direction: ltr; unicode-bidi: isolate; }
+.key { background: var(--soft); border-inline-start: 4px solid var(--accent); padding: 12px 16px; border-radius: 8px; margin: 8px 0; }
+.f { direction: ltr; text-align: center; font: 18px/1.6 "Cambria Math", "Times New Roman", serif; margin: 8px 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+ul { padding-inline-start: 22px; margin: 0 0 12px; } li { margin: 4px 0; }
+.box { max-width: 560px; margin: 0 auto; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+canvas { width: 100%; display: block; }
+label { display: flex; align-items: center; gap: 10px; font-size: 15px; margin-top: 8px; }
+label input { flex: 1; accent-color: var(--accent); }
+label b { min-width: 48px; direction: ltr; text-align: left; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; line-height: 1.6; color: var(--muted); margin: 6px 0; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-inline-end: 6px; }
+.sym { font-size: 14px; color: var(--muted); display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px 24px; list-style: none; padding: 0; }
+@media (max-width: 480px) { .sym { grid-template-columns: 1fr 1fr; } }
+.sym li { break-inside: avoid; }
+.sym mjx-container { color: var(--ink); }
+.err { font-size: 15px; margin-top: 8px; }
+.err b { color: var(--red); }
+button { font: inherit; font-size: 15px; padding: 6px 14px; border-radius: 10px; border: 1px solid var(--accent); background: none; color: var(--accent); cursor: pointer; margin-top: 10px; }
+svg text { font-family: "Vazirmatn", Tahoma, sans-serif; fill: var(--ink); }
+:root { --l1: #e8eef7; --l2: #dceade; --l3: #f6e7d3; --l4: #f3dada; --l5: #e6def3; }
+@media (prefers-color-scheme: dark) { :root { --l1: #1d2633; --l2: #1d2b22; --l3: #33291c; --l4: #352022; --l5: #2a2337; } }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+td, th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: right; vertical-align: top; }
+th { color: var(--muted); }
+.ex { font-size: 14px; color: var(--muted); }
+.kinds .wide { grid-column: 1 / -1; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 8px 0; }
+.ctx { background: var(--soft); border-radius: 10px; padding: 10px 12px; }
+.sent { font: 15px/1.8 Georgia, serif; text-align: left; margin: 4px 0 8px; }
+.w.hot { background: color-mix(in srgb, var(--accent) 30%, transparent); border-radius: 4px; padding: 0 3px; font-weight: 700; }
+.w.blank { color: var(--accent); font-weight: 700; }
+.bar { display: flex; align-items: center; gap: 8px; font-size: 13px; direction: ltr; }
+.bar span { width: 44px; font-family: Georgia, serif; }
+.bar i { height: 8px; background: var(--accent); border-radius: 4px; }
+.bar b { color: var(--muted); font-weight: 400; }
+.flow { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 10px; }
+.flow li { display: flex; gap: 12px; align-items: flex-start; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; position: relative; }
+.flow li:not(:last-child)::after { content: "↓"; position: absolute; bottom: -17px; inset-inline-start: 22px; color: var(--muted); font-size: 14px; }
+.flow .n { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--card); display: grid; place-items: center; font-weight: 700; font-size: 14px; }
+.flow p { margin: 0 0 4px; }
+.cycle { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; align-items: center; margin: 8px 0; }
+.cycle svg { width: 100%; max-width: 420px; margin: 0 auto; display: block; }
+.cycle .node { cursor: pointer; outline: none; }
+.cycle .node circle { fill: var(--card); stroke: var(--accent); stroke-width: 2; transition: fill .15s; }
+.cycle .node.on circle { fill: var(--accent); }
+.cycle .node text { text-anchor: middle; font-family: "Vazirmatn", Tahoma, sans-serif; fill: var(--ink); }
+.cycle .node.on text { fill: var(--card); }
+.cycle .t1 { font-size: 11px; font-weight: 700; } .cycle .t2 { font-size: 8px; }
+.cycle .arc { fill: none; stroke: var(--muted); stroke-width: 1.5; }
+.cycle .mid { text-anchor: middle; font: 700 13px "Vazirmatn", Tahoma, sans-serif; fill: var(--ink); }
+.cycle .mid2 { text-anchor: middle; font: 10px "Vazirmatn", Tahoma, sans-serif; fill: var(--muted); }
+.cycle .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; min-height: 150px; }
+.cycle .panel p { margin: 0 0 6px; }
+.split { display: flex; border-radius: 10px; overflow: hidden; margin: 8px 0 12px; font-size: 13px; color: #fff; text-align: center; line-height: 30px; font-weight: 700; }
+.mails { display: flex; flex-wrap: wrap; gap: 6px; direction: ltr; justify-content: center; }
+.mail { width: 50px; text-align: center; font-size: 13px; padding: 4px 0; border-radius: 8px; border: 2px solid var(--c); color: var(--c); }
+.mail.on { background: var(--c); color: #fff; }
+.part { border-top: 3px solid var(--accent); margin-top: 24px; }
+select { font: inherit; font-size: 14px; padding: 2px 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+.pbar { display: block; height: 8px; background: var(--red); border-radius: 4px; }
+#lm-tab { margin-top: 8px; }
+#lm-tab td, #lm-tab th { padding: 3px 6px; }
+.drop { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; margin: 12px 0; }
+.drop summary { cursor: pointer; }
+.drop[open] summary { margin-bottom: 10px; }
+a { color: var(--ink); text-decoration-color: var(--muted); text-underline-offset: 3px; }
+a:hover { color: var(--accent); }
+</style>
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+</head>
+<body>
+<main>
+<h1>مدل چیست و به چه دردی می‌خورد؟</h1>
+<p class="sub">فصل اولِ داستانِ یادگیری ماشین. در کل این فصل فقط یک مثال داریم: <b>قیمت خانه</b>.</p>
+
+<section>
+<h2>۱. یک سؤال</h2>
+<div>
+<p>می‌خواهید یک خانه‌ی ۱۰۰ متری بخرید. فروشنده می‌گوید ۶ میلیارد.</p>
+<p>گران است یا ارزان؟ نمی‌دانید.</p>
+<p>اگر بدانید قیمت منصفانه چقدر است، تصمیم بهتری می‌گیرید.</p>
+</div>
+<div class="key">هدفِ یادگیری ماشین همین است: <b>جوابِ خوب به سؤالی که جوابش را نمی‌دانیم</b>، تا تصمیم بهتری بگیریم.</div>
+</section>
+
+<section>
+<h2>۲. آدم‌ها چطور جواب می‌دهند؟</h2>
+<div>
+<p>یک بنگاه‌دار باتجربه خانه را می‌بیند و می‌گوید: «حدود ۵ میلیارد.»</p>
+<p>از کجا می‌داند؟ چون صدها خانه دیده و قیمت فروششان یادش است.</p>
+<p>در ذهنش یک قانون ساخته: <b>«هر متر حدود ۵۰ میلیون.»</b></p>
+<p>این قانون را از <b>نمونه‌ها</b> یاد گرفته، نه از کتاب.</p>
+</div>
+<div>
+<p>ولی این روش دو مشکل دارد:</p>
+<ul>
+<li>بنگاه‌دار در روز فقط چند خانه را می‌تواند قیمت بگذارد.</li>
+<li>وقتی بازار عوض شود، قانونش کهنه می‌شود.</li>
+</ul>
+<div class="key">ایده: کاری را که بنگاه‌دار کرد به <b>کامپیوتر</b> بدهیم. به کامپیوتر نمونه نشان بدهیم تا خودش قانون را پیدا کند.</div>
+</div>
+</section>
+
+<section>
+<h2>۳. مدل چیست؟</h2>
+<div>
+<p><b>مدل</b> <span class="en">(Model)</span> همان قانون است.</p>
+<p>ورودی می‌گیرد و جواب می‌دهد:</p>
+<div class="f">متراژ ← [ مدل ] ← قیمت</div>
+</div>
+<div>
+<p>مدل کامل نیست. فقط یک خلاصه‌ی ساده از دنیاست.</p>
+<p>جورج باکس، آماردان، جمله‌ی معروفی دارد:</p>
+<p class="quote">«همه‌ی مدل‌ها غلط‌اند، ولی بعضی‌شان به درد می‌خورند.»</p>
+</div>
+</section>
+
+<section>
+<h2>۴. مدل چه کارهایی می‌کند؟</h2>
+<p>سه نوع کار اصلی دارد:</p>
+<div class="kinds">
+<div>
+<p><b>پیش‌بینیِ عدد</b> <span class="en">(Regression)</span></p>
+<p>این خانه چند می‌ارزد؟</p>
+</div>
+<div>
+<p><b>پیش‌بینیِ دسته</b> <span class="en">(Classification)</span></p>
+<p>این عکس گربه است یا سگ؟</p>
+</div>
+<div>
+<p><b>پیدا کردنِ گروه‌ها</b> <span class="en">(Clustering)</span></p>
+<p>داده‌ها خودبه‌خود چند گروه‌اند؟ کسی از قبل نمی‌گوید کدام نقطه مال کدام گروه است.</p>
+<svg viewBox="0 0 230 100" style="width:100%;max-width:300px;display:block;margin:6px auto 0"><rect x="1" y="1" width="98" height="98" rx="8" fill="none" stroke="var(--line)"/><rect x="131" y="1" width="98" height="98" rx="8" fill="none" stroke="var(--line)"/><circle cx="34.2" cy="30.9" r="2.6" fill="var(--muted)"/><circle cx="37.1" cy="32.1" r="2.6" fill="var(--muted)"/><circle cx="42.8" cy="21.3" r="2.6" fill="var(--muted)"/><circle cx="29.3" cy="36.7" r="2.6" fill="var(--muted)"/><circle cx="34.7" cy="24.7" r="2.6" fill="var(--muted)"/><circle cx="50.9" cy="29.4" r="2.6" fill="var(--muted)"/><circle cx="47.4" cy="29.5" r="2.6" fill="var(--muted)"/><circle cx="28.1" cy="61.0" r="2.6" fill="var(--muted)"/><circle cx="28.0" cy="75.4" r="2.6" fill="var(--muted)"/><circle cx="25.5" cy="72.8" r="2.6" fill="var(--muted)"/><circle cx="28.8" cy="59.3" r="2.6" fill="var(--muted)"/><circle cx="30.7" cy="69.8" r="2.6" fill="var(--muted)"/><circle cx="20.6" cy="58.6" r="2.6" fill="var(--muted)"/><circle cx="33.0" cy="67.5" r="2.6" fill="var(--muted)"/><circle cx="74.8" cy="77.6" r="2.6" fill="var(--muted)"/><circle cx="74.7" cy="78.4" r="2.6" fill="var(--muted)"/><circle cx="67.7" cy="76.0" r="2.6" fill="var(--muted)"/><circle cx="68.8" cy="78.7" r="2.6" fill="var(--muted)"/><circle cx="78.3" cy="61.9" r="2.6" fill="var(--muted)"/><circle cx="62.0" cy="64.3" r="2.6" fill="var(--muted)"/><circle cx="80.2" cy="68.7" r="2.6" fill="var(--muted)"/><circle cx="164.2" cy="30.9" r="2.6" fill="var(--blue)"/><circle cx="167.1" cy="32.1" r="2.6" fill="var(--blue)"/><circle cx="172.8" cy="21.3" r="2.6" fill="var(--blue)"/><circle cx="159.3" cy="36.7" r="2.6" fill="var(--blue)"/><circle cx="164.7" cy="24.7" r="2.6" fill="var(--blue)"/><circle cx="180.9" cy="29.4" r="2.6" fill="var(--blue)"/><circle cx="177.4" cy="29.5" r="2.6" fill="var(--blue)"/><circle cx="158.1" cy="61.0" r="2.6" fill="var(--accent)"/><circle cx="158.0" cy="75.4" r="2.6" fill="var(--accent)"/><circle cx="155.5" cy="72.8" r="2.6" fill="var(--accent)"/><circle cx="158.8" cy="59.3" r="2.6" fill="var(--accent)"/><circle cx="160.7" cy="69.8" r="2.6" fill="var(--accent)"/><circle cx="150.6" cy="58.6" r="2.6" fill="var(--accent)"/><circle cx="163.0" cy="67.5" r="2.6" fill="var(--accent)"/><circle cx="204.8" cy="77.6" r="2.6" fill="var(--red)"/><circle cx="204.7" cy="78.4" r="2.6" fill="var(--red)"/><circle cx="197.7" cy="76.0" r="2.6" fill="var(--red)"/><circle cx="198.8" cy="78.7" r="2.6" fill="var(--red)"/><circle cx="208.3" cy="61.9" r="2.6" fill="var(--red)"/><circle cx="192.0" cy="64.3" r="2.6" fill="var(--red)"/><circle cx="210.2" cy="68.7" r="2.6" fill="var(--red)"/><ellipse cx="170" cy="30" rx="17" ry="15" fill="none" stroke="var(--blue)" stroke-width="1.2"/><ellipse cx="155" cy="68" rx="17" ry="15" fill="none" stroke="var(--accent)" stroke-width="1.2"/><ellipse cx="200" cy="70" rx="17" ry="15" fill="none" stroke="var(--red)" stroke-width="1.2"/><text x="115" y="54" text-anchor="middle" font-size="16" fill="var(--muted)">←</text></svg><p style="font-size:13px;color:var(--muted);text-align:center;margin:0">قبل: فقط نقطه‌ها · بعد: مدل سه گروه پیدا کرد</p>
+</div>
+</div>
+</section>
+
+<section>
+<h2>۵. داخلِ مدل: دو متغیر</h2>
+<div>
+<p>ساده‌ترین مدلِ قیمت خانه این است:</p>
+<div class="f">قیمتِ پیش‌بینی‌شده = <b>w</b> × متراژ + <b>b</b></div>
+<p>به جوابِ مدل <b>مقدارِ پیش‌بینی‌شده</b> می‌گوییم و در ریاضی با \(\hat{y}\) («وای‌هَت») نشانش می‌دهیم. قیمت واقعی هم \(y\) است.</p>
+</div>
+<div>
+<p><b>w</b> یعنی هر متر چقدر.</p>
+<p><b>b</b> یعنی یک مقدارِ پایه.</p>
+<p>به این دو متغیر <b>وزن</b> <span class="en">(Weights)</span> می‌گویند.</p>
+<div class="key"><b>یاد گرفتن</b> یعنی پیدا کردنِ بهترین مقدار برای w و b.</div>
+</div>
+</section>
+
+<section>
+<h2>۶. خودتان امتحان کنید</h2>
+<p>w و b را تغییر بدهید تا خطا کم شود. بعد دکمه‌ی «بگذار کامپیوتر پیدا کند» را بزنید.</p>
+<div class="box">
+  <canvas id="cv"></canvas>
+  <div class="legend"><span><i style="background:var(--blue)"></i>خانه‌های فروخته‌شده</span><span><i style="background:var(--accent)"></i>مقدارِ پیش‌بینی‌شده (ŷ)</span><span><i style="background:var(--red)"></i>خطا (فاصله تا قیمت واقعی)</span></div>
+  <label>w (هر متر، میلیون) <input id="w" type="range" min="0" max="100" step="1" value="20"><b id="wv"></b></label>
+  <label>b (پایه، میلیون) <input id="b" type="range" min="-1000" max="3000" step="50" value="2000"><b id="bv"></b></label>
+  <div class="err" id="err"></div>
+  <button id="auto">بگذار کامپیوتر پیدا کند</button>
+</div>
+</section>
+
+<section>
+<h2>۷. کامپیوتر چطور w و b را پیدا می‌کند؟</h2>
+<div>
+<p>اول برای هر خانه خطا را حساب می‌کند: قیمت واقعی منهای مقدارِ پیش‌بینی‌شده (\(y - \hat{y}\)).</p>
+<p>بعد میانگینِ این خطاها را می‌گیرد. حالا یک عدد داریم: <b>میانگینِ خطا</b>.</p>
+<p>این عدد به w و b بستگی دارد. w یا b را عوض کنید، میانگینِ خطا هم عوض می‌شود (در نمودار بالا دیدید).</p>
+<p>پس میانگینِ خطا خودش یک <b>تابع</b> است: ورودی‌اش w و b است و خروجی‌اش یک عدد.</p>
+<div class="f">خطا(w, b) = میانگینِ |قیمت واقعی − قیمتِ پیش‌بینی‌شده|</div>
+<p>همین را به زبان ریاضی:</p>
+<div class="f">\[ \hat{y}_i = w \, x_i + b \qquad\qquad L(w, b) = \frac{1}{n} \sum_{i=1}^{n} \left| \, y_i - \hat{y}_i \, \right| \]</div>
+<ul class="sym">
+<li>\(L\): تابع خطا (Loss)</li>
+<li>\(n\): تعداد خانه‌ها (این‌جا ۶)</li>
+<li>\(i\): شماره‌ی خانه (اولی، دومی، …)</li>
+<li>\(x_i\): متراژِ خانه‌ی \(i\)</li>
+<li>\(y_i\): قیمت واقعیِ خانه‌ی \(i\)</li>
+<li>\(\hat{y}_i\) (وای‌هَت): <b>مقدارِ پیش‌بینی‌شده</b>، جوابِ مدل برای خانه‌ی \(i\)</li>
+<li>\(\sum\): همه را با هم جمع کن</li>
+<li>\(\frac{1}{n}\): تقسیم بر تعداد، یعنی میانگین</li>
+<li>\(| \; |\): قدر مطلق؛ خطای منفی هم مثبت حساب شود</li>
+</ul>
+<p>به این تابع <b>تابع خطا</b> <span class="en">(Loss Function)</span> می‌گویند.</p>
+<p>حالا کار ساده است: <b>w و b را طوری تغییر بده که خروجیِ تابع خطا کمترین شود.</b></p>
+</div>
+<div>
+<p>قدم‌ها:</p>
+<ul>
+<li>از یک مقدار شروع کن.</li>
+<li>هر متغیر را کمی تغییر بده و ببین خطا کم شد یا زیاد.</li>
+<li>متغیر را به طرفی ببر که خطا کم می‌شود.</li>
+<li>تکرار کن.</li>
+</ul>
+<p>اسم این روش <b>گرادیان کاهشی</b> <span class="en">(Gradient Descent)</span> است.</p>
+</div>
+</section>
+
+<section>
+<h2>۸. از کجا شروع کنیم؟</h2>
+<div>
+<p>برای این مدلِ ساده فرقی نمی‌کند.</p>
+<p>از هر مقداری شروع کنید، آخرش به همان بهترین خط می‌رسید.</p>
+<p>(دکمه‌ی «بگذار کامپیوتر پیدا کند» از همان مقدارهایی شروع می‌کند که شما گذاشته‌اید. امتحان کنید.)</p>
+</div>
+<div>
+<p>در مدل‌های بزرگ، مقدارِ اول را <b>تصادفی و کوچک</b> انتخاب می‌کنند.</p>
+<p>چرا؟ اگر همه‌ی وزن‌ها از یک عدد شروع کنند، همه یک‌جور تغییر می‌کنند و همه یک چیز یاد می‌گیرند.</p>
+</div>
+</section>
+
+<section>
+<h2>۹. تصویر کلی: آمار و هوش مصنوعی</h2>
+<p>همه‌ی روش‌هایی که اسمشان را می‌شنوید، در اصل یکی از همین سه کار را می‌کنند: <b>پیش‌بینیِ عدد</b>، <b>پیش‌بینیِ دسته</b>، یا <b>پیدا کردنِ گروه‌ها</b>. فرقشان در <b>روش</b> است.</p>
+<svg viewBox="0 0 620 400" style="width:100%;max-width:480px;display:block;margin:8px auto" role="img" aria-label="جعبه‌های تو در تو: هوش مصنوعی، یادگیری ماشین، یادگیری عمیق، مدل زبانی بزرگ، GPT">
+  <rect x="2" y="2" width="616" height="396" rx="22" fill="var(--l1)" stroke="var(--line)"/>
+  <text x="310" y="34" text-anchor="middle" font-size="18" font-weight="700">هوش مصنوعی (AI)</text>
+  <rect x="40" y="52" width="540" height="330" rx="20" fill="var(--l2)" stroke="var(--line)"/>
+  <text x="310" y="82" text-anchor="middle" font-size="17" font-weight="700">یادگیری ماشین (Machine Learning)</text>
+  <rect x="80" y="100" width="460" height="266" rx="18" fill="var(--l3)" stroke="var(--line)"/>
+  <text x="310" y="130" text-anchor="middle" font-size="16" font-weight="700">یادگیری عمیق (Deep Learning)</text>
+  <rect x="120" y="148" width="380" height="202" rx="16" fill="var(--l4)" stroke="var(--line)"/>
+  <text x="310" y="178" text-anchor="middle" font-size="15" font-weight="700">مدل زبانی بزرگ (LLM)</text>
+  <rect x="160" y="196" width="300" height="138" rx="14" fill="var(--l5)" stroke="var(--line)"/>
+  <text x="310" y="224" text-anchor="middle" font-size="14" font-weight="700">نمونه‌ها: GPT، Claude، Gemini</text>
+  <text x="310" y="262" text-anchor="middle" font-size="13">+ ابزار و تکرار ← ایجنت (Agent)</text>
+  <text x="310" y="292" text-anchor="middle" font-size="13">+ صفحه‌ی گفت‌وگو ← ChatGPT</text>
+</svg>
+<table style="margin-top:12px">
+<tr><th>خانواده</th><th>روش</th><th>مثال</th></tr>
+<tr><td>آمار</td><td>فرمول‌های ساده، مثل همین خطِ قیمت خانه (رگرسیون خطی)</td><td>قیمت خانه</td></tr>
+<tr><td>یادگیری ماشین</td><td>قانون را از نمونه‌ها یاد می‌گیرد؛ مثلاً درخت تصمیم</td><td>ایمیل کلاهبرداری است یا نه؟</td></tr>
+<tr><td>یادگیری عمیق</td><td>شبکه‌ی عصبی با میلیون‌ها وزن</td><td>گربه است یا سگ؟</td></tr>
+<tr><td>مدل زبانی بزرگ (LLM)</td><td>شبکه‌ی عصبیِ خیلی بزرگ که <b>کلمه‌ی بعدی</b> را پیش‌بینی می‌کند</td><td>GPT، Claude، Gemini</td></tr>
+<tr><td>ایجنت (Agent)</td><td>مدل زبانی + ابزار (جست‌وجو، اجرای کد) + تکرار</td><td>پیدا کردن بلیت ارزان</td></tr>
+</table>
+<p style="margin-top:10px">هوش مصنوعی بزرگ‌ترین دایره است. یادگیری ماشین داخل آن است، یادگیری عمیق داخل یادگیری ماشین، و مدل زبانی داخل یادگیری عمیق. مرز آمار و یادگیری ماشین هم تیز نیست؛ خیلی از روش‌ها مال هر دو هستند.</p>
+</section>
+
+<section>
+<h2>۱۰. با جواب یا بی‌جواب؟</h2>
+<p>یادگیری ماشین بسته به این‌که داده <b>جواب</b> دارد یا نه، چند نوع است:</p>
+<div class="kinds">
+<div>
+<p><b>با ناظر</b> <span class="en">(Supervised)</span></p>
+<p>هر نمونه جوابش را دارد. مثلاً قیمتِ فروشِ هر خانه را می‌دانیم.</p>
+<p>مدل یاد می‌گیرد همان جواب را بدهد.</p>
+<p class="ex">برای: پیش‌بینی عدد، پیش‌بینی دسته</p>
+<ul class="ex">
+<li>این خانه چند می‌ارزد؟</li>
+<li>این ایمیل اسپم است یا نه؟</li>
+<li>فردا هوا چند درجه است؟</li>
+<li>این عکس گربه است یا سگ؟</li>
+</ul>
+</div>
+<div>
+<p><b>بی‌ناظر</b> <span class="en">(Unsupervised)</span></p>
+<p>نمونه‌ها جواب ندارند. فقط خودِ داده را داریم.</p>
+<p>مدل خودش ساختار را پیدا می‌کند.</p>
+<p class="ex">برای: پیدا کردن گروه‌ها</p>
+<ul class="ex">
+<li>مشتری‌های یک فروشگاه چند جورند؟</li>
+<li>کدام خبرها درباره‌ی یک موضوع‌اند؟</li>
+<li>کدام آهنگ‌ها شبیه هم‌اند؟</li>
+<li>کدام تراکنش بانکی با بقیه فرق دارد و مشکوک است؟</li>
+</ul>
+</div>
+<div>
+<p><b>تقویتی</b> <span class="en">(Reinforcement)</span></p>
+<p>جوابِ درست را نمی‌دهیم؛ فقط بعد از هر کار می‌گوییم <b>خوب بود یا بد</b> (پاداش).</p>
+<p>مدل با آزمون و خطا یاد می‌گیرد.</p>
+<p class="ex">برای: بازی کردن، کنترل ربات</p>
+<ul class="ex">
+<li>در شطرنج، حرکت بعدی چه باشد؟</li>
+<li>ربات چطور راه برود که زمین نخورد؟</li>
+<li>چراغ راهنمایی کِی سبز شود تا ترافیک کم شود؟</li>
+<li>ماشین خودران کِی ترمز کند؟</li>
+</ul>
+</div>
+</div>
+</section>
+<section>
+<h2>۱۱. مدل‌ها چه شکلی‌اند؟</h2>
+<p>مدل‌ها فقط خط نیستند. این‌ها مهم‌ترین شکل‌ها هستند. همه همان سه کار را می‌کنند، با روش‌های مختلف:</p>
+<div class="kinds">
+<div><p><b>خطی</b> <span class="en">(Linear)</span></p><svg viewBox="0 0 120 80" style="width:100%;max-width:240px;display:block;margin:4px auto 8px"><circle cx="15" cy="62" r="3" fill="var(--blue)"/><circle cx="30" cy="55" r="3" fill="var(--blue)"/><circle cx="45" cy="50" r="3" fill="var(--blue)"/><circle cx="60" cy="38" r="3" fill="var(--blue)"/><circle cx="75" cy="35" r="3" fill="var(--blue)"/><circle cx="90" cy="22" r="3" fill="var(--blue)"/><circle cx="105" cy="18" r="3" fill="var(--blue)"/><line x1="8" y1="66" x2="112" y2="14" stroke="var(--accent)" stroke-width="2.5"/></svg><p>یک خطِ صاف. ساده و سریع؛ همان مدلِ قیمت خانه.</p><p class="ex">مثال: قیمت خانه از روی متراژ</p></div>
+<div><p><b>غیرخطی</b> <span class="en">(Non-linear)</span></p><svg viewBox="0 0 120 80" style="width:100%;max-width:240px;display:block;margin:4px auto 8px"><circle cx="10" cy="64.5" r="2.5" fill="var(--blue)"/><circle cx="16" cy="56.1" r="2.5" fill="var(--blue)"/><circle cx="22" cy="40.1" r="2.5" fill="var(--blue)"/><circle cx="28" cy="26.5" r="2.5" fill="var(--blue)"/><circle cx="34" cy="18.4" r="2.5" fill="var(--blue)"/><circle cx="40" cy="26.3" r="2.5" fill="var(--blue)"/><circle cx="46" cy="32.4" r="2.5" fill="var(--blue)"/><circle cx="52" cy="53.3" r="2.5" fill="var(--blue)"/><circle cx="58" cy="67.7" r="2.5" fill="var(--blue)"/><circle cx="64" cy="62.7" r="2.5" fill="var(--blue)"/><circle cx="70" cy="52.5" r="2.5" fill="var(--blue)"/><circle cx="76" cy="27.6" r="2.5" fill="var(--blue)"/><circle cx="82" cy="18.4" r="2.5" fill="var(--blue)"/><circle cx="88" cy="14.2" r="2.5" fill="var(--blue)"/><circle cx="94" cy="26.8" r="2.5" fill="var(--blue)"/><circle cx="100" cy="43.6" r="2.5" fill="var(--blue)"/><circle cx="106" cy="53.1" r="2.5" fill="var(--blue)"/><path d="M6.0 63.3 L8.0 64.0 L10.0 63.3 L12.0 61.3 L14.0 58.0 L16.0 53.6 L18.0 48.5 L20.0 42.9 L22.0 37.1 L24.0 31.5 L26.0 26.4 L28.0 22.0 L30.0 18.7 L32.0 16.7 L34.0 16.0 L36.0 16.7 L38.0 18.7 L40.0 22.0 L42.0 26.4 L44.0 31.5 L46.0 37.1 L48.0 42.9 L50.0 48.5 L52.0 53.6 L54.0 58.0 L56.0 61.3 L58.0 63.3 L60.0 64.0 L62.0 63.3 L64.0 61.3 L66.0 58.0 L68.0 53.6 L70.0 48.5 L72.0 42.9 L74.0 37.1 L76.0 31.5 L78.0 26.4 L80.0 22.0 L82.0 18.7 L84.0 16.7 L86.0 16.0 L88.0 16.7 L90.0 18.7 L92.0 22.0 L94.0 26.4 L96.0 31.5 L98.0 37.1 L100.0 42.9 L102.0 48.5 L104.0 53.6 L106.0 58.0 L108.0 61.3 L110.0 63.3 L112.0 64.0 L114.0 63.3" fill="none" stroke="var(--accent)" stroke-width="2.5"/><text x="34" y="78" font-size="6" text-anchor="middle" fill="var(--muted)" >تابستان</text><text x="86" y="78" font-size="6" text-anchor="middle" fill="var(--muted)" >تابستان</text></svg><p>وقتی رابطه صاف نیست. مثلاً فروش بستنی: هر تابستان بالا، هر زمستان پایین. یک خط این را نمی‌فهمد؛ یک منحنیِ موج‌دار می‌فهمد.</p><p class="ex">مثال: فروش بستنی در ماه آینده</p></div>
+<div><p><b>درخت تصمیم</b> <span class="en">(Decision Tree)</span></p><svg viewBox="0 0 120 80" style="width:100%;max-width:240px;display:block;margin:4px auto 8px"><rect x="30" y="2" width="60" height="16" rx="4" fill="var(--soft)" stroke="var(--muted)"/><text x="60" y="13" font-size="7" text-anchor="middle" fill="var(--ink)" >درآمد بالاست؟</text>
+<line x1="45" y1="18" x2="28" y2="34" stroke="var(--muted)"/><line x1="75" y1="18" x2="92" y2="34" stroke="var(--muted)"/><text x="31" y="26" font-size="6" text-anchor="middle" fill="var(--muted)" >نه</text><text x="89" y="26" font-size="6" text-anchor="middle" fill="var(--muted)" >بله</text>
+<rect x="2" y="34" width="54" height="16" rx="4" fill="var(--soft)" stroke="var(--muted)"/><text x="29" y="45" font-size="7" text-anchor="middle" fill="var(--ink)" >قسط عقب‌افتاده؟</text>
+<rect x="70" y="34" width="46" height="16" rx="4" fill="var(--soft)" stroke="var(--accent)"/><text x="93" y="45" font-size="7" text-anchor="middle" fill="var(--ink)" >وام بده</text>
+<line x1="18" y1="50" x2="12" y2="62" stroke="var(--muted)"/><line x1="40" y1="50" x2="47" y2="62" stroke="var(--muted)"/>
+<rect x="0" y="62" width="28" height="14" rx="4" fill="var(--soft)" stroke="var(--accent)"/><text x="14" y="72" font-size="7" text-anchor="middle" fill="var(--ink)" >وام بده</text>
+<rect x="32" y="62" width="32" height="14" rx="4" fill="var(--soft)" stroke="var(--red)"/><text x="48" y="72" font-size="7" text-anchor="middle" fill="var(--ink)" >نده</text></svg><p>سؤال‌های بله/نه، پشتِ سرِ هم، مثل کارمند بانک. <b>جنگل تصادفی</b> = صدها درخت که هر کدام کمی فرق دارند و با هم رأی می‌دهند.</p><p class="ex">مثال: وام بدهیم یا نه؟</p></div>
+<div><p><b>نزدیک‌ترین همسایه‌ها</b> <span class="en">(k-NN)</span></p><svg viewBox="0 0 120 80" style="width:100%;max-width:240px;display:block;margin:4px auto 8px"><line x1="60" y1="40" x2="39" y2="31" stroke="var(--accent)" stroke-width="1.5"/><line x1="60" y1="40" x2="78" y2="21" stroke="var(--accent)" stroke-width="1.5"/><line x1="60" y1="40" x2="31" y2="26" stroke="var(--accent)" stroke-width="1.5"/><circle cx="31" cy="26" r="3" fill="var(--accent)"/><circle cx="103" cy="57" r="3" fill="var(--muted)"/><circle cx="25" cy="59" r="3" fill="var(--muted)"/><circle cx="22" cy="48" r="3" fill="var(--muted)"/><circle cx="21" cy="8" r="3" fill="var(--muted)"/><circle cx="99" cy="21" r="3" fill="var(--muted)"/><circle cx="30" cy="71" r="3" fill="var(--muted)"/><circle cx="99" cy="27" r="3" fill="var(--muted)"/><circle cx="108" cy="43" r="3" fill="var(--muted)"/><circle cx="78" cy="21" r="3" fill="var(--accent)"/><circle cx="106" cy="52" r="3" fill="var(--muted)"/><circle cx="109" cy="65" r="3" fill="var(--muted)"/><circle cx="39" cy="31" r="3" fill="var(--accent)"/><circle cx="25" cy="17" r="3" fill="var(--muted)"/><circle cx="15" cy="27" r="3" fill="var(--muted)"/><circle cx="71" cy="8" r="3" fill="var(--muted)"/><circle cx="60" cy="40" r="4.5" fill="var(--red)"/><text x="60" y="32" font-size="7" text-anchor="middle" fill="var(--red)" font-weight="700">شما</text></svg><p>چیزِ جدید را با شبیه‌ترین نمونه‌ها مقایسه کن. <b>پیشنهاد فیلم</b>: آدم‌هایی که سلیقه‌شان شبیه شماست، چه دیده‌اند؟ <b>ترمیم عکس</b>: جای خراب را با تکه‌های شبیهِ همان عکس پر کن.</p><p class="ex">مثال: چه فیلمی به شما پیشنهاد بدهیم؟</p></div>
+<div><p><b>گروه‌بندی</b> <span class="en">(K-Means)</span></p><svg viewBox="0 0 120 80" style="width:100%;max-width:240px;display:block;margin:4px auto 8px"><circle cx="34" cy="22" r="3" fill="var(--blue)"/><circle cx="25" cy="31" r="3" fill="var(--blue)"/><circle cx="30" cy="22" r="3" fill="var(--blue)"/><circle cx="30" cy="29" r="3" fill="var(--blue)"/><circle cx="19" cy="34" r="3" fill="var(--blue)"/><circle cx="19" cy="29" r="3" fill="var(--blue)"/><circle cx="96" cy="13" r="3" fill="var(--accent)"/><circle cx="95" cy="20" r="3" fill="var(--accent)"/><circle cx="90" cy="13" r="3" fill="var(--accent)"/><circle cx="77" cy="16" r="3" fill="var(--accent)"/><circle cx="99" cy="17" r="3" fill="var(--accent)"/><circle cx="94" cy="30" r="3" fill="var(--accent)"/><circle cx="71" cy="57" r="3" fill="var(--red)"/><circle cx="57" cy="60" r="3" fill="var(--red)"/><circle cx="67" cy="53" r="3" fill="var(--red)"/><circle cx="66" cy="65" r="3" fill="var(--red)"/><circle cx="69" cy="52" r="3" fill="var(--red)"/><circle cx="71" cy="53" r="3" fill="var(--red)"/><text x="30" y="29" font-size="11" text-anchor="middle" fill="var(--ink)" >✕</text><text x="88" y="26" font-size="11" text-anchor="middle" fill="var(--ink)" >✕</text><text x="60" y="64" font-size="11" text-anchor="middle" fill="var(--ink)" >✕</text></svg><p>نقطه‌ها دورِ چند مرکز (✕) جمع می‌شوند. هیچ جوابی از قبل نداریم.</p><p class="ex">مثال: مشتری‌ها چند جورند؟</p></div>
+<div class="wide">
+<p><b>شبکه‌ی عصبی</b> <span class="en">(Neural Network)</span></p>
+<svg viewBox="0 0 120 80" style="width:100%;max-width:380px;display:block;margin:4px auto 8px"><line x1="18" y1="22" x2="60" y2="26" stroke="var(--muted)" stroke-width=".7"/><line x1="18" y1="22" x2="60" y2="49" stroke="var(--muted)" stroke-width=".7"/><line x1="18" y1="22" x2="60" y2="72" stroke="var(--muted)" stroke-width=".7"/><line x1="18" y1="40" x2="60" y2="26" stroke="var(--muted)" stroke-width=".7"/><line x1="18" y1="40" x2="60" y2="49" stroke="var(--muted)" stroke-width=".7"/><line x1="18" y1="40" x2="60" y2="72" stroke="var(--muted)" stroke-width=".7"/><line x1="18" y1="58" x2="60" y2="26" stroke="var(--muted)" stroke-width=".7"/><line x1="18" y1="58" x2="60" y2="49" stroke="var(--muted)" stroke-width=".7"/><line x1="18" y1="58" x2="60" y2="72" stroke="var(--muted)" stroke-width=".7"/><line x1="18" y1="76" x2="60" y2="26" stroke="var(--muted)" stroke-width=".7"/><line x1="18" y1="76" x2="60" y2="49" stroke="var(--muted)" stroke-width=".7"/><line x1="18" y1="76" x2="60" y2="72" stroke="var(--muted)" stroke-width=".7"/><line x1="60" y1="26" x2="102" y2="49" stroke="var(--muted)" stroke-width=".7"/><line x1="60" y1="49" x2="102" y2="49" stroke="var(--muted)" stroke-width=".7"/><line x1="60" y1="72" x2="102" y2="49" stroke="var(--muted)" stroke-width=".7"/><circle cx="18" cy="22" r="5" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><circle cx="18" cy="40" r="5" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><circle cx="18" cy="58" r="5" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><circle cx="18" cy="76" r="5" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><circle cx="60" cy="26" r="5" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><circle cx="60" cy="49" r="5" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><circle cx="60" cy="72" r="5" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><circle cx="102" cy="49" r="5" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/><text x="18" y="10" font-size="6" text-anchor="middle" fill="var(--muted)" >لبه‌ها و خط‌ها</text><text x="60" y="10" font-size="6" text-anchor="middle" fill="var(--muted)" >شکل‌ها: گوش، چشم</text><text x="102" y="10" font-size="7" text-anchor="middle" fill="var(--accent)" font-weight="700">گربه!</text></svg>
+<p>چند لایه گره که به هم وصل‌اند. هیچ‌کس به آن نمی‌گوید «دنبال گوش بگرد». فقط هزاران عکس با جوابشان (گربه یا سگ) می‌بیند و وزن‌هایش را عوض می‌کند تا خطا کم شود.</p>
+<p>در این راه، هر لایه خودش چیزی یاد می‌گیرد:</p>
+<ul><li><b>لایه‌های اول:</b> لبه‌ها و خط‌های ساده.</li><li><b>لایه‌های وسط:</b> ترکیبِ آن‌ها؛ شکل‌هایی مثل گوشِ نوک‌تیز یا چشم.</li><li><b>لایه‌ی آخر:</b> «این ترکیب یعنی گربه.»</li></ul>
+<p class="ex">مثال: تشخیص چهره در گوشی، تبدیل صدا به متن</p>
+</div>
+<div class="wide">
+<p><b>مدل زبانی بزرگ</b> <span class="en">(LLM)</span></p>
+<p>یک شبکه‌ی عصبیِ خیلی بزرگ که فقط یک کار می‌کند: <b>کلمه‌ی بعدی را حدس بزن</b>. بعد آن کلمه را به متن اضافه می‌کند و دوباره حدس می‌زند، کلمه به کلمه، تا جواب کامل شود.</p>
+<p>ولی حدسش به <b>کلِ متن</b> بستگی دارد، نه فقط کلمه‌ی قبلی. دو متنِ نصفه، هر دو با پایانِ «I love»:</p>
+<div class="two">
+<div class="ctx"><p class="ex">نامه به دوست</p><p dir="ltr" class="sent"><span class="w hot">Dear</span> <span class="w hot">Sara,</span> <span class="w">I</span> <span class="w hot">miss</span> <span class="w">you</span> <span class="w">so</span> <span class="w">much.</span> <span class="w">I</span> <span class="w">love</span> <span class="w blank">___</span></p><div class="bar"><span>you</span><i style="width:72%"></i><b>72%</b></div><div class="bar"><span>Sara</span><i style="width:14%"></i><b>14%</b></div><div class="bar"><span>pasta</span><i style="width:1%"></i><b>1%</b></div></div>
+<div class="ctx"><p class="ex">دستور آشپزی</p><p dir="ltr" class="sent"><span class="w hot">Boil</span> <span class="w">the</span> <span class="w">water,</span> <span class="w">add</span> <span class="w">the</span> <span class="w hot">sauce</span> <span class="w">and</span> <span class="w hot">cheese.</span> <span class="w">I</span> <span class="w">love</span> <span class="w blank">___</span></p><div class="bar"><span>pasta</span><i style="width:58%"></i><b>58%</b></div><div class="bar"><span>this</span><i style="width:21%"></i><b>21%</b></div><div class="bar"><span>you</span><i style="width:4%"></i><b>4%</b></div></div>
+</div>
+<p>بعد از «I love» معمولاً «you» می‌آید. ولی در متنِ آشپزی، مدل به کلمه‌هایی مثل sauce و cheese نگاه می‌کند و «pasta» را محتمل‌تر می‌داند.</p>
+<div class="key">به این «نگاه کردن به کلمه‌های مهمِ متن» <b>توجه</b> <span class="en">(Attention)</span> می‌گویند. کلمه‌های پررنگ بالا همان‌هایی‌اند که مدل بیشتر به آن‌ها توجه می‌کند. این، قلبِ مدل‌هایی مثل GPT است.</div>
+<p class="ex">مثال: ChatGPT، ترجمه، خلاصه کردن متن. (عددها برای نشان دادن ایده‌اند، نه خروجیِ یک مدل واقعی.)</p>
+</div>
+</div>
+</section>
+<section>
+<h2>۱۲. بردار و ماتریس: زبانِ عددیِ مدل‌ها</h2>
+<p>کامپیوتر فقط <b>عدد</b> می‌فهمد. نه خانه، نه عکس، نه کلمه. پس قبل از هر کاری، همه‌چیز را به عدد تبدیل می‌کنیم.</p>
+
+<p><b>بردار</b> <span class="en">(Vector)</span> = یک فهرست از عددها که یک چیز را توصیف می‌کند.</p>
+<div class="f">یک خانه = [ ۱۰۰ متر ، ۱۰ سال ، ۲ اتاق ، ۵۰۰ متر تا مترو ]</div>
+<p>هر عدد یک <b>ویژگی</b> <span class="en">(Feature)</span> است. یک کاربر، یک آهنگ یا یک کلمه هم می‌تواند یک بردار باشد.</p>
+
+<p><b>ماتریس</b> <span class="en">(Matrix)</span> = یک جدول از عددها؛ یعنی چند بردار زیر هم.</p>
+<div class="kinds">
+<div><p><b>جدولِ داده</b></p><p>۱۰۰۰ خانه × ۴ ویژگی. هر سطر یک خانه است.</p></div>
+<div><p><b>عکس</b></p><p>هر خانه‌ی جدول، روشنیِ یک نقطه (پیکسل) است.</p><svg viewBox="0 0 165 74" style="width:100%;max-width:330px;display:block;margin:6px auto"><rect x="0" y="0" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="96" y="8.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="12" y="0" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="108" y="8.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="24" y="0" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="120" y="8.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="36" y="0" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="132" y="8.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="48" y="0" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="144" y="8.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="60" y="0" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="156" y="8.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="0" y="12" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="96" y="20.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="12" y="12" width="12" height="12" fill="rgb(35,35,35)" stroke="var(--line)" stroke-width=".4"/><text x="108" y="20.5" font-size="7" text-anchor="middle" fill="var(--ink)">9</text><rect x="24" y="12" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="120" y="20.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="36" y="12" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="132" y="20.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="48" y="12" width="12" height="12" fill="rgb(35,35,35)" stroke="var(--line)" stroke-width=".4"/><text x="144" y="20.5" font-size="7" text-anchor="middle" fill="var(--ink)">9</text><rect x="60" y="12" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="156" y="20.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="0" y="24" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="96" y="32.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="12" y="24" width="12" height="12" fill="rgb(35,35,35)" stroke="var(--line)" stroke-width=".4"/><text x="108" y="32.5" font-size="7" text-anchor="middle" fill="var(--ink)">9</text><rect x="24" y="24" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="120" y="32.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="36" y="24" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="132" y="32.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="48" y="24" width="12" height="12" fill="rgb(35,35,35)" stroke="var(--line)" stroke-width=".4"/><text x="144" y="32.5" font-size="7" text-anchor="middle" fill="var(--ink)">9</text><rect x="60" y="24" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="156" y="32.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="0" y="36" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="96" y="44.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="12" y="36" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="108" y="44.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="24" y="36" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="120" y="44.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="36" y="36" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="132" y="44.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="48" y="36" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="144" y="44.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="60" y="36" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="156" y="44.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="0" y="48" width="12" height="12" fill="rgb(35,35,35)" stroke="var(--line)" stroke-width=".4"/><text x="96" y="56.5" font-size="7" text-anchor="middle" fill="var(--ink)">9</text><rect x="12" y="48" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="108" y="56.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="24" y="48" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="120" y="56.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="36" y="48" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="132" y="56.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="48" y="48" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="144" y="56.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="60" y="48" width="12" height="12" fill="rgb(35,35,35)" stroke="var(--line)" stroke-width=".4"/><text x="156" y="56.5" font-size="7" text-anchor="middle" fill="var(--ink)">9</text><rect x="0" y="60" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="96" y="68.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><rect x="12" y="60" width="12" height="12" fill="rgb(35,35,35)" stroke="var(--line)" stroke-width=".4"/><text x="108" y="68.5" font-size="7" text-anchor="middle" fill="var(--ink)">9</text><rect x="24" y="60" width="12" height="12" fill="rgb(35,35,35)" stroke="var(--line)" stroke-width=".4"/><text x="120" y="68.5" font-size="7" text-anchor="middle" fill="var(--ink)">9</text><rect x="36" y="60" width="12" height="12" fill="rgb(35,35,35)" stroke="var(--line)" stroke-width=".4"/><text x="132" y="68.5" font-size="7" text-anchor="middle" fill="var(--ink)">9</text><rect x="48" y="60" width="12" height="12" fill="rgb(35,35,35)" stroke="var(--line)" stroke-width=".4"/><text x="144" y="68.5" font-size="7" text-anchor="middle" fill="var(--ink)">9</text><rect x="60" y="60" width="12" height="12" fill="rgb(255,255,255)" stroke="var(--line)" stroke-width=".4"/><text x="156" y="68.5" font-size="7" text-anchor="middle" fill="var(--ink)">0</text><text x="80" y="40" font-size="12" text-anchor="middle" fill="var(--muted)">=</text><rect x="90" y="0" width="72" height="72" fill="none" stroke="var(--muted)"/></svg></div>
+<div><p><b>وزن‌های مدل</b></p><p>وزن‌های یک شبکه‌ی عصبی هم در ماتریس‌ها نگه داشته می‌شوند.</p></div>
+</div>
+
+<p style="margin-top:14px"><b>چرا این‌قدر مهم‌اند؟</b> چون وقتی داده جدول باشد، کامپیوتر می‌تواند یک کار را روی <b>همه‌ی</b> عددها <b>هم‌زمان</b> انجام بدهد. کارت‌های گرافیک <span class="en">(GPU)</span> دقیقاً برای همین ساخته شده‌اند. بدون این، آموزش مدل‌های بزرگ سال‌ها طول می‌کشید.</p>
+
+<p style="margin-top:14px"><b>کارهای مهم روی بردار و ماتریس</b> (فعلاً فقط معنی‌شان):</p>
+<div class="kinds">
+<div>
+<p><b>۱. جمع و ضرب در یک عدد</b></p>
+<p>به همه‌ی عددها یک مقدار اضافه کن، یا همه را چند برابر کن.</p>
+<p class="ex">مثال: روشن‌تر کردنِ عکس = به همه‌ی پیکسل‌ها عدد اضافه کن.</p>
+</div>
+<div>
+<p><b>۲. ضرب داخلی</b> <span class="en">(Dot Product)</span></p>
+<p>هر عدد را در وزنش ضرب کن و همه را جمع بزن. <b>همین جوابِ مدل است:</b> قیمت = وزنِ متراژ × متراژ + وزنِ سن × سن + …</p>
+<p>کار دومش: می‌گوید دو بردار چقدر <b>هم‌جهت</b>اند، یعنی چقدر شبیه‌اند.</p>
+<svg viewBox="0 0 130 80" style="width:100%;max-width:260px;display:block;margin:6px auto"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="context-stroke"/></marker></defs>
+<line x1="10" y1="70" x2="100" y2="18" stroke="var(--accent)" stroke-width="2.5" marker-end="url(#ah)"/><text x="104" y="16" font-size="8" fill="var(--accent)">سارا</text>
+<line x1="10" y1="70" x2="92" y2="30" stroke="var(--blue)" stroke-width="2.5" marker-end="url(#ah)"/><text x="96" y="34" font-size="8" fill="var(--blue)">علی</text>
+<line x1="10" y1="70" x2="22" y2="6" stroke="var(--red)" stroke-width="2.5" marker-end="url(#ah)"/><text x="26" y="8" font-size="8" fill="var(--red)">رضا</text>
+<text x="70" y="78" font-size="6.5" text-anchor="middle" fill="var(--muted)">← اکشن · عاشقانه ↑</text></svg>
+<p class="ex">سلیقه‌ی سارا و علی شبیه است (پیکان‌ها هم‌جهت). پس فیلمی که علی دوست داشته به سارا پیشنهاد می‌شود، نه فیلمِ رضا.</p>
+</div>
+<div>
+<p><b>۳. فاصله</b> <span class="en">(Distance)</span></p>
+<p>دو بردار چقدر از هم دورند؟</p>
+<p class="ex">مثال: نزدیک‌ترین همسایه‌ها (k-NN) با همین کار شبیه‌ترین‌ها را پیدا می‌کند.</p>
+</div>
+<div>
+<p><b>۴. ضرب ماتریس</b> <span class="en">(Matrix Multiplication)</span></p>
+<p>خیلی ضرب داخلی، با هم و یک‌جا.</p>
+<p class="ex">مثال: قیمتِ ۱۰۰۰ خانه را با یک عمل حساب کن. هر لایه‌ی شبکه‌ی عصبی هم در اصل یک ضرب ماتریس است.</p>
+</div>
+</div>
+<div class="key">مدل زبانی هم هر کلمه را یک بردار می‌کند <span class="en">(Embedding)</span>. کلمه‌هایی که معنی نزدیک دارند، مثل «شاه» و «ملکه»، بردارهای نزدیک دارند. «توجه» هم با ضرب داخلی می‌سنجد کدام کلمه‌ها به هم مربوط‌اند.</div>
+</section>
+<section>
+<h2>۱۳. یک پروژه‌ی واقعی، از اول تا آخر</h2>
+<p>تکه‌ها را کنار هم بگذاریم. مثال: <b>پیشنهاد ویدیو در تیک‌تاک</b>.</p>
+<div class="cycle">
+<svg viewBox="0 0 400 340" role="img" aria-label="چرخه‌ی هفت قدمیِ یک پروژه">
+<defs><marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>
+<path d="M236.9 50.6 A125 125 0 0 1 270.3 66.7" class="arc" marker-end="url(#ah2)"/><path d="M316.4 124.4 A125 125 0 0 1 324.6 160.6" class="arc" marker-end="url(#ah2)"/><path d="M308.2 232.6 A125 125 0 0 1 285.1 261.6" class="arc" marker-end="url(#ah2)"/><path d="M218.5 293.6 A125 125 0 0 1 181.5 293.6" class="arc" marker-end="url(#ah2)"/><path d="M114.9 261.6 A125 125 0 0 1 91.8 232.6" class="arc" marker-end="url(#ah2)"/><path d="M75.4 160.6 A125 125 0 0 1 83.6 124.4" class="arc" marker-end="url(#ah2)"/><path d="M129.7 66.7 A125 125 0 0 1 163.1 50.6" class="arc" marker-end="url(#ah2)"/><g class="node" data-k="0" tabindex="0"><circle cx="200.0" cy="45.0" r="34"/><text x="200.0" y="41.0" class="t1">۱. مسئله</text><text x="200.0" y="57.0" class="t2">Problem</text></g><g class="node" data-k="1" tabindex="0"><circle cx="297.7" cy="92.1" r="34"/><text x="297.7" y="88.1" class="t1">۲. داده</text><text x="297.7" y="104.1" class="t2">Data</text></g><g class="node" data-k="2" tabindex="0"><circle cx="321.9" cy="197.8" r="34"/><text x="321.9" y="193.8" class="t1">۳. ویژگی‌ها</text><text x="321.9" y="209.8" class="t2">Features</text></g><g class="node" data-k="3" tabindex="0"><circle cx="254.2" cy="282.6" r="34"/><text x="254.2" y="278.6" class="t1">۴. آموزش</text><text x="254.2" y="294.6" class="t2">Training</text></g><g class="node" data-k="4" tabindex="0"><circle cx="145.8" cy="282.6" r="34"/><text x="145.8" y="278.6" class="t1">۵. ارزیابی</text><text x="145.8" y="294.6" class="t2">Evaluation</text></g><g class="node" data-k="5" tabindex="0"><circle cx="78.1" cy="197.8" r="34"/><text x="78.1" y="193.8" class="t1">۶. استقرار</text><text x="78.1" y="209.8" class="t2">Deployment</text></g><g class="node" data-k="6" tabindex="0"><circle cx="102.3" cy="92.1" r="34"/><text x="102.3" y="88.1" class="t1">۷. پایش</text><text x="102.3" y="104.1" class="t2">Monitoring</text></g>
+<text x="200" y="166" class="mid">پیشنهاد ویدیو</text><text x="200" y="184" class="mid2">موس را روی هر قدم ببرید</text>
+</svg>
+<div class="panel" id="panel"></div>
+</div>
+<script>
+(() => {
+  const S = [{"n": "۱", "name": "مسئله", "en": "Problem", "d": "دقیقاً چه چیزی را پیش‌بینی کنیم، و با چه عددی بفهمیم موفق شدیم؟", "x": "این کاربر این ویدیو را تا آخر می‌بیند یا نه؟ (پیش‌بینی دسته)"}, {"n": "۲", "name": "داده", "en": "Data", "d": "نمونه‌هایی با جواب جمع کن و تمیزشان کن: تکراری‌ها، جاهای خالی، اشتباه‌ها.", "x": "میلیون‌ها بازدیدِ قبلی: چه کسی، چه ویدیویی، تا آخر دید یا نه."}, {"n": "۳", "name": "ویژگی‌ها", "en": "Features", "d": "هر نمونه را به یک بردار تبدیل کن؛ چیزهایی که به جواب ربط دارند.", "x": "سنِ کاربر، ویدیوهایی که قبلاً دوست داشته، طولِ ویدیو، موضوعِ ویدیو."}, {"n": "۴", "name": "آموزش", "en": "Training", "d": "مدل را انتخاب کن و وزن‌ها را با گرادیان کاهشی پیدا کن تا تابع خطا کمترین شود.", "x": "یک شبکه‌ی عصبی که از بازدیدهای قبلی یاد می‌گیرد."}, {"n": "۵", "name": "ارزیابی", "en": "Evaluation", "d": "مدل را روی داده‌ای امتحان کن که <b>ندیده</b>. حفظ کردن کافی نیست.", "x": "روی بازدیدهای هفته‌ی آخر، که در آموزش نبودند، چقدر درست حدس می‌زند؟"}, {"n": "۶", "name": "استقرار", "en": "Deployment", "d": "مدل را در برنامه‌ی واقعی بگذار؛ باید سریع جواب بدهد.", "x": "هر بار که کاربر صفحه را بالا می‌کشد، در کسری از ثانیه ویدیوی بعدی را انتخاب کند."}, {"n": "۷", "name": "پایش", "en": "Monitoring", "d": "دنیا عوض می‌شود و مدل کهنه می‌شود. خطا را زیر نظر بگیر و دوباره آموزش بده.", "x": "یک ترند جدید می‌آید که مدل هیچ‌وقت ندیده؛ باید با داده‌ی تازه دوباره یاد بگیرد."}], panel = document.getElementById('panel'), nodes = document.querySelectorAll('.cycle .node');
+  const show = k => {
+    const d = S[k];
+    nodes.forEach(n => n.classList.toggle('on', +n.dataset.k === k));
+    panel.innerHTML = `<p><b>${d.n}. ${d.name}</b> <span class="en">(${d.en})</span></p><p>${d.d}</p><p class="ex">تیک‌تاک: ${d.x}</p>`;
+  };
+  nodes.forEach(n => { const k = +n.dataset.k; n.addEventListener('mouseenter', () => show(k)); n.addEventListener('click', () => show(k)); n.addEventListener('focus', () => show(k)); });
+  show(0);
+})();
+</script>
+<div class="key">این یک دایره است، نه یک خط: بعد از پایش دوباره به «داده» برمی‌گردیم. در مصاحبه، سؤال‌های <b>طراحی سیستم یادگیری ماشین</b> <span class="en">(ML System Design)</span> دقیقاً همین هفت قدم را می‌پرسند.</div>
+</section>
+<section>
+<h2>۱۴. داده و ویژگی‌ها</h2>
+<p><b>داده</b> = نمونه‌هایی که جوابشان را می‌دانیم. هر نمونه یک سطر از جدول است.</p>
+<p><b>ویژگی</b> <span class="en">(Feature)</span> = هر ستونی که به مدل کمک می‌کند جواب را حدس بزند. <b>برچسب</b> <span class="en">(Label)</span> = ستونِ جواب.</p>
+<table>
+<tr><th>متراژ</th><th>سن</th><th>محله</th><th>عکس</th><th>توضیحِ آگهی</th><th>قیمت (برچسب)</th></tr>
+<tr><td>۱۰۰</td><td>۱۰</td><td>شمال</td><td>🖼️</td><td>«آفتاب‌گیر، نوساز…»</td><td>۵٬۳۰۰</td></tr>
+<tr><td>۷۵</td><td>۲۵</td><td>مرکز</td><td>🖼️</td><td>«نزدیک مترو…»</td><td>۴٬۲۰۰</td></tr>
+</table>
+<p style="margin-top:10px">ویژگی‌ها چند جورند، و همه آخرش باید <b>عدد</b> شوند (بخش ۱۲):</p>
+<div class="kinds">
+<div><p><b>عدد</b></p><p class="ex">متراژ، سن. همین‌طور استفاده می‌شوند.</p></div>
+<div><p><b>دسته</b></p><p class="ex">محله. هر محله یک ستونِ صفر/یک می‌شود.</p></div>
+<div><p><b>متن</b></p><p class="ex">توضیحِ آگهی. هر کلمه یک بردار می‌شود.</p></div>
+<div><p><b>عکس</b></p><p class="ex">عکسِ خانه. جدولی از پیکسل‌ها.</p></div>
+</div>
+<div class="key">مدل فقط به اندازه‌ی داده‌اش خوب است. داده‌ی کم، غلط یا یک‌طرفه، مدلِ بد می‌سازد، هرچقدر هم مدل پیچیده باشد.</div>
+</section>
+
+<section>
+<h2>۱۵. آموزش، و تقسیمِ داده</h2>
+<p><b>آموزش</b> <span class="en">(Training)</span> = همان کاری که در بخش ۷ دیدیم: وزن‌ها را تغییر بده تا خطا کمترین شود.</p>
+<p>ولی هدف این نیست که مدل خانه‌های <b>قدیمی</b> را درست حدس بزند؛ آن‌ها را که خودمان می‌دانیم. هدف خانه‌های <b>جدید</b> است.</p>
+<p>پس قبل از آموزش، داده را <b>سه تکه</b> می‌کنیم:</p>
+<div class="split">
+<div style="flex:70;background:var(--accent)">آموزش ۷۰٪</div>
+<div style="flex:15;background:var(--blue)">سنجش ۱۵٪</div>
+<div style="flex:15;background:var(--red)">آزمون ۱۵٪</div>
+</div>
+<div class="kinds">
+<div><p><b>آموزش</b> <span class="en">(Train)</span></p><p class="ex">مدل از این‌ها یاد می‌گیرد.</p></div>
+<div><p><b>سنجش</b> <span class="en">(Validation)</span></p><p class="ex">برای انتخاب بینِ چند مدل یا چند تنظیم. مدل از این‌ها یاد نمی‌گیرد.</p></div>
+<div><p><b>آزمون</b> <span class="en">(Test)</span></p><p class="ex">فقط یک بار، در آخر. نمره‌ی واقعیِ مدل روی داده‌ای که هرگز ندیده.</p></div>
+</div>
+<p style="margin-top:10px">درصدها ثابت نیستند؛ ۷۰/۱۵/۱۵ یا ۸۰/۱۰/۱۰ رایج است.</p>
+</section>
+
+<section>
+<h2>۱۶. ارزیابی: مدل خوب است؟</h2>
+<p><b>اشتباهِ اصلی: کم‌برازش یا بیش‌برازش.</b> هر سه مدل از همان خانه‌های <b style="color:var(--blue)">آبی</b> (آموزش) یاد گرفته‌اند. دایره‌های <b style="color:var(--red)">قرمز</b> خانه‌های <b>جدید</b>اند که مدل ندیده.</p>
+<div class="kinds">
+<div><p><b>کم‌برازش</b> <span class="en">(Underfitting)</span></p><svg viewBox="0 0 120 70" style="width:100%;max-width:200px;display:block;margin:4px auto"><circle cx="12" cy="58" r="2.6" fill="var(--blue)"/><circle cx="26" cy="46" r="2.6" fill="var(--blue)"/><circle cx="40" cy="44" r="2.6" fill="var(--blue)"/><circle cx="54" cy="30" r="2.6" fill="var(--blue)"/><circle cx="68" cy="34" r="2.6" fill="var(--blue)"/><circle cx="82" cy="20" r="2.6" fill="var(--blue)"/><circle cx="96" cy="22" r="2.6" fill="var(--blue)"/><circle cx="108" cy="12" r="2.6" fill="var(--blue)"/><circle cx="19" cy="50" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><circle cx="47" cy="38" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><circle cx="75" cy="27" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><circle cx="102" cy="17" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><line x1="6" y1="38" x2="114" y2="34" stroke="var(--accent)" stroke-width="2.2"/></svg><p class="ex">مدل خیلی ساده است. حتی داده‌ی آموزش را هم نفهمیده.</p></div>
+<div><p><b>درست</b></p><svg viewBox="0 0 120 70" style="width:100%;max-width:200px;display:block;margin:4px auto"><circle cx="12" cy="58" r="2.6" fill="var(--blue)"/><circle cx="26" cy="46" r="2.6" fill="var(--blue)"/><circle cx="40" cy="44" r="2.6" fill="var(--blue)"/><circle cx="54" cy="30" r="2.6" fill="var(--blue)"/><circle cx="68" cy="34" r="2.6" fill="var(--blue)"/><circle cx="82" cy="20" r="2.6" fill="var(--blue)"/><circle cx="96" cy="22" r="2.6" fill="var(--blue)"/><circle cx="108" cy="12" r="2.6" fill="var(--blue)"/><circle cx="19" cy="50" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><circle cx="47" cy="38" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><circle cx="75" cy="27" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><circle cx="102" cy="17" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><line x1="6" y1="62" x2="114" y2="10" stroke="var(--accent)" stroke-width="2.2"/></svg><p class="ex">روند را گرفته، نه جزئیاتِ تصادفی را. از خانه‌های قرمز هم کم فاصله دارد.</p></div>
+<div><p><b>بیش‌برازش</b> <span class="en">(Overfitting)</span></p><svg viewBox="0 0 120 70" style="width:100%;max-width:200px;display:block;margin:4px auto"><circle cx="12" cy="58" r="2.6" fill="var(--blue)"/><circle cx="26" cy="46" r="2.6" fill="var(--blue)"/><circle cx="40" cy="44" r="2.6" fill="var(--blue)"/><circle cx="54" cy="30" r="2.6" fill="var(--blue)"/><circle cx="68" cy="34" r="2.6" fill="var(--blue)"/><circle cx="82" cy="20" r="2.6" fill="var(--blue)"/><circle cx="96" cy="22" r="2.6" fill="var(--blue)"/><circle cx="108" cy="12" r="2.6" fill="var(--blue)"/><circle cx="19" cy="50" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><circle cx="47" cy="38" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><circle cx="75" cy="27" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><circle cx="102" cy="17" r="3" fill="none" stroke="var(--red)" stroke-width="1.6"/><path d="M6,66 Q12,58 15.5,63.0 Q19.0,68 22.5,57.0 Q26,46 29.5,33.5 Q33.0,21.0 36.5,32.5 Q40,44 43.5,52.5 Q47.0,61.0 50.5,45.5 Q54,30 57.5,19.0 Q61.0,8.0 64.5,21.0 Q68,34 71.5,42.5 Q75.0,51.0 78.5,35.5 Q82,20 85.5,11.0 Q89.0,2 92.5,12.0 Q96,22 99.0,31.5 Q102.0,41.0 105.0,26.5 Q108,12 111.0,8.0 L114,4" fill="none" stroke="var(--accent)" stroke-width="2.2"/></svg><p class="ex">از روی همه‌ی نقطه‌های آبی دقیقاً رد شده: خطای آموزش صفر! ولی بین آن‌ها بالا و پایین می‌پرد، چون نویزِ تصادفی را هم <b>حفظ</b> کرده. برای خانه‌های قرمز خیلی دور حدس می‌زند.</p><p class="ex">مثل دانش‌آموزی که جوابِ سؤال‌های تمرین را حفظ کرده؛ سؤالِ تازه که بیاید، می‌ماند.</p></div>
+</div>
+<p style="margin-top:14px"><b>با چه عددی بسنجیم؟</b> بستگی به کار دارد:</p>
+<div class="kinds">
+<div><p><b>پیش‌بینیِ عدد</b></p><p class="ex">میانگینِ خطا: به طور متوسط چقدر دور حدس زده؟ (مثلاً ۱۱۸ میلیون در بخش ۶)</p></div>
+<div><p><b>پیش‌بینیِ دسته</b></p><p class="ex">چند درصد را درست گفته؟ ولی این کافی نیست؛ <b>نوعِ</b> اشتباه هم مهم است:</p>
+<ul class="ex"><li>ایمیلِ مهم را اسپم دانست (هشدارِ اشتباه)</li><li>اسپم را رد نکرد (جا انداختن)</li></ul>
+<p class="ex">در تشخیص بیماری، جا انداختن خیلی بدتر از هشدارِ اشتباه است.</p></div>
+<div><p><b>پیدا کردنِ گروه‌ها</b></p><p class="ex">جوابِ درستی نداریم. می‌سنجیم گروه‌ها چقدر جمع‌وجور و از هم جدا هستند.</p></div>
+</div>
+<div class="key">ارزیابی همیشه روی داده‌ای است که مدل <b>ندیده</b>. نمره روی داده‌ی آموزش گول‌زننده است.</div>
+</section>
+<section>
+<h2>۱۷. پارامتر و هایپرپارامتر</h2>
+<div class="kinds">
+<div><p><b>پارامتر</b> <span class="en">(Parameter)</span></p><p>عددهایی که مدل <b>خودش</b> در آموزش یاد می‌گیرد.</p>
+<div class="f">\[ \hat{y} = \color{teal}{w_1}\, x_1 + \color{teal}{w_2}\, x_2 + \dots + \color{teal}{w_n}\, x_n + \color{teal}{b} \]</div>
+<p class="ex">\(x_1, x_2, \dots\) ویژگی‌ها هستند (متراژ، سن، …). عددهای رنگی، یعنی \(w\)ها و \(b\)، پارامترها هستند. یک مدل زبانی بزرگ میلیاردها پارامتر دارد.</p></div>
+<div><p><b>هایپرپارامتر</b> <span class="en">(Hyperparameter)</span></p><p>تنظیم‌هایی که <b>ما</b> قبل از آموزش انتخاب می‌کنیم. مثلاً شکلِ مدل:</p>
+<svg viewBox="0 0 200 82" style="width:100%;max-width:300px;display:block;margin:6px auto"><line x1="43.0" y1="14" x2="25.5" y2="28" stroke="var(--muted)" stroke-width=".7"/><line x1="43.0" y1="14" x2="60.5" y2="28" stroke="var(--muted)" stroke-width=".7"/><circle cx="43.0" cy="14" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="25.5" cy="28" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="60.5" cy="28" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><text x="43.0" y="76" font-size="8" text-anchor="middle" fill="var(--ink)">درختِ ۲ طبقه</text><line x1="146.0" y1="14" x2="123.0" y2="28" stroke="var(--muted)" stroke-width=".7"/><line x1="146.0" y1="14" x2="169.0" y2="28" stroke="var(--muted)" stroke-width=".7"/><circle cx="146.0" cy="14" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><line x1="123.0" y1="28" x2="111.5" y2="42" stroke="var(--muted)" stroke-width=".7"/><line x1="123.0" y1="28" x2="134.5" y2="42" stroke="var(--muted)" stroke-width=".7"/><circle cx="123.0" cy="28" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><line x1="169.0" y1="28" x2="157.5" y2="42" stroke="var(--muted)" stroke-width=".7"/><line x1="169.0" y1="28" x2="180.5" y2="42" stroke="var(--muted)" stroke-width=".7"/><circle cx="169.0" cy="28" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><line x1="111.5" y1="42" x2="105.8" y2="56" stroke="var(--muted)" stroke-width=".7"/><line x1="111.5" y1="42" x2="117.2" y2="56" stroke="var(--muted)" stroke-width=".7"/><circle cx="111.5" cy="42" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><line x1="134.5" y1="42" x2="128.8" y2="56" stroke="var(--muted)" stroke-width=".7"/><line x1="134.5" y1="42" x2="140.2" y2="56" stroke="var(--muted)" stroke-width=".7"/><circle cx="134.5" cy="42" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><line x1="157.5" y1="42" x2="151.8" y2="56" stroke="var(--muted)" stroke-width=".7"/><line x1="157.5" y1="42" x2="163.2" y2="56" stroke="var(--muted)" stroke-width=".7"/><circle cx="157.5" cy="42" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><line x1="180.5" y1="42" x2="174.8" y2="56" stroke="var(--muted)" stroke-width=".7"/><line x1="180.5" y1="42" x2="186.2" y2="56" stroke="var(--muted)" stroke-width=".7"/><circle cx="180.5" cy="42" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="105.8" cy="56" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="117.2" cy="56" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="128.8" cy="56" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="140.2" cy="56" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="151.8" cy="56" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="163.2" cy="56" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="174.8" cy="56" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="186.2" cy="56" r="2.6" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><text x="146.0" y="76" font-size="8" text-anchor="middle" fill="var(--ink)">درختِ ۴ طبقه</text></svg><svg viewBox="0 0 200 82" style="width:100%;max-width:300px;display:block;margin:6px auto"><line x1="25.0" y1="18" x2="55.0" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="25.0" y1="18" x2="55.0" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="25.0" y1="18" x2="55.0" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="25.0" y1="34" x2="55.0" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="25.0" y1="34" x2="55.0" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="25.0" y1="34" x2="55.0" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="25.0" y1="50" x2="55.0" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="25.0" y1="50" x2="55.0" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="25.0" y1="50" x2="55.0" y2="50" stroke="var(--muted)" stroke-width=".5"/><circle cx="25.0" cy="18" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="25.0" cy="34" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="25.0" cy="50" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="55.0" cy="18" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="55.0" cy="34" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="55.0" cy="50" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><text x="40.0" y="76" font-size="8" text-anchor="middle" fill="var(--ink)">شبکه‌ی ۲ لایه</text><line x1="100.5" y1="18" x2="121.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="100.5" y1="18" x2="121.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="100.5" y1="18" x2="121.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="100.5" y1="34" x2="121.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="100.5" y1="34" x2="121.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="100.5" y1="34" x2="121.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="100.5" y1="50" x2="121.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="100.5" y1="50" x2="121.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="100.5" y1="50" x2="121.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="121.5" y1="18" x2="142.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="121.5" y1="18" x2="142.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="121.5" y1="18" x2="142.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="121.5" y1="34" x2="142.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="121.5" y1="34" x2="142.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="121.5" y1="34" x2="142.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="121.5" y1="50" x2="142.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="121.5" y1="50" x2="142.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="121.5" y1="50" x2="142.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="142.5" y1="18" x2="163.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="142.5" y1="18" x2="163.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="142.5" y1="18" x2="163.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="142.5" y1="34" x2="163.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="142.5" y1="34" x2="163.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="142.5" y1="34" x2="163.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="142.5" y1="50" x2="163.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="142.5" y1="50" x2="163.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="142.5" y1="50" x2="163.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="163.5" y1="18" x2="184.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="163.5" y1="18" x2="184.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="163.5" y1="18" x2="184.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="163.5" y1="34" x2="184.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="163.5" y1="34" x2="184.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="163.5" y1="34" x2="184.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><line x1="163.5" y1="50" x2="184.5" y2="18" stroke="var(--muted)" stroke-width=".5"/><line x1="163.5" y1="50" x2="184.5" y2="34" stroke="var(--muted)" stroke-width=".5"/><line x1="163.5" y1="50" x2="184.5" y2="50" stroke="var(--muted)" stroke-width=".5"/><circle cx="100.5" cy="18" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="100.5" cy="34" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="100.5" cy="50" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="121.5" cy="18" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="121.5" cy="34" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="121.5" cy="50" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="142.5" cy="18" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="142.5" cy="34" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="142.5" cy="50" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="163.5" cy="18" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="163.5" cy="34" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="163.5" cy="50" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="184.5" cy="18" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="184.5" cy="34" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><circle cx="184.5" cy="50" r="3.4" fill="var(--card)" stroke="var(--accent)" stroke-width="1.4"/><text x="142.5" y="76" font-size="8" text-anchor="middle" fill="var(--ink)">شبکه‌ی ۵ لایه</text></svg><p class="ex">درخت چند طبقه باشد؟ شبکه چند لایه؟ این‌ها را مدل یاد نمی‌گیرد؛ ما انتخاب می‌کنیم.</p></div>
+</div>
+<p style="margin-top:10px">هایپرپارامتر را چطور انتخاب کنیم؟ چند حالت را آموزش می‌دهیم و روی داده‌ی <b>سنجش</b> (بخش ۱۵) مقایسه می‌کنیم. بهترین را نگه می‌داریم.</p>
+</section>
+
+<section class="part">
+<h2>بعدی: مدل‌ها، یکی‌یکی</h2>
+<p>هر مدل یک صفحه‌ی جدا دارد، از تصویر کلی تا جزئیات و سؤال‌های مصاحبه:</p>
+<ul><li><a href="linear-regression.html">رگرسیون خطی</a></li><li><a href="logistic-regression.html">رگرسیون لجستیک</a></li><li><a href="decision-tree.html">درخت تصمیم</a></li><li><a href="random-forest.html">جنگل تصادفی</a></li><li><a href="gradient-boosting.html">گرادیان بوستینگ</a></li><li><a href="knn.html">نزدیک‌ترین همسایه‌ها (k-NN)</a></li><li><a href="kmeans.html">خوشه‌بندی K-Means</a></li><li><a href="pca.html">PCA: کم کردن ابعاد</a></li><li><a href="naive-bayes.html">بیز ساده</a></li><li><a href="svm.html">ماشین بردار پشتیبان (SVM)</a></li><li><a href="neural-network.html">شبکه‌ی عصبی</a></li><li><a href="embeddings.html">Embedding: کلمه‌ها به بردار</a></li><li><a href="cnn.html">شبکه‌ی کانولوشنی (CNN)</a></li><li><a href="rnn.html">شبکه‌ی بازگشتی (RNN)</a></li><li><a href="transformer.html">ترنسفورمر و Attention</a></li><li><a href="llm.html">مدل‌های زبانی بزرگ (LLM)</a></li><li><a href="recommender.html">سیستم‌های پیشنهاد</a></li><li><a href="gradient-descent.html">گرادیان کاهشی</a> (روشی که مدل‌ها با آن یاد می‌گیرند)</li></ul>
+</section>
+</main>
+<script>
+const H = [[60, 3300], [75, 4200], [90, 4600], [100, 5300], [120, 6100], [140, 7400]]; // متراژ، قیمت (میلیون)
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d'), w = document.getElementById('w'), b = document.getElementById('b');
+const fa = n => Math.round(n).toLocaleString('fa-IR');
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const mae = (W, B) => H.reduce((s, [x, y]) => s + Math.abs(W * x + B - y), 0) / H.length;
+function draw() {
+  const W = cv.clientWidth, Ht = Math.round(W * 0.5), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.height = Ht + 'px'; ctx.setTransform(r, 0, 0, r, 0, 0);
+  const X = x => 40 + (x - 40) / 120 * (W - 50), Y = y => Ht - 28 - y / 8500 * (Ht - 40);
+  ctx.clearRect(0, 0, W, Ht);
+  ctx.strokeStyle = css('line'); ctx.lineWidth = 1; ctx.font = '12px Vazirmatn'; ctx.fillStyle = css('muted');
+  for (let x = 40; x <= 160; x += 20) { ctx.beginPath(); ctx.moveTo(X(x), Y(0)); ctx.lineTo(X(x), Y(8500)); ctx.stroke(); ctx.textAlign = 'center'; ctx.fillText(fa(x), X(x), Ht - 10); }
+  for (let y = 0; y <= 8000; y += 2000) { ctx.beginPath(); ctx.moveTo(X(40), Y(y)); ctx.lineTo(X(160), Y(y)); ctx.stroke(); ctx.textAlign = 'right'; ctx.fillText(fa(y), 36, Y(y) + 4); }
+  const Wv = +w.value, Bv = +b.value;
+  ctx.strokeStyle = css('red'); ctx.lineWidth = 2;
+  H.forEach(([x, y]) => { ctx.beginPath(); ctx.moveTo(X(x), Y(y)); ctx.lineTo(X(x), Y(Wv * x + Bv)); ctx.stroke(); });
+  ctx.strokeStyle = css('accent'); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(X(40), Y(Wv * 40 + Bv)); ctx.lineTo(X(160), Y(Wv * 160 + Bv)); ctx.stroke();
+  ctx.fillStyle = css('blue'); H.forEach(([x, y]) => { ctx.beginPath(); ctx.arc(X(x), Y(y), 6, 0, 7); ctx.fill(); });
+  document.getElementById('wv').textContent = fa(Wv); document.getElementById('bv').textContent = fa(Bv);
+  document.getElementById('err').innerHTML = `میانگینِ خطا: <b>${fa(mae(Wv, Bv))} میلیون</b> برای هر خانه`;
+}
+// gradient descent on mean squared error, in small animated steps (inputs scaled so both knobs move at a sensible speed)
+document.getElementById('auto').onclick = () => {
+  let Wv = +w.value, Bv = +b.value, k = 0;
+  const step = () => {
+    let gw = 0, gb = 0;
+    H.forEach(([x, y]) => { const e = Wv * x + Bv - y; gw += 2 * e * x / H.length; gb += 2 * e / H.length; });
+    Wv -= 0.00005 * gw; Bv -= 0.3 * gb;
+    w.value = Wv; b.value = Bv; draw();
+    if (++k < 120) requestAnimationFrame(step);
+  };
+  step();
+};
+w.oninput = b.oninput = draw; addEventListener('resize', draw); draw();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

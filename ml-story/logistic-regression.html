@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>رگرسیون لجستیک</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+h3 { font-size: 17px; margin: 0 0 6px; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.ctl button { margin: 0; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.cm { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4px; max-width: 360px; margin: 8px auto; font-size: 14px; text-align: center; }
+.cm div { padding: 8px 4px; border-radius: 8px; background: var(--soft); }
+.cm .h { background: none; color: var(--muted); font-size: 12px; }
+.cm .ok { background: color-mix(in srgb, var(--accent) 30%, var(--card)); }
+.cm .bad { background: color-mix(in srgb, var(--red) 25%, var(--card)); }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="linear-regression.html">رگرسیون خطی</a> · <a href="decision-tree.html">بعدی: درخت تصمیم ←</a></p>
+<h1>رگرسیون لجستیک <span class="en">(Logistic Regression)</span></h1>
+<p class="sub">مدلی برای جواب‌های «بله یا نه». اسمش «رگرسیون» است ولی کارش دسته‌بندی است. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p>رگرسیون خطی یک <b>عدد</b> پیش‌بینی می‌کرد. خیلی از سؤال‌ها ولی جوابِ <b>بله یا نه</b> دارند:</p>
+<ul class="ex">
+<li>این ایمیل اسپم است؟</li>
+<li>این مشتری خرید می‌کند؟</li>
+<li>این تراکنش تقلب است؟</li>
+<li>این بیمار این بیماری را دارد؟</li>
+</ul>
+<p>رگرسیون لجستیک به‌جای «بله» یا «نه»، یک <b>احتمال</b> می‌دهد: «۸۰٪ احتمال دارد بله باشد». بعد ما تصمیم می‌گیریم از چند درصد به بالا «بله» بگوییم.</p>
+<div class="key">مثالِ این صفحه: <b>یک دانش‌آموز با این تعداد ساعت مطالعه، در امتحان قبول می‌شود یا نه؟</b></div>
+<p>چرا مهم است: ساده، سریع، قابل فهم، و هنوز یکی از پرکاربردترین مدل‌ها در صنعت (مثلاً پیش‌بینیِ کلیک روی تبلیغ). و یک نورونِ شبکه‌ی عصبی دقیقاً همین است.</p>
+</section>
+
+<section>
+<h2>چرا رگرسیون خطی کافی نیست؟</h2>
+<p>۱۶ دانش‌آموز داریم. قبول = ۱، رد = ۰. دو مدل کنار هم:</p>
+<div class="kinds">
+<div><p><b>رگرسیون خطی</b></p><canvas id="cmpA"></canvas><p class="ex">برای ۰ ساعت می‌گوید <b>−۰٫۱۸</b> و برای ۹ ساعت <b>۱٫۲۳</b>. احتمالِ منفی یا بیشتر از ۱ معنی ندارد!</p></div>
+<div><p><b>رگرسیون لجستیک</b></p><canvas id="cmpB"></canvas><p class="ex">یک منحنیِ <b>S</b> شکل که همیشه بینِ ۰ و ۱ می‌ماند. برای ۲ ساعت ۴٪، برای ۶ ساعت ۹۳٪.</p></div>
+</div>
+</section>
+
+<section>
+<h2>تابع سیگموید: هر عدد را بین ۰ و ۱ ببر</h2>
+<p><b>ایده:</b> اول همان کارِ رگرسیون خطی را بکن: \(z = w\,x + b\). این \(z\) هر عددی می‌تواند باشد. بعد آن را از یک تابع رد کن که هر عدد را به یک احتمال بین ۰ و ۱ تبدیل کند:</p>
+<div class="f">\[ p = \sigma(z) = \frac{1}{1 + e^{-z}} \]</div>
+<div dir="ltr"><table>
+<tr><th>z</th><td>−6</td><td>−2</td><td>0</td><td>2</td><td>6</td></tr>
+<tr><th>σ(z)</th><td>0.002</td><td>0.12</td><td><b>0.5</b></td><td>0.88</td><td>0.998</td></tr>
+</table></div>
+<p class="ex" style="margin-top:6px">z خیلی منفی ← نزدیکِ ۰. z صفر ← دقیقاً ۰٫۵. z خیلی مثبت ← نزدیکِ ۱.</p>
+<p style="margin-top:12px"><b>خودتان امتحان کنید:</b> w و b را تغییر بدهید و ببینید منحنی چطور عوض می‌شود:</p>
+<div class="box">
+<canvas id="sig"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>قبول (۱)</span><span><i style="background:var(--red)"></i>رد (۰)</span><span><i style="background:var(--accent)"></i>احتمالِ قبولی</span></div>
+<label>w (شیب) <input id="sw" type="range" min="0" max="4" step="0.05" value="0.6"><b id="swv"></b></label>
+<label>b <input id="sb" type="range" min="-16" max="2" step="0.1" value="-2"><b id="sbv"></b></label>
+<div class="err" id="sinfo"></div>
+<div class="ctl"><button id="sfit">بگذار کامپیوتر پیدا کند</button></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>w</b></p><p class="ex">تیزیِ S. w بزرگ ← پله‌ی تیز (مدل مطمئن). w کوچک ← شیبِ آرام.</p></div>
+<div><p><b>b</b></p><p class="ex">جای S را چپ و راست می‌برد؛ یعنی از چند ساعت به بعد احتمال از ۵۰٪ بیشتر شود.</p></div>
+</div>
+</section>
+
+<section>
+<h2>از احتمال به تصمیم: مرز</h2>
+<p>معمولاً می‌گوییم: اگر \(p \ge 0.5\) ← «قبول». چون \(\sigma(z) = 0.5\) دقیقاً وقتی است که \(z = 0\)، مرز جایی است که:</p>
+<div class="f">\[ w\,x + b = 0 \quad \Rightarrow \quad x = -\frac{b}{w} \]</div>
+<p>با بهترین وزن‌ها (\(w = 1.46\)، \(b = -6.22\)): مرز = \(6.22 / 1.46 \approx\) <b>۴٫۲۵ ساعت</b>. کمتر از این ← «رد»، بیشتر ← «قبول».</p>
+<p>با <b>دو</b> ویژگی، مرز یک <b>خط</b> است؛ با سه ویژگی یک صفحه. به همین دلیل می‌گویند رگرسیون لجستیک یک <b>دسته‌بندِ خطی</b> <span class="en">(Linear Classifier)</span> است:</p>
+<div class="box">
+<canvas id="two"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>قبول</span><span><i style="background:var(--red)"></i>رد</span><span>رنگِ زمینه = احتمالِ قبولی</span></div>
+<div class="ctl"><button id="tfit">آموزش (۲۰۰ قدم)</button><button id="treset">از نو</button></div>
+<div class="err" id="tinfo"></div>
+</div>
+<p class="ex">محورِ افقی ساعتِ مطالعه، محورِ عمودی ساعتِ خواب. خط، جایی است که احتمال دقیقاً ۵۰٪ است.</p>
+<p>عددِ ۰٫۵ اجباری نیست. اگر «جا انداختنِ» یک بیمار خیلی بد است، مرز را پایین‌تر می‌گذاریم (پایین‌تر، در بخشِ «مدل چقدر خوب است؟»).</p>
+</section>
+
+<section>
+<h2>تابع خطا: چرا MSE نه؟</h2>
+<p>در رگرسیون خطی از MSE استفاده کردیم. این‌جا از تابعی به اسم <b>Log Loss</b> <span class="en">(یا Binary Cross-Entropy)</span> استفاده می‌کنیم:</p>
+<div class="f">\[ L = -\frac{1}{n} \sum_{i=1}^{n} \Big[\, y_i \log p_i + (1 - y_i) \log (1 - p_i) \,\Big] \]</div>
+<p>ترسناک به نظر می‌رسد، ولی ساده است. برای هر دانش‌آموز فقط <b>یکی</b> از دو تکه فعال است:</p>
+<div class="kinds">
+<div><p><b>اگر واقعاً قبول شده (y = 1)</b></p><div class="f">\[ \text{penalty} = -\log p \]</div></div>
+<div><p><b>اگر واقعاً رد شده (y = 0)</b></p><div class="f">\[ \text{penalty} = -\log (1 - p) \]</div></div>
+</div>
+<p style="margin-top:10px"><b>با عدد:</b> دانش‌آموزی واقعاً قبول شده. مدل چقدر جریمه می‌شود؟</p>
+<div dir="ltr"><table>
+<tr><th>model's p (pass)</th><th>Log Loss: −log p</th><th>MSE: (1 − p)²</th></tr>
+<tr><td>0.99 (sure, right)</td><td>0.01</td><td>0.0001</td></tr>
+<tr><td>0.9</td><td>0.11</td><td>0.01</td></tr>
+<tr><td>0.5 (unsure)</td><td>0.69</td><td>0.25</td></tr>
+<tr><td>0.1 (wrong)</td><td>2.3</td><td>0.81</td></tr>
+<tr><td>0.01 (sure, wrong)</td><td><b>4.6</b></td><td>0.98</td></tr>
+</table></div>
+<canvas id="lossc" style="margin-top:8px"></canvas>
+<div class="legend" style="justify-content:center"><span><i style="background:var(--blue)"></i>−log p (y = 1)</span><span><i style="background:var(--red)"></i>−log(1−p) (y = 0)</span></div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>دلیل ۱: اشتباهِ مطمئن را خیلی جریمه می‌کند</b></p><p class="ex">وقتی مدل با اطمینان اشتباه می‌کند (p = 0.01 برای کسی که قبول شده)، Log Loss به سمتِ بی‌نهایت می‌رود. MSE حداکثر ۱ است؛ یعنی مدلی که با اطمینان اشتباه می‌کند، تقریباً همان‌قدر جریمه می‌شود که مدلی که فقط کمی اشتباه می‌کند.</p></div>
+<div><p><b>دلیل ۲: یک کاسه‌ی تمیز</b></p><p class="ex">MSE بعد از سیگموید، چند گودال و دشتِ صاف می‌سازد (غیرمحدب) و گرادیان کاهشی گیر می‌کند. Log Loss همیشه یک کاسه با یک کف است (محدب).</p></div>
+</div>
+<details class="drop"><summary><b>دلیل ۳ (عمیق‌تر): Log Loss از کجا آمده؟</b></summary>
+<p>مدل برای هر دانش‌آموز می‌گوید احتمالِ قبولی \(p_i\) است. احتمالِ این‌که <b>همین نتیجه‌هایی که واقعاً دیدیم</b> اتفاق بیفتد، ضربِ احتمال‌هاست:</p>
+<div class="f">\[ \prod_{i} p_i^{\,y_i} (1 - p_i)^{\,1 - y_i} \]</div>
+<p>(اگر \(y_i = 1\)، فقط \(p_i\) می‌ماند؛ اگر \(y_i = 0\)، فقط \(1 - p_i\).) بهترین مدل آن است که این عدد را <b>بیشترین</b> کند <span class="en">(Maximum Likelihood)</span>. لگاریتم گرفتن، ضرب را جمع می‌کند، و منفی کردن، «بیشترین» را «کمترین» می‌کند. نتیجه دقیقاً همان Log Loss است. یعنی Log Loss برای دسته‌بندی همان نقشی را دارد که MSE برای خطای نرمال داشت.</p>
+</details>
+</section>
+
+<section>
+<h2>یادگیری: همان گرادیان کاهشی</h2>
+<p>شیبِ Log Loss نسبت به وزن‌ها، به شکلِ جالبی ساده است:</p>
+<div class="f">\[ \frac{\partial L}{\partial w_j} = \frac{1}{n} \sum_{i=1}^{n} (p_i - y_i)\, x_{ij} \qquad\qquad \frac{\partial L}{\partial b} = \frac{1}{n} \sum_{i=1}^{n} (p_i - y_i) \]</div>
+<p>دقیقاً همان شکلِ رگرسیون خطی: <b>(پیش‌بینی − واقعی) × ویژگی</b>. فقط این‌جا پیش‌بینی \(p\) از سیگموید آمده.</p>
+<p class="ex">برای رگرسیون لجستیک فرمولِ مستقیم (مثلِ Normal Equation) وجود ندارد؛ پس حتماً با گرادیان کاهشی (یا روش‌های مشابه) آموزش می‌بیند. دکمه‌ی «بگذار کامپیوتر پیدا کند» در شکلِ سیگموید همین کار را می‌کند.</p>
+</section>
+
+<section>
+<h2>معنیِ وزن‌ها: شانس</h2>
+<p>در رگرسیون خطی، w یعنی «هر واحد بیشتر، y چقدر بیشتر». این‌جا معنی کمی فرق دارد. اول یک کلمه: <b>شانس</b> <span class="en">(Odds)</span>:</p>
+<div class="f">\[ \text{odds} = \frac{p}{1 - p} \]</div>
+<p class="ex">احتمالِ ۸۰٪ یعنی شانسِ ۸۰ به ۲۰، یعنی ۴. احتمالِ ۵۰٪ یعنی شانسِ ۱.</p>
+<p>اگر کمی جبر بزنیم، معلوم می‌شود \(z\) همان <b>لگاریتمِ شانس</b> است:</p>
+<div class="f">\[ \log \frac{p}{1-p} = w\,x + b \]</div>
+<p>پس: <b>هر ساعت مطالعه‌ی بیشتر، شانسِ قبولی را \(e^{w}\) برابر می‌کند.</b> با \(w = 1.46\): \(e^{1.46} \approx 4.3\). یعنی هر ساعت بیشتر، شانسِ قبولی را حدوداً <b>۴٫۳ برابر</b> می‌کند.</p>
+<p class="ex">دقت: «شانس ۴٫۳ برابر» با «احتمال ۴٫۳ برابر» فرق دارد. از ۴ به ۵ ساعت، احتمال از ۴۱٪ به حدود ۷۵٪ می‌رسد، نه ۴٫۳ برابر.</p>
+</section>
+
+<section>
+<h2>بیشتر از دو دسته: Softmax</h2>
+<p>اگر جواب سه دسته یا بیشتر باشد (مثلاً گربه، سگ، پرنده)، برای <b>هر</b> دسته یک \(z\) حساب می‌کنیم و آن‌ها را با <b>Softmax</b> به احتمال‌هایی تبدیل می‌کنیم که جمعشان ۱ است:</p>
+<div class="f">\[ p_k = \frac{e^{z_k}}{\sum_j e^{z_j}} \]</div>
+<div dir="ltr"><table>
+<tr><th></th><th>cat</th><th>dog</th><th>bird</th></tr>
+<tr><td>z</td><td>2.0</td><td>1.0</td><td>0.1</td></tr>
+<tr><td>e<sup>z</sup></td><td>7.39</td><td>2.72</td><td>1.11</td></tr>
+<tr><td>p</td><td><b>0.66</b></td><td>0.24</td><td>0.10</td></tr>
+</table></div>
+<p class="ex" style="margin-top:6px">تابع خطا هم همان Log Loss است برای چند دسته <span class="en">(Categorical Cross-Entropy)</span>: \(-\log p\) برای دسته‌ی درست. با دو دسته، Softmax دقیقاً همان سیگموید می‌شود. لایه‌ی آخرِ تقریباً همه‌ی شبکه‌های عصبیِ دسته‌بندی، و حتی مدل‌های زبانی (انتخابِ کلمه‌ی بعدی)، همین Softmax است.</p>
+</section>
+
+<section>
+<h2>مدل چقدر خوب است؟</h2>
+<p>برای دسته‌بندی، «درصدِ درست» کافی نیست. باید <b>نوعِ</b> اشتباه را ببینیم. چهار حالت داریم:</p>
+<div class="kinds">
+<div><p><b>مثبتِ درست</b> <span class="en">(TP)</span></p><p class="ex">گفت قبول، قبول شد.</p></div>
+<div><p><b>منفیِ درست</b> <span class="en">(TN)</span></p><p class="ex">گفت رد، رد شد.</p></div>
+<div><p><b>مثبتِ اشتباه</b> <span class="en">(FP)</span></p><p class="ex">گفت قبول، رد شد. (هشدارِ اشتباه)</p></div>
+<div><p><b>منفیِ اشتباه</b> <span class="en">(FN)</span></p><p class="ex">گفت رد، قبول شد. (جا انداختن)</p></div>
+</div>
+<p style="margin-top:10px">مرز را جابه‌جا کنید و ببینید چه عوض می‌شود:</p>
+<div class="box">
+<label>مرز <input id="th" type="range" min="0.05" max="0.95" step="0.05" value="0.5"><b id="thv"></b></label>
+<div class="cm" id="cm"></div>
+<div class="err" id="cminfo"></div>
+</div>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>Accuracy</b></p><div class="f">\[ \frac{TP + TN}{\text{all}} \]</div><p class="ex">چند درصد درست. با داده‌ی نامتوازن گول‌زننده است: اگر ۹۹٪ ایمیل‌ها عادی باشند، مدلی که همیشه بگوید «عادی» ۹۹٪ درست است و هیچ اسپمی پیدا نمی‌کند.</p></div>
+<div><p><b>Precision</b></p><div class="f">\[ \frac{TP}{TP + FP} \]</div><p class="ex">از کسانی که گفت «قبول»، چند درصد واقعاً قبول شدند؟ مهم وقتی هشدارِ اشتباه گران است (ایمیلِ مهم در اسپم).</p></div>
+<div><p><b>Recall</b></p><div class="f">\[ \frac{TP}{TP + FN} \]</div><p class="ex">از کسانی که واقعاً قبول شدند، چند درصد را پیدا کرد؟ مهم وقتی جا انداختن گران است (بیماری، تقلب).</p></div>
+<div><p><b>F1</b></p><div class="f">\[ \frac{2 \cdot P \cdot R}{P + R} \]</div><p class="ex">یک عدد برای تعادلِ این دو.</p></div>
+</div>
+<p class="ex" style="margin-top:8px">اگر همه‌ی مرزها را امتحان کنیم و Recall را در برابر نرخِ هشدارِ اشتباه بکشیم، منحنیِ <b>ROC</b> درمی‌آید. مساحتِ زیرش <span class="en">(AUC)</span> یک عدد بین ۰٫۵ (شانسی) و ۱ (عالی) است که به انتخابِ مرز بستگی ندارد.</p>
+</section>
+
+<section>
+<h2>دام‌ها</h2>
+<div class="kinds">
+<div><p><b>داده‌ی نامتوازن</b></p><svg viewBox="0 0 120 40" style="width:100%;max-width:200px;display:block;margin:4px auto" id="imb"></svg><p class="ex">۹۸ ایمیلِ عادی، ۲ اسپم. مدل یاد می‌گیرد همیشه بگوید «عادی». درمان: وزنِ بیشتر برای دسته‌ی کم <span class="en">(class_weight)</span>، نمونه‌برداریِ دوباره، پایین آوردنِ مرز، و سنجیدن با Precision، Recall یا AUC به‌جای Accuracy.</p></div>
+<div><p><b>مرزِ غیرخطی</b></p><svg viewBox="0 0 120 60" style="width:100%;max-width:200px;display:block;margin:4px auto" id="circ"></svg><p class="ex">قبولی‌ها وسط، ردی‌ها دورتادور. یک خط نمی‌تواند جدایشان کند. درمان: ویژگیِ جدید (مثلاً \(x_1^2 + x_2^2\))، یا مدلِ غیرخطی مثل درخت.</p></div>
+<div><p><b>جداییِ کامل</b> <span class="en">(Perfect Separation)</span></p><svg viewBox="0 0 120 60" style="width:100%;max-width:200px;display:block;margin:4px auto" id="sep"></svg><p class="ex">اگر یک خط همه را بی‌اشتباه جدا کند، مدل برای کمتر کردنِ خطا w را مدام بزرگ‌تر می‌کند تا S به یک پله‌ی تیز تبدیل شود؛ وزن‌ها به بی‌نهایت می‌روند. درمان: جریمه‌ی L2 (پیش‌فرضِ scikit-learn).</p></div>
+<div><p><b>احتمال‌های نامطمئن</b></p><p class="ex">خروجی، احتمالِ «واقعی» نیست مگر مدل <b>کالیبره</b> باشد؛ یعنی از بینِ همه‌ی جاهایی که گفته ۷۰٪، واقعاً حدود ۷۰٪ بله باشند. رگرسیون لجستیک معمولاً خوب کالیبره است؛ خیلی از مدل‌های دیگر نه.</p></div>
+</div>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>از صفر با NumPy:</b></p>
+<pre>import numpy as np
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+def fit(X, y, lr=0.1, epochs=1000, lam=0.0):
+    X = (X - X.mean(0)) / X.std(0)          # standardize
+    n, d = X.shape
+    w, b = np.zeros(d), 0.0
+    for _ in range(epochs):
+        p = sigmoid(X @ w + b)               # predicted probabilities
+        w -= lr * (X.T @ (p - y) / n + lam * w)
+        b -= lr * (p - y).mean()
+    return w, b
+
+def log_loss(y, p, eps=1e-12):
+    p = np.clip(p, eps, 1 - eps)            # avoid log(0)
+    return -np.mean(y * np.log(p) + (1 - y) * np.log(1 - p))</pre>
+<p><b>با scikit-learn:</b></p>
+<pre>from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics import classification_report, roc_auc_score
+
+model = make_pipeline(StandardScaler(), LogisticRegression(C=1.0, class_weight="balanced"))
+model.fit(X_train, y_train)
+p = model.predict_proba(X_test)[:, 1]          # probability of class 1
+print(classification_report(y_test, p >= 0.5), roc_auc_score(y_test, p))</pre>
+<p class="ex">در scikit-learn، <code>C</code> برعکسِ قدرتِ جریمه است: C کوچک‌تر ← جریمه‌ی بیشتر.</p>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+
+<details><summary>What is logistic regression, and why is it called regression if it does classification?</summary>
+<p>It models the <b>probability</b> of the positive class:</p>
+<div class="f">\[ p = \sigma(\mathbf{w}^\top \mathbf{x} + b) = \frac{1}{1 + e^{-(\mathbf{w}^\top \mathbf{x} + b)}} \]</div>
+<p>It is a regression on the <b>log-odds</b>: \(\log\frac{p}{1-p} = \mathbf{w}^\top \mathbf{x} + b\) is a linear model, just like linear regression. It becomes a classifier only when you add a threshold (e.g. predict 1 if \(p \ge 0.5\)).</p></details>
+
+<details><summary>Why not use linear regression for classification?</summary>
+<p>Three problems: (1) predictions are not bounded, e.g. −0.18 for 0 hours and 1.23 for 9 hours in our example, which are not probabilities; (2) extreme points far from the boundary pull the line and move the decision threshold even though they are already correctly classified; (3) MSE treats the 0/1 labels as numbers with normal noise, which they are not.</p></details>
+
+<details><summary>Why log loss (cross-entropy) instead of MSE?</summary>
+<div class="f">\[ L = -\frac{1}{n}\sum \big[y\log p + (1-y)\log(1-p)\big] \]</div>
+<p><b>1. Convexity:</b> with a sigmoid, MSE gives a non-convex surface with flat regions; log loss is convex, so gradient descent finds the single minimum.</p>
+<p><b>2. Gradients:</b> the gradient of log loss is \((p - y)\,x\): large when the model is very wrong. With MSE, the gradient has an extra factor \(\sigma'(z) = p(1-p)\), which is almost zero when the model is confidently wrong, so learning stalls exactly when it should be fastest.</p>
+<p><b>3. Confident mistakes:</b> predicting 0.01 for a true 1 costs 4.6 under log loss but at most 0.98 under MSE.</p>
+<p><b>4. Maximum likelihood:</b> log loss is the negative log-likelihood of Bernoulli labels, so minimising it gives the most likely model.</p>
+<p class="src">Analytics Vidhya; Towards AI; DeepLearning.AI community</p></details>
+
+<details><summary>Derive the gradient of the log loss.</summary>
+<p>For one example, \(L = -[y\log p + (1-y)\log(1-p)]\) with \(p = \sigma(z)\), \(z = \mathbf{w}^\top\mathbf{x} + b\). Use \(\sigma'(z) = p(1-p)\):</p>
+<div class="f">\[ \frac{\partial L}{\partial p} = -\frac{y}{p} + \frac{1-y}{1-p} \qquad \frac{\partial p}{\partial z} = p(1-p) \]</div>
+<div class="f">\[ \frac{\partial L}{\partial z} = \Big(-\frac{y}{p} + \frac{1-y}{1-p}\Big)p(1-p) = -y(1-p) + (1-y)p = p - y \]</div>
+<p>So \(\frac{\partial L}{\partial \mathbf{w}} = (p - y)\,\mathbf{x}\) and \(\frac{\partial L}{\partial b} = p - y\): the same form as linear regression. The sigmoid's derivative cancels out, which is why there is no vanishing-gradient problem here.</p></details>
+
+<details><summary>How do you interpret the coefficients?</summary>
+<p>A coefficient is the change in <b>log-odds</b> for a one-unit increase of that feature, holding others fixed. Exponentiate it to get an <b>odds ratio</b>: \(e^{w}\). In our example \(w = 1.46\), so each extra hour multiplies the odds of passing by \(e^{1.46} \approx 4.3\). It does <i>not</i> multiply the probability by 4.3: going from 4 to 5 hours moves the probability from about 41% to about 75%.</p></details>
+
+<details><summary>What is the decision boundary of logistic regression?</summary>
+<p>The set of points where \(p = 0.5\), i.e. \(\mathbf{w}^\top\mathbf{x} + b = 0\): a line in 2D, a plane in 3D, a hyperplane in general. So logistic regression is a <b>linear classifier</b>. With threshold \(t\) the boundary is \(\mathbf{w}^\top\mathbf{x} + b = \log\frac{t}{1-t}\), still linear. For curved boundaries add features (squares, products) or use a non-linear model.</p></details>
+
+<details><summary>How do you handle class imbalance?</summary>
+<ul><li><b>Measure the right thing:</b> precision, recall, F1, PR-AUC or ROC-AUC, not accuracy.</li>
+<li><b>Reweight:</b> give the rare class a larger weight in the loss (<code>class_weight="balanced"</code>).</li>
+<li><b>Resample:</b> oversample the rare class (e.g. SMOTE) or undersample the common one.</li>
+<li><b>Move the threshold:</b> pick it on the validation set for the precision/recall you need.</li></ul>
+<p>Example: 98 normal emails and 2 spam; "always normal" scores 98% accuracy and 0% recall.</p></details>
+
+<details><summary>Precision vs recall: which matters more?</summary>
+<div class="f">\[ \text{Precision} = \frac{TP}{TP + FP} \qquad \text{Recall} = \frac{TP}{TP + FN} \]</div>
+<p>It depends on the cost of each mistake. Spam filter: a false positive hides a real email, so favour precision. Cancer screening or fraud: a false negative misses a case, so favour recall. Lowering the threshold raises recall and lowers precision. F1 is their harmonic mean when both matter.</p></details>
+
+<details><summary>What is ROC-AUC? When is PR-AUC better?</summary>
+<p>The ROC curve plots recall (true positive rate) against the false positive rate for every threshold. AUC is the area under it: the probability that a random positive gets a higher score than a random negative. 0.5 is random, 1 is perfect, and it does not depend on the threshold. With heavy imbalance, ROC-AUC can look great while precision is poor, because the false positive rate stays small; then the precision-recall curve and PR-AUC are more informative.</p></details>
+
+<details><summary>What happens with perfectly separable data?</summary>
+<p>The log loss keeps decreasing as the weights grow, because a steeper sigmoid makes the predictions closer to exactly 0 and 1. The weights diverge to infinity and the solution is unstable. Regularisation (L2, the default in scikit-learn) fixes this by penalising large weights.</p></details>
+
+<details><summary>Logistic regression vs softmax regression?</summary>
+<p>Softmax generalises the sigmoid to \(K\) classes: \(p_k = e^{z_k} / \sum_j e^{z_j}\), trained with categorical cross-entropy \(-\log p_{\text{true}}\). With \(K = 2\) it reduces exactly to the sigmoid. The alternative, one-vs-rest, trains \(K\) separate binary models; softmax trains them jointly and gives probabilities that sum to 1.</p></details>
+
+<details><summary>Is logistic regression a linear model? Can it learn non-linear patterns?</summary>
+<p>It is linear in the features (linear decision boundary, linear log-odds). It can learn non-linear patterns only through engineered features, e.g. \(x^2\), \(x_1 x_2\), or binned values. For complex interactions, trees, boosting or neural networks are better.</p></details>
+
+<details><summary>Implement logistic regression from scratch.</summary>
+<p>See the NumPy code above. Points interviewers check: a numerically stable sigmoid and log (clip probabilities to avoid \(\log 0\)), vectorised gradients \(\frac{1}{n}X^\top(p - y)\), the bias gradient, feature scaling, optional L2 term, and a convergence check on the loss.</p></details>
+
+<p class="ex" style="margin-top:12px">Sources: <a href="https://www.techprep.app/blog/logistic-regression-interview-questions">TechPrep</a> · <a href="https://pub.towardsai.net/top-20-logistic-regression-interview-questions-and-answers-c504327b0199">Towards AI</a> · <a href="https://www.analyticsvidhya.com/?p=72908">Analytics Vidhya (log loss vs MSE)</a> · <a href="https://community.deeplearning.ai/t/logistic-regression-vs-linear-regression-in-using-mse/1053">DeepLearning.AI community</a> · <a href="https://buildml.substack.com/p/crash-course-to-crack-machine-learning-c5b">BuildML</a> · <a href="https://www.upgrad.com/blog/logistic-regression-interview-questions-answers-for-freshers-experienced">upGrad</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const sig = z => 1 / (1 + Math.exp(-z));
+const HX = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9], HY = [0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1];
+const mk = (cv, ratio, maxw) => { const W = Math.max(220, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+// axes for hours (0..10) vs probability (-0.3..1.3)
+const hoursPlot = (cv, ratio, maxw, f, ylo = -0.35, yhi = 1.35) => {
+  const [c, W, Ht] = mk(cv, ratio, maxw), X = x => 22 + x / 10 * (W - 30), Y = y => Ht - 18 - (y - ylo) / (yhi - ylo) * (Ht - 26);
+  c.strokeStyle = css('line'); c.setLineDash([3, 3]); [0, 1].forEach(v => { c.beginPath(); c.moveTo(X(0), Y(v)); c.lineTo(X(10), Y(v)); c.stroke(); }); c.setLineDash([]);
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'right'; c.fillText('۱', X(0) - 4, Y(1) + 4); c.fillText('۰', X(0) - 4, Y(0) + 4);
+  c.textAlign = 'center'; for (let x = 0; x <= 10; x += 2) c.fillText(fa(x), X(x), Ht - 4);
+  if (f) { c.strokeStyle = css('accent'); c.lineWidth = 2.5; c.beginPath(); for (let k = 0; k <= 200; k++) { const x = k / 20, y = Math.max(ylo, Math.min(yhi, f(x))); k ? c.lineTo(X(x), Y(y)) : c.moveTo(X(x), Y(y)); } c.stroke(); }
+  HX.forEach((x, i) => { c.fillStyle = css(HY[i] ? 'blue' : 'red'); c.beginPath(); c.arc(X(x), Y(HY[i]), 4.5, 0, 7); c.fill(); });
+  return [c, X, Y, W, Ht];
+};
+
+// 1) linear vs logistic, side by side
+const cmp = () => { hoursPlot(document.getElementById('cmpA'), 0.7, 320, x => 0.157 * x - 0.184); hoursPlot(document.getElementById('cmpB'), 0.7, 320, x => sig(1.462 * x - 6.22)); };
+
+// 2) sigmoid explorer + training
+const sw = document.getElementById('sw'), sb = document.getElementById('sb');
+const ll = (w, b) => -HX.reduce((a, x, i) => { const p = Math.min(1 - 1e-12, Math.max(1e-12, sig(w * x + b))); return a + (HY[i] ? Math.log(p) : Math.log(1 - p)); }, 0) / HX.length;
+const sigDraw = () => { const w = +sw.value, b = +sb.value;
+  const [c, X, Y] = hoursPlot(document.getElementById('sig'), 0.55, 532, x => sig(w * x + b), -0.1, 1.1);
+  const bd = w > 0 ? -b / w : NaN;
+  if (bd >= 0 && bd <= 10) { c.strokeStyle = css('orange'); c.setLineDash([4, 4]); c.beginPath(); c.moveTo(X(bd), Y(-0.1)); c.lineTo(X(bd), Y(1.1)); c.stroke(); c.setLineDash([]); }
+  document.getElementById('swv').textContent = fa(w, 2); document.getElementById('sbv').textContent = fa(b, 1);
+  document.getElementById('sinfo').innerHTML = `Log Loss: <b>${fa(ll(w, b), 3)}</b>` + (bd >= 0 && bd <= 10 ? ` · مرزِ ۵۰٪ (خط‌چینِ نارنجی): <b>${fa(bd, 2)}</b> ساعت` : ''); };
+sw.oninput = sb.oninput = sigDraw;
+document.getElementById('sfit').onclick = () => { let w = +sw.value, b = +sb.value, k = 0;
+  const step = () => { for (let r = 0; r < 60; r++) { let gw = 0, gb = 0; HX.forEach((x, i) => { const e = sig(w * x + b) - HY[i]; gw += e * x; gb += e; }); w -= 0.08 * gw / 16; b -= 0.08 * gb / 16; }
+    sw.value = w; sb.value = Math.max(-16, b); sigDraw(); if (++k < 80) requestAnimationFrame(step); };
+  step(); };
+
+// 3) two features: hours studied (x) and hours slept (y)
+let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const P2 = Array.from({ length: 40 }, () => { const a = rnd() * 10, s = 3 + rnd() * 6, z = 0.9 * a + 0.8 * s - 9.5 + (rnd() - 0.5) * 3; return [a, s, z > 0 ? 1 : 0]; });
+let tw = [0, 0], tb = 0, tsteps = 0;
+const twoDraw = () => { const [c, W, Ht] = mk(document.getElementById('two'), 0.65, 532), X = a => 20 + a / 10 * (W - 28), Y = s => Ht - 18 - (s - 2) / 8 * (Ht - 26);
+  const cell = 8; for (let px = X(0); px < X(10); px += cell) for (let py = Y(10); py < Y(2); py += cell) {
+    const a = (px + cell / 2 - 20) / (W - 28) * 10, s = 2 + (Ht - 18 - (py + cell / 2)) / (Ht - 26) * 8, p = sig(tw[0] * (a - 5) + tw[1] * (s - 6) + tb);
+    c.fillStyle = css(p >= 0.5 ? 'blue' : 'red'); c.globalAlpha = 0.06 + 0.22 * Math.abs(p - 0.5) * 2; c.fillRect(px, py, cell, cell); }
+  c.globalAlpha = 1;
+  if (tw[1] !== 0) { c.strokeStyle = css('ink'); c.lineWidth = 2; c.beginPath(); for (const a of [0, 10]) { const s = 6 - (tw[0] * (a - 5) + tb) / tw[1]; a ? c.lineTo(X(a), Y(s)) : c.moveTo(X(a), Y(s)); } c.save(); c.rect(X(0), Y(10), X(10) - X(0), Y(2) - Y(10)); c.clip(); c.stroke(); c.restore(); }
+  P2.forEach(([a, s, y]) => { c.fillStyle = css(y ? 'blue' : 'red'); c.beginPath(); c.arc(X(a), Y(s), 4.5, 0, 7); c.fill(); c.strokeStyle = css('card'); c.lineWidth = 1; c.stroke(); });
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; c.fillText('ساعت مطالعه', W / 2, Ht - 3);
+  c.save(); c.translate(9, Ht / 2); c.rotate(-Math.PI / 2); c.fillText('ساعت خواب', 0, 0); c.restore();
+  const acc = P2.filter(([a, s, y]) => (sig(tw[0] * (a - 5) + tw[1] * (s - 6) + tb) >= 0.5) === !!y).length;
+  document.getElementById('tinfo').innerHTML = `قدم: <b>${fa(tsteps)}</b> · درست: <b>${fa(acc)}</b> از ${fa(P2.length)}`; };
+const mean = (k) => P2.reduce((s, p) => s + p[k], 0) / P2.length;
+document.getElementById('tfit').onclick = () => { let k = 0; const step = () => { for (let r = 0; r < 10; r++) { let g = [0, 0], gb = 0;
+    P2.forEach(([a, s, y]) => { const e = sig(tw[0] * (a - 5) + tw[1] * (s - 6) + tb) - y; g[0] += e * (a - 5); g[1] += e * (s - 6); gb += e; });
+    tw = tw.map((w, i) => w - 0.15 * g[i] / P2.length); tb -= 0.5 * gb / P2.length; tsteps++; }
+    twoDraw(); if (++k < 20) requestAnimationFrame(step); }; step(); };
+document.getElementById('treset').onclick = () => { tw = [0, 0]; tb = 0; tsteps = 0; twoDraw(); };
+
+// 4) loss curves
+const lossDraw = () => { const [c, W, Ht] = mk(document.getElementById('lossc'), 0.45, 420), X = p => 16 + p * (W - 24), Y = l => Ht - 16 - Math.min(l, 5) / 5 * (Ht - 24);
+  [['blue', p => -Math.log(p)], ['red', p => -Math.log(1 - p)]].forEach(([col, f]) => { c.strokeStyle = css(col); c.lineWidth = 2.5; c.beginPath();
+    for (let k = 1; k < 200; k++) { const p = k / 200; k > 1 ? c.lineTo(X(p), Y(f(p))) : c.moveTo(X(p), Y(f(p))); } c.stroke(); });
+  c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; [0, 0.5, 1].forEach(p => c.fillText('p=' + p, X(p), Ht - 3)); };
+
+// 5) threshold + confusion matrix, on the fitted one-feature model
+const th = document.getElementById('th');
+const cmDraw = () => { const t = +th.value; let TP = 0, TN = 0, FP = 0, FN = 0;
+  HX.forEach((x, i) => { const yes = sig(1.462 * x - 6.22) >= t; if (yes && HY[i]) TP++; else if (yes) FP++; else if (HY[i]) FN++; else TN++; });
+  document.getElementById('thv').textContent = fa(t * 100) + '٪';
+  document.getElementById('cm').innerHTML = `<div class="h"></div><div class="h">واقعاً قبول</div><div class="h">واقعاً رد</div>
+    <div class="h">گفت قبول</div><div class="ok">TP = ${fa(TP)}</div><div class="bad">FP = ${fa(FP)}</div>
+    <div class="h">گفت رد</div><div class="bad">FN = ${fa(FN)}</div><div class="ok">TN = ${fa(TN)}</div>`;
+  const P = TP + FP ? TP / (TP + FP) : 0, R = TP + FN ? TP / (TP + FN) : 0;
+  document.getElementById('cminfo').innerHTML = `Accuracy: <b>${fa((TP + TN) / 16 * 100)}٪</b> · Precision: <b>${fa(P * 100)}٪</b> · Recall: <b>${fa(R * 100)}٪</b>`; };
+th.oninput = cmDraw;
+
+// 6) small pitfall pictures
+(() => { const imb = document.getElementById('imb'); let h = '';
+  for (let k = 0; k < 100; k++) h += `<rect x="${(k % 25) * 4.7 + 1}" y="${Math.floor(k / 25) * 9 + 2}" width="3.6" height="7" rx="1" fill="${k === 37 || k === 81 ? 'var(--red)' : 'var(--blue)'}" opacity="${k === 37 || k === 81 ? 1 : .45}"/>`;
+  imb.innerHTML = h;
+  let c2 = ''; for (let k = 0; k < 22; k++) { const a = k / 22 * 2 * Math.PI; c2 += `<circle cx="${60 + 24 * Math.cos(a)}" cy="${30 + 22 * Math.sin(a)}" r="2.2" fill="var(--red)"/>`; }
+  for (let k = 0; k < 9; k++) { const a = k / 9 * 2 * Math.PI; c2 += `<circle cx="${60 + 8 * Math.cos(a)}" cy="${30 + 7 * Math.sin(a)}" r="2.2" fill="var(--blue)"/>`; }
+  document.getElementById('circ').innerHTML = c2 + '<circle cx="60" cy="30" r="15" fill="none" stroke="var(--accent)" stroke-dasharray="3 2"/>';
+  let s3 = ''; for (let k = 0; k < 8; k++) { s3 += `<circle cx="${12 + k * 5}" cy="${14 + (k % 3) * 14}" r="2.2" fill="var(--red)"/><circle cx="${74 + k * 5}" cy="${14 + (k % 3) * 14}" r="2.2" fill="var(--blue)"/>`; }
+  document.getElementById('sep').innerHTML = s3 + '<line x1="60" y1="2" x2="60" y2="58" stroke="var(--accent)" stroke-width="2"/>'; })();
+
+const all = () => { cmp(); sigDraw(); twoDraw(); lossDraw(); cmDraw(); };
+addEventListener('resize', all); all();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

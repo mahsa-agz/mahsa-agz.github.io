@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>گرادیان کاهشی</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.qa .src { font-size: 12px; color: var(--muted); }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.ctl button { margin: 0; }
+.ctl button.on { background: var(--accent); color: var(--card); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.en-block summary { font-weight: 700; }
+h3 { font-size: 17px; margin: 0 0 6px; }
+</style>
+</head>
+<body>
+<main>
+<h1>گرادیان کاهشی <span class="en">(Gradient Descent)</span></h1>
+<p class="sub">روشی که تقریباً همه‌ی مدل‌ها با آن یاد می‌گیرند. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+<section>
+<h2>تصویر کلی</h2>
+<p>هر مدل یک <b>تابع خطا</b> دارد: یک عدد که می‌گوید مدل با وزن‌های فعلی چقدر اشتباه می‌کند.</p>
+<p>یاد گرفتن یعنی پیدا کردنِ وزن‌هایی که این عدد را <b>کمترین</b> کنند.</p>
+<p>برای مدل‌های ساده گاهی یک فرمولِ مستقیم هست. ولی برای بیشترِ مدل‌ها، مخصوصاً با میلیون‌ها وزن، نیست. پس باید <b>قدم‌به‌قدم</b> به کمترین نقطه برسیم.</p>
+<div class="key">گرادیان کاهشی: <b>شیب را حساب کن، و کمی خلافِ شیب برو. تکرار کن.</b></div>
+</section>
+
+<section>
+<h2>چهار قدم</h2>
+<ol>
+<li><b>شروع:</b> وزن‌ها را یک مقدارِ اولیه بده (مثلاً تصادفیِ کوچک).</li>
+<li><b>شیب:</b> برای هر وزن حساب کن: اگر کمی زیادش کنیم، خطا بالا می‌رود یا پایین، و چقدر؟</li>
+<li><b>قدم:</b> هر وزن را کمی خلافِ شیبش ببر.</li>
+<li><b>تکرار:</b> تا وقتی خطا دیگر کم نمی‌شود.</li>
+</ol>
+</section>
+
+<section>
+<h2>با یک وزن</h2>
+<p>مدلِ قیمت خانه: \(\hat{y} = w\,x + b\). b را ثابت نگه می‌داریم و فقط w را عوض می‌کنیم. خطا برای هر w یک <b>کاسه</b> است:</p>
+<div class="box">
+<canvas id="gd1"></canvas>
+<div class="ctl">نرخ یادگیری:
+<select id="gd1-lr"><option value="0.00001">کوچک</option><option value="0.00007" selected>مناسب</option><option value="0.000105">بزرگ</option></select>
+<button id="gd1-step">یک قدم</button><button id="gd1-reset">از نو</button></div>
+<div class="err" id="gd1-info"></div>
+</div>
+<div class="f">\[ w_{\text{new}} = w - \eta \cdot \frac{\partial L}{\partial w} \]</div>
+<ul class="sym">
+<li>\(\frac{\partial L}{\partial w}\): شیبِ خطا نسبت به w</li>
+<li>\(\eta\) (اِتا): نرخ یادگیری، اندازه‌ی قدم</li>
+<li>منفی: خلافِ شیب، یعنی سرازیری</li>
+</ul>
+</section>
+
+<section>
+<h2>نرخ یادگیری</h2>
+<p>همان کاسه، همان نقطه‌ی شروع، ۸ قدم، فقط با اندازه‌ی قدمِ متفاوت:</p>
+<div class="kinds">
+<div><p><b>خیلی کوچک</b></p><canvas id="lr0"></canvas><p class="ex">درست می‌رود ولی خیلی آهسته. آموزش طول می‌کشد.</p></div>
+<div><p><b>مناسب</b></p><canvas id="lr1"></canvas><p class="ex">چند قدم بزرگ اول، بعد آرام روی کف.</p></div>
+<div><p><b>خیلی بزرگ</b></p><canvas id="lr2"></canvas><p class="ex">از کف رد می‌شود و هر قدم دورتر می‌افتد. خطا بالا می‌رود (واگرا).</p></div>
+</div>
+<p style="margin-top:10px">در عمل نرخ یادگیری را <b>در طول آموزش کم می‌کنند</b> <span class="en">(Learning Rate Schedule)</span>: اول قدم‌های بزرگ برای رسیدن سریع، بعد قدم‌های کوچک برای نشستن روی کف. نرخ یادگیری یک <b>هایپرپارامتر</b> است و معمولاً اولین چیزی است که تنظیم می‌کنند.</p>
+</section>
+<section>
+<h2>با چند وزن: گرادیان</h2>
+<p>با دو وزن، خطا یک کاسه‌ی سه‌بعدی است. از <b>بالا</b> که نگاه کنیم، خط‌های هم‌ارتفاع (مثل نقشه‌ی کوه) بیضی می‌شوند. کف، وسطِ بیضی‌هاست.</p>
+<p><b>گرادیان</b> = فهرستِ شیب‌ها، یکی برای هر وزن: \(\nabla L = \left[\frac{\partial L}{\partial w_1}, \frac{\partial L}{\partial w_2}, \dots\right]\). این فهرست رو به <b>تندترین سربالایی</b> است؛ پس خلافش تندترین سرازیری است.</p>
+<div class="f">\[ \mathbf{w}_{\text{new}} = \mathbf{w} - \eta \, \nabla L \]</div>
+</section>
+
+<section>
+<h2>هم‌مقیاس کردن ویژگی‌ها</h2>
+<p>فرض کنید یک ویژگی <b>متراژ</b> است (۵۰ تا ۲۰۰) و دیگری <b>تعداد اتاق</b> (۱ تا ۵). یک تغییرِ کوچک در وزنِ متراژ، خطا را خیلی عوض می‌کند؛ در وزنِ اتاق، کم. کاسه <b>کشیده و باریک</b> می‌شود.</p>
+<p>در کاسه‌ی باریک، شیب بیشتر به طرفِ دیواره‌ی نزدیک است، نه به طرفِ کف. گرادیان کاهشی <b>زیگزاگ</b> می‌رود و دیر می‌رسد.</p>
+<div class="kinds">
+<div><p><b>بدون هم‌مقیاس کردن</b></p><canvas id="sc0"></canvas><p class="ex" id="sc0i"></p></div>
+<div><p><b>هم‌مقیاس‌شده</b></p><canvas id="sc1"></canvas><p class="ex" id="sc1i"></p></div>
+</div>
+<p class="ex">هر دو از یک نقطه شروع کرده‌اند و ۳۰ قدم رفته‌اند. نقطه‌ی آبی کف است.</p>
+<p><b>راه‌حل:</b> قبل از آموزش، همه‌ی ویژگی‌ها را هم‌اندازه کن. رایج‌ترین روش: از هر ویژگی میانگینش را کم کن و بر انحراف معیارش تقسیم کن <span class="en">(Standardization)</span>. کاسه گرد می‌شود و گرادیان کاهشی مستقیم به کف می‌رود.</p>
+</section>
+
+
+<section>
+<h2>هر قدم با چقدر داده؟</h2>
+<p><b>مثال:</b> ۴۰ خانه داریم (هر مربع یک خانه). برای یک قدمِ گرادیان کاهشی، باید شیب را از روی خطای خانه‌ها حساب کنیم. سؤال این است: <b>از روی چند خانه؟</b> مربع‌های رنگی، خانه‌هایی‌اند که در <b>یک قدم</b> استفاده می‌شوند:</p>
+<div class="kinds">
+<div><p><b>Batch</b></p><svg viewBox="0 0 100 42" style="width:100%;max-width:220px;display:block;margin:4px auto"><rect x="1" y="1" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="1" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="1" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="1" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="1" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="1" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="1" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="1" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="1" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="1" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="1" y="11" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="11" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="11" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="11" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="11" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="11" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="11" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="11" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="11" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="11" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="1" y="21" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="21" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="21" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="21" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="21" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="21" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="21" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="21" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="21" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="21" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="1" y="31" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="31" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="31" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="31" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="31" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="31" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="31" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="31" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="31" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="31" width="8" height="8" rx="2" fill="var(--accent)" stroke="var(--line)" stroke-width=".4"/></svg><p class="ex">همه‌ی ۴۰ خانه. شیب دقیق است، ولی هر قدم باید همه را بخواند.<br>یک دور روی همه‌ی داده = <b>۱ قدم</b>.</p></div>
+<div><p><b>Mini-batch</b></p><svg viewBox="0 0 100 42" style="width:100%;max-width:220px;display:block;margin:4px auto"><rect x="1" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="1" width="8" height="8" rx="2" fill="var(--blue)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="1" width="8" height="8" rx="2" fill="var(--blue)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="1" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="11" width="8" height="8" rx="2" fill="var(--blue)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="11" width="8" height="8" rx="2" fill="var(--blue)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="1" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="21" width="8" height="8" rx="2" fill="var(--blue)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="21" width="8" height="8" rx="2" fill="var(--blue)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="1" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="31" width="8" height="8" rx="2" fill="var(--blue)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="31" width="8" height="8" rx="2" fill="var(--blue)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/></svg><p class="ex">یک تکه‌ی تصادفی، این‌جا ۸ خانه. شیب تقریباً درست، قدم سریع.<br>یک دور روی همه‌ی داده = <b>۵ قدم</b>.</p></div>
+<div><p><b>SGD</b></p><svg viewBox="0 0 100 42" style="width:100%;max-width:220px;display:block;margin:4px auto"><rect x="1" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="1" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="1" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="11" width="8" height="8" rx="2" fill="var(--red)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="11" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="1" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="21" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="1" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="11" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="21" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="31" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="41" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="51" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="61" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="71" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="81" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/><rect x="91" y="31" width="8" height="8" rx="2" fill="var(--soft)" stroke="var(--line)" stroke-width=".4"/></svg><p class="ex">فقط <b>یک</b> خانه‌ی تصادفی. شیب پرنویز است (یک خانه ممکن است عجیب باشد)، ولی قدم خیلی سریع.<br>یک دور روی همه‌ی داده = <b>۴۰ قدم</b>.</p></div>
+</div>
+<p style="margin-top:10px">با داده‌ی واقعی، مثلاً یک میلیون خانه: Batch برای <b>هر قدم</b> باید یک میلیون خطا حساب کند. Mini-batch با ۲۵۶ خانه همان قدم را هزاران بار سریع‌تر برمی‌دارد.</p>
+
+<table>
+<tr><th>روش</th><th>هر قدم با</th><th>خوبی</th><th>بدی</th></tr>
+<tr><td><b>Batch</b></td><td>همه‌ی داده</td><td>شیبِ دقیق، مسیرِ صاف</td><td>با میلیون‌ها نمونه، هر قدم خیلی کند</td></tr>
+<tr><td><b>Stochastic (SGD)</b></td><td>فقط یک خانه (یک نمونه)</td><td>هر قدم خیلی سریع</td><td>شیبِ پرنویز، مسیرِ لرزان</td></tr>
+<tr><td><b>Mini-batch</b></td><td>یک تکه، مثلاً ۳۲ یا ۲۵۶ خانه</td><td>تعادلِ سرعت و دقت؛ کارت گرافیک را خوب پر می‌کند</td><td>اندازه‌ی تکه یک هایپرپارامتر دیگر است</td></tr>
+</table>
+<div class="kinds" style="margin-top:12px">
+<div><p><b>Batch</b></p><canvas id="bt0"></canvas><p class="ex">صاف؛ ولی هر قدم کل داده را می‌خواند.</p></div>
+<div><p><b>Mini-batch</b></p><canvas id="bt1"></canvas><p class="ex">کمی لرزان؛ هر قدم سریع.</p></div>
+<div><p><b>SGD</b></p><canvas id="bt2"></canvas><p class="ex">خیلی لرزان؛ هر قدم خیلی سریع.</p></div>
+</div>
+<p><button id="bt-again">دوباره</button></p>
+<p class="ex">در عمل تقریباً همیشه Mini-batch استفاده می‌شود؛ وقتی می‌گویند SGD، معمولاً منظورشان همین است. یک دور کامل روی همه‌ی داده را یک <b>ایپاک</b> <span class="en">(Epoch)</span> می‌گویند.</p>
+</section>
+
+<section>
+<h2>دام‌ها</h2>
+<div class="kinds">
+<div><p><b>کمینه‌ی محلی</b> <span class="en">(Local Minimum)</span></p><svg viewBox="0 0 120 60" style="width:100%;max-width:220px;display:block;margin:4px auto"><polyline points="4,8.0 6,8.1 8,8.1 10,8.3 12,8.7 14,9.4 16,10.5 18,12.3 20,14.6 22,17.5 24,20.6 26,23.3 28,25.3 30,26.0 32,25.3 34,23.3 36,20.6 38,17.5 40,14.6 42,12.3 44,10.5 46,9.4 48,8.7 50,8.3 52,8.2 54,8.1 56,8.1 58,8.3 60,8.5 62,9.0 64,9.9 66,11.3 68,13.4 70,16.4 72,20.4 74,25.3 76,30.8 78,36.5 80,41.6 82,45.6 84,47.7 86,47.7 88,45.6 90,41.6 92,36.5 94,30.8 96,25.3 98,20.4 100,16.4 102,13.4 104,11.3 106,9.9 108,9.0 110,8.5 112,8.3 114,8.1 116,8.1" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="30" cy="22.5" r="3.5" fill="var(--red)"/><circle cx="85" cy="46.0" r="2.5" fill="var(--blue)"/><text x="30" y="40" font-size="5" text-anchor="middle" fill="var(--red)">گیر کرد</text><text x="85" y="58" font-size="5" text-anchor="middle" fill="var(--blue)">کفِ اصلی</text></svg><p class="ex">یک گودالِ کوچک که کفِ اصلی نیست. گرادیان کاهشی آن‌جا گیر می‌کند، چون شیب صفر است.</p></div>
+<div><p><b>نقطه‌ی زینی</b> <span class="en">(Saddle Point)</span></p><canvas id="saddle3"></canvas><p class="ex" style="text-align:center;margin:0">بکشید تا بچرخد</p><p class="ex">مثل زینِ اسب. نقطه‌ی قرمز در جهتِ <b style="color:var(--blue)">آبی</b> ته دره است، ولی در جهتِ <b style="color:var(--orange)">نارنجی</b> بالای تپه. همان‌جا شیب در هر دو جهت صفر است، پس گرادیان کاهشی فکر می‌کند رسیده، ولی کف نیست. در شبکه‌های عصبیِ بزرگ از کمینه‌ی محلی رایج‌تر است.</p></div>
+<div><p><b>دشتِ صاف</b> <span class="en">(Plateau)</span></p><svg viewBox="0 0 120 60" style="width:100%;max-width:220px;display:block;margin:4px auto"><polyline points="4,50.0 6,50.0 8,49.9 10,49.9 12,49.9 14,49.8 16,49.7 18,49.6 20,49.4 22,49.0 24,48.6 26,47.9 28,47.0 30,45.7 32,44.0 34,41.7 36,38.8 38,35.6 40,32.0 42,28.4 44,25.2 46,22.3 48,20.0 50,18.3 52,17.0 54,16.1 56,15.4 58,15.0 60,14.6 62,14.4 64,14.3 66,14.2 68,14.1 70,14.1 72,14.1 74,14.0 76,14.0 78,14.0 80,14.0 82,14.0 84,14.0 86,14.0 88,14.0 90,14.0 92,14.0 94,14.0 96,14.0 98,14.0 100,14.0 102,14.0 104,14.0 106,14.0 108,14.0 110,14.0 112,14.0 114,14.0 116,14.0" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="78" cy="10.5" r="3.5" fill="var(--red)"/><circle cx="86" cy="10.5" r="3.5" fill="var(--red)"/><circle cx="94" cy="10.5" r="3.5" fill="var(--red)"/><text x="86" y="26" font-size="5" text-anchor="middle" fill="var(--red)">قدم‌ها خیلی کوتاه</text><text x="16" y="58" font-size="5" text-anchor="middle" fill="var(--blue)">کف</text></svg><p class="ex">شیب تقریباً صفر و قدم‌ها خیلی کوچک. آموزش متوقف به نظر می‌رسد.</p></div>
+</div>
+<p class="ex" style="margin-top:10px">خبرِ خوب: در رگرسیون خطی با MSE فقط یک کف هست (کاسه‌ی محدب، Convex). این دام‌ها مالِ مدل‌های پیچیده‌تر مثل شبکه‌ی عصبی‌اند.</p>
+</section>
+
+<section>
+<h2>نسخه‌های بهتر: Momentum و Adam</h2>
+<p><b>مشکل:</b> گرادیان کاهشیِ ساده فقط به شیبِ <b>همین لحظه</b> نگاه می‌کند. در یک دره‌ی باریک، شیب بیشتر به طرفِ دیواره است تا به طرفِ کف؛ پس زیگزاگ می‌رود و دیر می‌رسد. دو راه‌حلِ معروف این را درست می‌کنند.</p>
+<p><b>اول نتیجه را ببینید:</b> همان دره‌ی باریک، همان نقطه‌ی شروع، ۳۰ قدم:</p>
+<div class="kinds">
+<div><p><b>گرادیان کاهشیِ ساده</b></p><canvas id="op0"></canvas><p class="ex" id="op0i"></p></div>
+<div><p><b>Momentum</b></p><canvas id="op1"></canvas><p class="ex" id="op1i"></p></div>
+<div><p><b>Adam</b></p><canvas id="op2"></canvas><p class="ex" id="op2i"></p></div>
+</div>
+
+<h3 style="margin-top:20px">Momentum: قدم‌های قبلی را هم یادت باشد</h3>
+<p><b>ایده:</b> به‌جای این‌که هر قدم فقط از شیبِ الان باشد، یک <b>«سرعت»</b> نگه دار: جمعِ شیبِ الان با بخشی از سرعتِ قبلی.</p>
+<div class="f">\[ v \leftarrow \beta\, v + \nabla L \qquad\qquad w \leftarrow w - \eta\, v \]</div>
+<ul class="sym">
+<li>\(v\): سرعت؛ جهتی که تا حالا می‌رفتیم</li>
+<li>\(\beta\) (بتا): چقدر از گذشته یادمان بماند؛ معمولاً ۰٫۹</li>
+<li>\(\nabla L\): شیبِ همین لحظه</li>
+</ul>
+<p><b>مثال عددی</b> با \(\beta = 0.9\). دو جهتِ مختلف، کنار هم:</p>
+<div class="kinds">
+<div><p><b>جهتِ زیگزاگ</b> (شیب هر بار علامتش عوض می‌شود)</p>
+<table><tr><th>قدم</th><th>شیب</th><th>سرعت v</th></tr>
+<tr><td>۱</td><td>+۴</td><td>۴</td></tr><tr><td>۲</td><td>−۴</td><td>۰٫۹×۴ − ۴ = <b>−۰٫۴</b></td></tr><tr><td>۳</td><td>+۴</td><td>۰٫۹×(−۰٫۴) + ۴ = <b>۳٫۶۴</b></td></tr><tr><td>۴</td><td>−۴</td><td>۰٫۹×۳٫۶۴ − ۴ = <b>−۰٫۷۲</b></td></tr></table>
+<p class="ex">رفت و برگشت‌ها همدیگر را <b>خنثی</b> می‌کنند؛ تکان‌ها کم می‌شود.</p></div>
+<div><p><b>جهتِ ثابت</b> (شیب همیشه یکی)</p>
+<table><tr><th>قدم</th><th>شیب</th><th>سرعت v</th></tr>
+<tr><td>۱</td><td>+۱</td><td>۱</td></tr><tr><td>۲</td><td>+۱</td><td>۰٫۹×۱ + ۱ = <b>۱٫۹</b></td></tr><tr><td>۳</td><td>+۱</td><td>۰٫۹×۱٫۹ + ۱ = <b>۲٫۷۱</b></td></tr><tr><td>۴</td><td>+۱</td><td>۰٫۹×۲٫۷۱ + ۱ = <b>۳٫۴۴</b></td></tr></table>
+<p class="ex">سرعت <b>جمع می‌شود</b>؛ در جهتِ درست تندتر می‌رود (تا حداکثر ۱۰ برابر وقتی β = ۰٫۹).</p></div>
+</div>
+<p style="margin-top:8px">نتیجه: زیگزاگ کم می‌شود، حرکت به طرفِ کف تند می‌شود، و از دشت‌های صاف و نقطه‌های زینی هم راحت‌تر رد می‌شود (چون سرعتِ قبلی هنوز هلش می‌دهد).</p>
+
+<h3 style="margin-top:20px">Adam: برای هر وزن، اندازه‌ی قدمِ خودش</h3>
+<p><b>مشکلِ دیگر:</b> در گرادیان کاهشیِ ساده، همه‌ی وزن‌ها <b>یک</b> نرخ یادگیری دارند. ولی بعضی وزن‌ها همیشه شیبِ بزرگ دارند و بعضی شیبِ کوچک.</p>
+<p><b>مثال:</b> دو وزن، با نرخ یادگیری ۰٫۱:</p>
+<table>
+<tr><th></th><th>شیبِ همیشگی</th><th>قدم با گرادیان کاهشیِ ساده</th><th>قدم با Adam</th></tr>
+<tr><td>وزنِ الف</td><td>۱۰</td><td>۰٫۱ × ۱۰ = <b>۱</b> (خیلی بزرگ؛ ممکن است از کف رد شود)</td><td>حدود <b>۰٫۱</b></td></tr>
+<tr><td>وزنِ ب</td><td>۰٫۱</td><td>۰٫۱ × ۰٫۱ = <b>۰٫۰۱</b> (خیلی کوچک؛ تقریباً تکان نمی‌خورد)</td><td>حدود <b>۰٫۱</b></td></tr>
+</table>
+<p style="margin-top:8px"><b>ایده‌ی Adam:</b> قدمِ هر وزن را بر «اندازه‌ی معمولِ» شیب‌هایش تقسیم کن. وزنی که شیبش همیشه بزرگ است، قدمِ کوچک‌تر می‌گیرد؛ وزنی که شیبش کوچک است، قدمِ بزرگ‌تر. همه با سرعتِ منطقی جلو می‌روند.</p>
+<div class="f">\[ m \leftarrow \beta_1 m + (1-\beta_1)\, g \qquad s \leftarrow \beta_2 s + (1-\beta_2)\, g^2 \qquad w \leftarrow w - \eta\, \frac{m}{\sqrt{s} + \epsilon} \]</div>
+<ul class="sym">
+<li>\(g\): شیبِ همین لحظه برای این وزن</li>
+<li>\(m\): میانگینِ شیب‌ها (همان momentum)؛ \(\beta_1 \approx 0.9\)</li>
+<li>\(s\): میانگینِ <b>مربعِ</b> شیب‌ها؛ یعنی اندازه‌ی معمولِ شیب. \(\beta_2 \approx 0.999\)</li>
+<li>\(\frac{m}{\sqrt{s}}\): جهت از m، اندازه تقسیم بر اندازه‌ی معمول. برای وزنِ الف: \(10/\sqrt{100} = 1\)؛ برای وزنِ ب: \(0.1/\sqrt{0.01} = 1\). هر دو یک‌اندازه!</li>
+<li>\(\epsilon\): یک عددِ خیلی کوچک تا تقسیم بر صفر نشود</li>
+</ul>
+<p class="ex">Adam یک «تصحیحِ بایاس» هم دارد: چون m و s از صفر شروع می‌کنند، در قدم‌های اول خیلی کوچک‌اند؛ Adam آن‌ها را بر \(1-\beta^t\) تقسیم می‌کند تا درست شوند.</p>
+
+<h3 style="margin-top:20px">کدام را کی استفاده کنیم؟</h3>
+<div class="kinds">
+<div><p><b>SGD + Momentum</b></p><p class="ex">ساده، حافظه‌ی کم. در کارهای تصویری (CNN) گاهی بهتر تعمیم می‌دهد. نرخ یادگیری را باید با دقت تنظیم کرد.</p></div>
+<div><p><b>Adam</b></p><p class="ex">سریع همگرا می‌شود و به نرخ یادگیری کم‌حساس‌تر است. پیش‌فرضِ رایج برای ترنسفورمرها و آزمایشِ سریع. دو برابرِ SGD حافظه می‌خواهد (m و s برای هر وزن).</p></div>
+<div><p><b>AdamW</b></p><p class="ex">Adam، با جریمه‌ی وزن‌ها (weight decay) که جدا و درست اعمال می‌شود. پیش‌فرضِ امروزیِ مدل‌های زبانی.</p></div>
+</div>
+</section>
+
+<section>
+<h2>کد از صفر</h2>
+<p>رگرسیون خطی با Mini-batch گرادیان کاهشی، فقط با NumPy:</p>
+<pre>import numpy as np
+
+def train(X, y, lr=0.01, epochs=100, batch=32):
+    # X: (n, d) features, already standardized.  y: (n,)
+    n, d = X.shape
+    w, b = np.zeros(d), 0.0
+    for _ in range(epochs):
+        idx = np.random.permutation(n)          # shuffle every epoch
+        for s in range(0, n, batch):
+            j = idx[s:s + batch]
+            err = X[j] @ w + b - y[j]           # y_hat - y
+            w -= lr * 2 * X[j].T @ err / len(j) # dL/dw for MSE
+            b -= lr * 2 * err.mean()            # dL/db
+    return w, b</pre>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Questions reported from real interviews and collected from prep sites. Click a question to see the answer.</p>
+<details><summary>What is gradient descent and how does it work?</summary><p>An iterative method for minimising a loss function. Start from initial weights, compute the gradient of the loss with respect to the weights, and move every weight a small step against its gradient: \(w \leftarrow w - \eta \nabla L\). Repeat until the loss stops decreasing.</p><p class="src">Very common; e.g. Oracle and Cruise per Glassdoor reports and prep sites</p></details>
+<details><summary>What is the difference between batch, stochastic and mini-batch gradient descent?</summary><p>Batch uses the whole dataset for each step (exact gradient, slow). SGD uses a single example (fast, noisy). Mini-batch uses a small chunk, e.g. 32 to a few thousand examples: a balance of the two that also fits GPUs well. SGD's noise can even help by kicking the model out of shallow local minima.</p><p class="src">Most frequent question on this topic in prep sites</p></details>
+<details><summary>How do you choose the learning rate? What happens if it is too large or too small?</summary><p>Too large: the loss oscillates or explodes (divergence). Too small: training is very slow and can stall on plateaus. To choose: try values on a log scale (0.1, 0.01, 0.001) on the validation set, or run an LR range test and pick where the loss drops fastest. During training it is usually decayed (schedules, warmup).</p><p class="src">LinkedIn technical screen per PracHub; Dataford</p></details>
+<details><summary>Why do we scale features before gradient descent?</summary><p>With very different feature scales the loss surface becomes a long, narrow valley. The learning rate must be small enough for the steep direction, so progress along the flat direction is very slow and the path zig-zags. Standardisation makes the bowl rounder and convergence much faster.</p><p class="src">PracHub; prep sites</p></details>
+<details><summary>What does momentum do?</summary><p>It keeps a velocity: an exponential moving average of past gradients. Steps grow in directions where the gradient is consistent and oscillations cancel in directions where it flips sign. Result: faster convergence and easier passage through plateaus and saddle points.</p><p class="src">Prep sites</p></details>
+<details><summary>Explain Adam. How does it differ from SGD, and when would you use each?</summary><p>Adam keeps two moving averages: of the gradient (like momentum) and of the squared gradient. Each weight gets its own step size by dividing by the square root of the second; there is also bias correction. Hyperparameters: learning rate, beta1 (usually 0.9), beta2 (usually 0.999), epsilon. Adam converges fast and is less sensitive to the learning rate; it is the default for transformers. SGD with momentum sometimes generalises better on vision tasks. Adam needs about twice the optimizer-state memory.</p><p class="src">PracHub (Explain and Compare SGD and Adam); Dataford</p></details>
+<details><summary>How is AdamW different from Adam with L2 regularisation?</summary><p>In Adam, an L2 penalty is added to the gradient and then divided by each weight's adaptive scale, so weights with large gradients are regularised less. AdamW applies weight decay separately, directly to the weights, so every weight is decayed equally. In practice it generalises better.</p><p class="src">Prep sites (follow-up to the Adam question)</p></details>
+<details><summary>Your loss is not decreasing or training has stalled. What do you do?</summary><p>Check the learning rate first. Then feature scaling, gradient correctness (compare with numerical gradients), initialisation, and for deep nets vanishing or exploding gradients. Fixes: learning-rate schedules, momentum or Adam, normalisation layers, gradient clipping.</p><p class="src">PracHub (Keep Gradient Descent from Stalling)</p></details>
+<details><summary>What is the difference between a local minimum and a saddle point? Which is the bigger problem in deep networks?</summary><p>A local minimum is a bottom in every direction but not the best one. A saddle point is a bottom in some directions and a top in others. In very high dimensions saddle points are far more common, and many local minima are nearly as good as the global one. SGD noise and momentum help escape saddle points.</p><p class="src">Prep sites</p></details>
+<details><summary>Why does linear regression with MSE have a single solution?</summary><p>Because MSE is a convex quadratic in the weights: a bowl with one bottom. Any local minimum is the global minimum.</p><p class="src">Prep sites</p></details>
+<details><summary>Implement gradient descent for linear regression from scratch.</summary><p>See the code section above. Interviewers look for vectorised computation (no loop over examples), correct array shapes, the gradient for the bias, and shuffling the data every epoch.</p><p class="src">Dataford (implement batch GD from scratch)</p></details>
+<details><summary>How does batch size affect training?</summary><p>Larger batches give a more accurate gradient and better GPU use, but need more memory and sometimes generalise slightly worse. Smaller batches are noisier; the noise can act like regularisation and help generalisation, but steps are less stable. When you increase the batch size you usually increase the learning rate too.</p><p class="src">LinkedIn technical screen per PracHub</p></details>
+<p class="ex" style="margin-top:12px">Sources: <a href="https://www.techprep.app/blog/gradient-descent-interview-questions">TechPrep</a> · <a href="https://prachub.com/interview-questions/explain-gradient-descent-learning-rate-backpropagation-overfitting-and-batch-size">PracHub (LinkedIn)</a> · <a href="https://prachub.com/interview-questions/explain-and-compare-sgd-and-adam">PracHub (SGD vs Adam)</a> · <a href="https://prachub.com/interview-questions/keep-gradient-descent-from-stalling-at-poor-solutions">PracHub (stalling)</a> · <a href="https://dataford.io/questions/lists/gradient-descent-questions">Dataford</a> · <a href="https://www.tryexponent.com/courses/ml-engineer/ml-concepts-interviews/gradient-descent">Exponent</a> · <a href="https://www.glassdoor.ca/Interview/Technical-Screening-general-machine-learning-questions-e-g-overfitting-underfitting-gradient-descent-QTN_8666978.htm">Glassdoor (Oracle)</a></p>
+</div>
+</section>
+</main>
+
+<script>
+const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+const sizeCv = (cv, ratio) => { const W = Math.max(260, Math.min(cv.parentElement.clientWidth - 28, 560)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+const pick = (ids, on) => ids.forEach(id => document.getElementById(id).classList.toggle('on', id === on));
+
+// 1) one weight
+(() => {
+  const H = [[60, 3300], [75, 4200], [90, 4600], [100, 5300], [120, 6100], [140, 7400]], B = 323;
+  const L = w => H.reduce((s, [x, y]) => s + (w * x + B - y) ** 2, 0) / H.length;
+  const dL = w => H.reduce((s, [x, y]) => s + 2 * (w * x + B - y) * x, 0) / H.length;
+  const lr = document.getElementById('gd1-lr'); let w = 10, path = [10];
+  const draw = () => { const [c, W, Ht] = sizeCv(document.getElementById('gd1'), 0.5);
+    const X = v => 10 + v / 100 * (W - 20), Y = v => Ht - 18 - Math.min(v, 3e7) / 3e7 * (Ht - 26);
+    c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; for (let v = 0; v <= 100; v += 20) c.fillText('w=' + fa(v), X(v), Ht - 4);
+    c.strokeStyle = css('accent'); c.lineWidth = 2.5; c.beginPath(); for (let v = 0; v <= 100; v += .5) { const p = [X(v), Y(L(v))]; v ? c.lineTo(...p) : c.moveTo(...p); } c.stroke();
+    c.strokeStyle = css('red'); c.lineWidth = 1.2; c.setLineDash([3, 3]); c.beginPath(); path.forEach((v, k) => { const p = [X(Math.max(0, Math.min(100, v))), Y(L(v))]; k ? c.lineTo(...p) : c.moveTo(...p); }); c.stroke(); c.setLineDash([]);
+    c.fillStyle = css('red'); c.beginPath(); c.arc(X(Math.max(0, Math.min(100, w))), Y(L(w)), 6, 0, 7); c.fill();
+    document.getElementById('gd1-info').innerHTML = `قدم ${fa(path.length - 1)} · w = <b>${fa(w, 1)}</b> · خطا = <b>${fa(L(w))}</b>` + (w < 0 || w > 100 ? ' · از نمودار بیرون رفت!' : ''); };
+  document.getElementById('gd1-step').onclick = () => { w -= +lr.value * dL(w); path.push(w); draw(); };
+  document.getElementById('gd1-reset').onclick = lr.onchange = () => { w = 10; path = [10]; draw(); };
+  addEventListener('resize', draw); draw();
+})();
+
+// small side-by-side pictures
+const mini = cv => { const W = Math.max(200, Math.min(cv.parentElement.clientWidth - 8, 320)), Ht = Math.round(W * 0.7), r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+  const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+const contour = (cv, a, c2, path) => {
+  const [c, W, Ht] = mini(cv), S = Math.min(W, Ht) * 0.42, X = u => W / 2 + u * S, Y = v => Ht / 2 - v * S;
+  c.strokeStyle = css('accent'); c.globalAlpha = .5; c.lineWidth = 1;
+  for (const lv of [.02, .08, .2, .4, .7, 1.1]) { c.beginPath(); c.ellipse(X(0), Y(0), Math.sqrt(lv / a) * S, Math.sqrt(lv / c2) * S, 0, 0, 7); c.stroke(); }
+  c.globalAlpha = 1; c.fillStyle = css('blue'); c.beginPath(); c.arc(X(0), Y(0), 4, 0, 7); c.fill();
+  c.strokeStyle = css('red'); c.lineWidth = 1.8; c.beginPath(); path.forEach(([u, v], k) => k ? c.lineTo(X(u), Y(v)) : c.moveTo(X(u), Y(v))); c.stroke();
+  c.fillStyle = css('red'); path.forEach(([u, v]) => { c.beginPath(); c.arc(X(u), Y(v), 2, 0, 7); c.fill(); });
+};
+const randn = () => Math.sqrt(-2 * Math.log(Math.random() || 1e-9)) * Math.cos(2 * Math.PI * Math.random());
+const descend = (a, c2, lr, steps, noise, u, v) => { const p = [[u, v]]; for (let k = 0; k < steps; k++) { u -= lr * (2 * a * u + noise * randn()); v -= lr * (2 * c2 * v + noise * randn()); p.push([u, v]); } return p; };
+
+// learning rate: same bowl, same start, 8 steps
+const lrPics = () => {
+  const H = [[60, 3300], [75, 4200], [90, 4600], [100, 5300], [120, 6100], [140, 7400]], B = 323;
+  const L = w => H.reduce((s, [x, y]) => s + (w * x + B - y) ** 2, 0) / H.length, dL = w => H.reduce((s, [x, y]) => s + 2 * (w * x + B - y) * x, 0) / H.length;
+  [0.00001, 0.00007, 0.000105].forEach((lr, i) => {
+    const [c, W, Ht] = mini(document.getElementById('lr' + i)), X = v => 6 + v / 100 * (W - 12), Y = v => Ht - 6 - Math.min(v, 3e7) / 3e7 * (Ht - 12);
+    c.strokeStyle = css('accent'); c.lineWidth = 2; c.beginPath(); for (let v = 0; v <= 100; v += 1) { v ? c.lineTo(X(v), Y(L(v))) : c.moveTo(X(v), Y(L(v))); } c.stroke();
+    let w = 10; const p = [w]; for (let k = 0; k < 8; k++) { w -= lr * dL(w); p.push(w); }
+    c.strokeStyle = css('red'); c.lineWidth = 1.2; c.beginPath(); p.forEach((v, k) => { const q = [X(Math.max(0, Math.min(100, v))), Y(L(v))]; k ? c.lineTo(...q) : c.moveTo(...q); }); c.stroke();
+    c.fillStyle = css('red'); p.forEach(v => { if (v < 0 || v > 100) return; c.beginPath(); c.arc(X(v), Y(L(v)), 2.5, 0, 7); c.fill(); });
+  });
+};
+// feature scaling: elongated vs round bowl, 30 steps each
+const scPics = () => {
+  [[1, 25, 0.038], [1, 1, 0.4]].forEach(([a, c2, lr], i) => { const p = descend(a, c2, lr, 30, 0, -1.6, 0.32); contour(document.getElementById('sc' + i), a, c2, p);
+    document.getElementById('sc' + i + 'i').innerHTML = `بعد از ۳۰ قدم، فاصله تا کف: <b>${fa(Math.hypot(...p[p.length - 1]) * 100, 1)}٪</b>`; });
+};
+// batch sizes: same bowl, more or less noise, 40 steps each
+const btPics = () => [0, 0.35, 1.1].forEach((nz, i) => contour(document.getElementById('bt' + i), 1, 2.5, descend(1, 2.5, 0.08, 40, nz, -1.5, 0.55)));
+document.getElementById('bt-again').onclick = btPics;
+const allMini = () => { lrPics(); scPics(); btPics(); };
+addEventListener('resize', allMini); allMini();
+// optimizers race on the same narrow valley
+const opPics = () => {
+  const a = 1, c2 = 25, N = 30, u0 = -1.6, v0 = 0.32;
+  const runs = [
+    () => descend(a, c2, 0.038, N, 0, u0, v0),
+    () => { let u = u0, v = v0, mu = 0, mv = 0; const p = [[u, v]]; for (let k = 0; k < N; k++) { mu = 0.8 * mu + 2 * a * u; mv = 0.8 * mv + 2 * c2 * v; u -= 0.02 * mu; v -= 0.02 * mv; p.push([u, v]); } return p; },
+    () => { let u = u0, v = v0; const m = [0, 0], q = [0, 0], p = [[u, v]];
+      for (let k = 1; k <= N; k++) { const g = [2 * a * u, 2 * c2 * v];
+        for (let i = 0; i < 2; i++) { m[i] = 0.9 * m[i] + 0.1 * g[i]; q[i] = 0.999 * q[i] + 0.001 * g[i] ** 2; }
+        u -= 0.15 * (m[0] / (1 - 0.9 ** k)) / (Math.sqrt(q[0] / (1 - 0.999 ** k)) + 1e-8);
+        v -= 0.15 * (m[1] / (1 - 0.9 ** k)) / (Math.sqrt(q[1] / (1 - 0.999 ** k)) + 1e-8); p.push([u, v]); }
+      return p; }];
+  const notes = ['زیگزاگ؛ به طرفِ کف آهسته', 'زیگزاگ خنثی شده؛ سریع به کف', 'مسیرِ صاف‌تر و مستقیم‌تر؛ هر وزن قدمِ خودش'];
+  runs.forEach((f, i) => { const p = f(); contour(document.getElementById('op' + i), a, c2, p);
+    document.getElementById('op' + i + 'i').innerHTML = `${notes[i]}<br>فاصله تا کف بعد از ۳۰ قدم: <b>${fa(Math.hypot(...p[p.length - 1]) * 100, 1)}٪</b>`; });
+};
+addEventListener('resize', opPics); opPics();
+// 3D saddle z = x² − y², drag to rotate
+(() => {
+  const cv = document.getElementById('saddle3'); let rot = 35, drag = null;
+  const draw = () => {
+    const W = Math.max(200, Math.min(cv.parentElement.clientWidth - 8, 300)), Ht = Math.round(W * 0.8), r = devicePixelRatio || 1;
+    cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto'; cv.style.touchAction = 'none';
+    const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht);
+    const th = rot * Math.PI / 180, S = W * 0.3, Z = (x, y) => x * x - y * y;
+    const P = (x, y) => { const a = x * Math.cos(th) - y * Math.sin(th), b = x * Math.sin(th) + y * Math.cos(th); return [W / 2 + S * a, Ht * 0.52 + S * 0.4 * b - S * 0.55 * Z(x, y)]; };
+    const line = (pts, col, w, al) => { c.strokeStyle = css(col); c.lineWidth = w; c.globalAlpha = al; c.beginPath(); pts.forEach((p, k) => k ? c.lineTo(...p) : c.moveTo(...p)); c.stroke(); c.globalAlpha = 1; };
+    const N = 14;
+    for (let i = 0; i <= N; i++) { const t = -1 + 2 * i / N; const A = [], B = [];
+      for (let k = 0; k <= 30; k++) { const q = -1 + 2 * k / 30; A.push(P(t, q)); B.push(P(q, t)); }
+      line(A, 'accent', 1, .45); line(B, 'accent', 1, .45); }
+    const ex = [], ny = []; for (let k = 0; k <= 30; k++) { const q = -1 + 2 * k / 30; ex.push(P(q, 0)); ny.push(P(0, q)); }
+    line(ex, 'blue', 3, 1); line(ny, 'orange', 3, 1);
+    c.fillStyle = css('red'); c.beginPath(); c.arc(...P(0, 0), 6, 0, 7); c.fill();
+  };
+  cv.addEventListener('pointerdown', e => { drag = [e.clientX, rot]; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => { if (drag) { rot = drag[1] + (e.clientX - drag[0]) * 0.6; draw(); } });
+  cv.addEventListener('pointerup', () => drag = null);
+  addEventListener('resize', draw); draw();
+})();
+
+
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

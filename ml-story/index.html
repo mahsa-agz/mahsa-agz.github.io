@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>همه‌ی درس‌ها</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<style>
+.prog { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin: 8px 0 20px; }
+.bar { height: 10px; background: var(--soft); border-radius: 6px; overflow: hidden; margin-top: 6px; }
+.bar i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+.group h2 { margin-top: 0; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+.card.done { border-color: var(--accent); }
+.card .n { color: var(--muted); font-size: 12px; }
+.card a.t { font-weight: 700; font-size: 17px; color: var(--ink); text-decoration: none; }
+.card a.t:hover { color: var(--accent); }
+.card .d { font-size: 14px; color: var(--muted); line-height: 1.7; margin: 0; }
+.card .meta { font-size: 12px; color: var(--muted); }
+.card label { display: flex; align-items: center; gap: 6px; font-size: 13px; margin: 0; cursor: pointer; }
+.card label input { accent-color: var(--accent); }
+.checks { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; }
+.note { font-size: 14px; }
+code { direction: ltr; unicode-bidi: isolate; overflow-wrap: anywhere; display: inline-block; max-width: 100%; }
+</style>
+</head>
+<body>
+<main>
+<h1>همه‌ی درس‌ها</h1>
+<p class="sub">نقشه‌ی شخصیِ آمادگی برای مصاحبه‌ی ML Engineer. به ترتیب پیشنهادی بخوانید. تیک‌ها فقط در همین مرورگر ذخیره می‌شوند.</p>
+
+<div class="prog">
+<div id="ptxt"></div>
+<div class="bar"><i id="pbar"></i></div>
+</div>
+
+<div id="groups"></div>
+
+<section>
+<h2>تمرینِ کدنویسی</h2>
+<p class="note">سؤال‌های الگوریتمِ تیک‌تاک (۳۱۷ سؤال، ۱۰تا ۱۰تا به ترتیبِ تکرار، با ستونِ موضوع) در فایلِ اکسل است:</p>
+<p class="note"><code>C:\Users\USER\Downloads\algorithm_plan.xlsx</code></p>
+<p class="ex">برای یادگیریِ یک موضوع، در برگه‌ی «All problems» ستونِ Topic را فیلتر کنید. برای تمرینِ قاطی، برگه‌ها را به ترتیب جلو بروید.</p>
+</section>
+</main>
+
+<script>
+const GROUPS = [
+  ['۱. تصویر بزرگ', [
+    ['model.html', 'مدل چیست؟', 'از «چرا اصلاً مدل؟» تا داده، تابع خطا، یادگیری، انواع مدل، بردار و ماتریس، مسیرِ یک پروژه.', 18, 0],
+  ]],
+  ['۲. یادگیری چطور کار می‌کند', [
+    ['gradient-descent.html', 'گرادیان کاهشی', 'شیب، نرخ یادگیری، هم‌مقیاس کردن، Batch و SGD، Momentum و Adam.', 11, 12],
+  ]],
+  ['۳. مدل‌های کلاسیک', [
+    ['linear-regression.html', 'رگرسیون خطی', 'پیش‌بینیِ عدد؛ MSE، Ridge و Lasso، MAE، RMSE و R².', 11, 12],
+    ['logistic-regression.html', 'رگرسیون لجستیک', 'بله یا نه؛ سیگموید، Log Loss، مرز، Precision و Recall.', 12, 13],
+    ['decision-tree.html', 'درخت تصمیم', 'سؤال‌های بله/نه؛ Gini، عمق و بیش‌برازش.', 10, 10],
+    ['random-forest.html', 'جنگل تصادفی', 'صدها درخت که رأی می‌دهند؛ Bagging و OOB.', 11, 10],
+    ['gradient-boosting.html', 'گرادیان بوستینگ', 'درخت‌های پشتِ سرِ هم؛ نرخ یادگیری، XGBoost و LightGBM.', 10, 11],
+    ['knn.html', 'نزدیک‌ترین همسایه‌ها (k-NN)', 'شبیه‌ترین نمونه‌ها؛ فاصله، مقیاس، انتخابِ k، نفرینِ ابعاد.', 13, 11],
+    ['kmeans.html', 'خوشه‌بندی K-Means', 'گروه‌بندی بدونِ برچسب؛ انتخابِ K و K-Means++.', 11, 11],
+    ['pca.html', 'PCA: کم کردن ابعاد', 'جهتِ بیشترین پخش؛ بردار ویژه، واریانسِ توضیح‌داده‌شده.', 13, 12],
+    ['naive-bayes.html', 'بیز ساده', 'فیلترِ اسپم؛ قانون بیز، هموارسازیِ لاپلاس.', 13, 11],
+    ['svm.html', 'ماشین بردار پشتیبان (SVM)', 'پهن‌ترین خیابان؛ C، Hinge Loss، کرنل.', 14, 12],
+  ]],
+  ['۴. یادگیری عمیق', [
+    ['neural-network.html', 'شبکه‌ی عصبی', 'لایه‌ها، فعال‌سازی، Backpropagation، مقداردهیِ اولیه، منظم‌سازی.', 16, 12],
+    ['embeddings.html', 'Embedding', 'کلمه و کاربر و ویدیو به بردار؛ word2vec، جست‌وجوی برداری.', 17, 12],
+    ['cnn.html', 'شبکه‌ی کانولوشنی (CNN)', 'فیلتر روی تصویر؛ Pooling، ResNet، Transfer Learning.', 17, 12],
+    ['rnn.html', 'شبکه‌ی بازگشتی (RNN)', 'داده‌ی ترتیبی؛ گرادیانِ محوشونده، LSTM و GRU.', 14, 12],
+    ['transformer.html', 'ترنسفورمر و Attention', 'Q، K، V؛ چندسر، Positional Encoding، BERT و GPT.', 14, 12],
+  ]],
+  ['۵. مدل‌های بزرگ و محصول', [
+    ['llm.html', 'مدل‌های زبانی بزرگ (LLM)', 'توکن، نمونه‌گیری، مسیرِ آموزش، LoRA، RAG، ارزیابی.', 14, 12],
+    ['recommender.html', 'سیستم‌های پیشنهاد', 'For You تیک‌تاک؛ تجزیه‌ی ماتریس، Two-Tower، طراحیِ سیستم.', 12, 12],
+  ]],
+];
+const fa = n => n.toLocaleString('fa-IR');
+const KEY = 'ml-story-progress';
+let S = {}; try { S = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+let n = 0;
+document.getElementById('groups').innerHTML = GROUPS.map(([g, pages]) => `<section class="group"><h2>${g}</h2><div class="cards">` +
+  pages.map(([href, title, desc, secs, qa]) => { n++; const s = S[href] || {};
+    return `<div class="card${s.read ? ' done' : ''}" data-h="${href}"><span class="n">درسِ ${fa(n)}</span>
+      <a class="t" href="${href}">${title}</a><p class="d">${desc}</p>
+      <span class="meta">${fa(secs)} بخش${qa ? ` · ${fa(qa)} سؤالِ مصاحبه` : ''}</span>
+      <div class="checks"><label><input type="checkbox" data-k="read"${s.read ? ' checked' : ''}> خواندم</label>
+      ${qa ? `<label><input type="checkbox" data-k="qa"${s.qa ? ' checked' : ''}> سؤال‌ها را مرور کردم</label>` : ''}</div></div>`; }).join('') + '</div></section>').join('');
+const total = GROUPS.reduce((a, g) => a + g[1].length, 0);
+const upd = () => { const done = Object.values(S).filter(v => v.read).length;
+  document.getElementById('ptxt').innerHTML = `پیشرفت: <b>${fa(done)}</b> از ${fa(total)} درس خوانده شده`;
+  document.getElementById('pbar').style.width = (done / total * 100) + '%'; };
+document.addEventListener('change', e => { const c = e.target.closest('.card'); if (!c || !e.target.dataset.k) return;
+  const h = c.dataset.h; S[h] = S[h] || {}; S[h][e.target.dataset.k] = e.target.checked; save();
+  c.classList.toggle('done', !!S[h].read); upd(); });
+upd();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>

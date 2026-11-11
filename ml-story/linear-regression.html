@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>رگرسیون خطی</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<script>window.MathJax = { chtml: { scale: 1 } };</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+<style>
+pre { direction: ltr; text-align: left; background: var(--soft); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Consolas, monospace; }
+code { direction: ltr; unicode-bidi: isolate; }
+.qa details { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+.qa summary { cursor: pointer; font-weight: 700; }
+.qa details[open] summary { margin-bottom: 8px; }
+.ctl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; font-size: 14px; }
+.ctl button { margin: 0; }
+.ctl button.on { background: var(--accent); color: var(--card); }
+.en-block { text-align: left; font-family: system-ui, "Segoe UI", sans-serif; }
+.en-block summary { font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+<p class="sub"><a href="model.html">→ جزوه‌ی اصلی</a> · <a href="logistic-regression.html">بعدی: رگرسیون لجستیک ←</a></p>
+<h1>رگرسیون خطی <span class="en">(Linear Regression)</span></h1>
+<p class="sub">ساده‌ترین مدل، و پایه‌ی بقیه. اول تصویر کلی، بعد کم‌کم جزئیات.</p>
+
+
+<section>
+<h2>تصویر بزرگ</h2>
+<p><b>رگرسیون خطی</b> <span class="en">(Linear Regression)</span> یعنی پیدا کردنِ بهترین <b>خط</b> از میان نقطه‌ها.</p>
+<p>کارش: پیش‌بینیِ <b>عدد</b>.</p>
+<ul class="ex">
+<li>قیمت خانه از روی متراژ، سن، محله</li>
+<li>فروش ماه بعد از روی بودجه‌ی تبلیغات</li>
+<li>زمانِ رسیدنِ پیک از روی فاصله و ترافیک</li>
+</ul>
+<p>چرا هنوز این‌قدر مهم است؟</p>
+<ul>
+<li><b>ساده و سریع</b> است.</li>
+<li><b>قابل فهم</b> است: هر وزن می‌گوید هر ویژگی چقدر اثر دارد.</li>
+<li><b>پایه‌ی بقیه</b> است: رگرسیون لجستیک و هر نورونِ یک شبکه‌ی عصبی، در اصل همین فرمول‌اند به‌اضافه‌ی یک قدمِ دیگر.</li>
+</ul>
+</section>
+
+<section>
+<h2>از یک ویژگی به چند ویژگی</h2>
+<p>با یک ویژگی، مدل یک خط است:</p>
+<div class="f">\[ \hat{y} = w\,x + b \]</div>
+<p>با چند ویژگی، همان فکر است؛ فقط برای هر ویژگی یک وزن داریم:</p>
+<div class="f">\[ \hat{y} = w_1\,\text{area} + w_2\,\text{age} + w_3\,\text{rooms} + b \]</div>
+<p>معنیِ هر وزن: <b>اگر فقط همان ویژگی یکی بیشتر شود و بقیه ثابت بمانند، قیمت چقدر عوض می‌شود.</b></p>
+<div class="kinds">
+<div><p class="ex">\(w_1 = 50\)</p><p>هر متر بیشتر ← ۵۰ میلیون گران‌تر</p></div>
+<div><p class="ex">\(w_2 = -20\)</p><p>هر سال قدیمی‌تر ← ۲۰ میلیون ارزان‌تر</p></div>
+<div><p class="ex">\(w_3 = 100\)</p><p>هر اتاقِ بیشتر ← ۱۰۰ میلیون گران‌تر</p></div>
+</div>
+<p style="margin-top:10px">با دو ویژگی، مدل به‌جای خط یک <b>صفحه</b> است؛ با بیشتر، چیزی که نمی‌شود کشید، ولی ایده همان است.</p>
+</section>
+
+<section>
+<h2>تابع خطا</h2>
+<p><b>قدم ۱. خطای یک خانه.</b> مدل برای هر خانه یک قیمت حدس می‌زند (\(\hat{y}\)). قیمتِ واقعی (\(y\)) را هم می‌دانیم. فاصله‌ی این دو، <b>خطا</b>ی همان خانه است:</p>
+<div class="f">\[ e_i = y_i - \hat{y}_i \]</div>
+<p class="ex">مثال: خانه‌ی ۱۰۰ متری واقعاً ۵٬۳۰۰ میلیون فروش رفته. مدل گفته ۵٬۰۰۰. خطا = ۳۰۰.</p>
+
+<p><b>قدم ۲. یک عدد برای کلِ مدل.</b> می‌خواهیم بدانیم مدل <b>روی هم رفته</b> چقدر بد است. پس برای هر خانه یک <b>جریمه</b> حساب می‌کنیم و میانگین می‌گیریم. به این عدد <b>تابع خطا</b> <span class="en">(Loss Function)</span> می‌گویند. دو انتخابِ رایج برای جریمه:</p>
+<div class="kinds">
+<div><p><b>قدر مطلق</b> <span class="en">(MAE)</span></p><div class="f">\[ \frac{1}{n} \sum_{i=1}^{n} |e_i| \]</div><p class="ex">جریمه = خودِ خطا، مثبت‌شده. خطای ۳۰۰ ← جریمه‌ی ۳۰۰.</p></div>
+<div><p><b>مربع</b> <span class="en">(MSE)</span></p><div class="f">\[ \frac{1}{n} \sum_{i=1}^{n} e_i^2 \]</div><p class="ex">جریمه = خطا ضرب در خودش. خطای ۳۰۰ ← جریمه‌ی ۹۰٬۰۰۰.</p></div>
+</div>
+
+<p style="margin-top:12px"><b>قدم ۳. با شکل ببینید.</b> نقطه‌ها خانه‌ها هستند و خطِ سبز حدسِ مدل. هر خانه یک جریمه دارد:</p>
+<ul class="ex">
+<li>با <b>قدر مطلق</b>، جریمه یک <b>خط</b> قرمز است، به طولِ خطا.</li>
+<li>با <b>مربع</b>، جریمه یک <b>مربع</b> قرمز است که ضلعش همان خطاست. مساحتش جریمه است.</li>
+</ul>
+<div class="box">
+<canvas id="lossfig"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>خانه‌ها</span><span><i style="background:var(--orange)"></i>یک خانه‌ی عجیب (قصر)</span><span><i style="background:var(--accent)"></i>بهترین خط برای این جریمه</span><span><i style="background:var(--red)"></i>جریمه</span></div>
+<button id="lm-abs">قدر مطلق</button> <button id="lm-sq">مربع</button>
+<label>قیمتِ قصر (۱۲۰ متری) <input id="lm-out" type="range" min="6100" max="16000" step="100" value="6100"><b id="lm-outv"></b></label>
+<table class="ex" id="lm-tab"></table>
+<div class="err" id="lm-info"></div>
+</div>
+
+<p style="margin-top:12px"><b>کنار هم: جریمه برای هر خطا.</b> محورِ افقی خطای یک خانه است، محورِ عمودی جریمه‌اش.</p>
+<div class="box"><canvas id="pen2"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>قدر مطلق: |e|</span><span><i style="background:var(--red)"></i>مربع: e²</span></div></div>
+<p class="ex">نزدیکِ صفر، مربع خیلی کوچک است (خطای کوچک را تقریباً می‌بخشد). دورتر، خیلی سریع بالا می‌رود (خطای بزرگ را سخت جریمه می‌کند).</p>
+
+<p style="margin-top:12px"><b>چرا پیدا کردنِ کف با مربع راحت‌تر است؟</b> به شیبِ دو منحنیِ بالا نگاه کنید:</p>
+<div class="kinds">
+<div><p><b>مربع: یک کاسه‌ی نرم</b></p><p class="ex">هرچه به کف نزدیک‌تر شوی، شیب کمتر می‌شود. گرادیان کاهشی قدم را ضربِ شیب می‌کند، پس قدم‌ها <b>خودبه‌خود کوتاه</b> می‌شوند و آرام روی کف می‌نشیند.</p></div>
+<div><p><b>قدر مطلق: یک قیف با گوشه‌های تیز</b></p><p class="ex">شیب تا نزدیکِ کف تقریباً همان‌قدر تند می‌ماند و درست در کف یک‌دفعه عوض می‌شود. پس قدم‌ها کوتاه نمی‌شوند و نقطه دورِ کف <b>عقب و جلو می‌پرد</b>.</p></div>
+</div>
+
+<p style="margin-top:12px"><b>در سه بُعد.</b> مدل دو عدد دارد: w و b. پس خطا یک <b>سطح</b> است بالای صفحه‌ی (w, b)، و کف، بهترین جفتِ w و b است. شکل را بکشید تا بچرخد، و گرادیان کاهشی را روی هر دو امتحان کنید:</p>
+<div class="box">
+<canvas id="surf3"></canvas>
+<button id="s3-sq">مربع</button> <button id="s3-abs">قدر مطلق</button> <button id="s3-go">۳۰ قدم گرادیان کاهشی</button>
+<label>چرخش <input id="s3-rot" type="range" min="0" max="360" step="2" value="40"></label>
+<div class="err" id="s3-info"></div>
+<p class="ex" style="margin:4px 0 0">برای خوانا شدنِ شکل، متراژ را نسبت به میانگینش حساب کرده‌ایم؛ شکلِ کاسه همان است.</p>
+</div>
+<script>
+(() => {
+  const H = [[60, 3300], [75, 4200], [90, 4600], [100, 5300], [120, 6100], [140, 7400]];
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+  const fa = n => (Math.round(n * 10) / 10).toLocaleString('fa-IR');
+  const sizeCv = (cv, ratio) => { const W = Math.max(260, Math.min(cv.parentElement.clientWidth - 28, 532)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+    cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+  const curve = (c, f, x0, x1, X, Y, col) => { c.strokeStyle = css(col); c.lineWidth = 2.5; c.beginPath(); for (let k = 0; k <= 200; k++) { const x = x0 + (x1 - x0) * k / 200; k ? c.lineTo(X(x), Y(f(x))) : c.moveTo(X(x), Y(f(x))); } c.stroke(); };
+
+  // 1) penalty per error
+  const pen = () => { const [c, W, Ht] = sizeCv(document.getElementById('pen2'), 0.45);
+    const X = e => W / 2 + e / 3 * (W / 2 - 14), Y = p => Ht - 14 - p / 4 * (Ht - 22);
+    c.strokeStyle = css('line'); c.beginPath(); c.moveTo(0, Y(0)); c.lineTo(W, Y(0)); c.moveTo(X(0), 0); c.lineTo(X(0), Ht); c.stroke();
+    curve(c, Math.abs, -3, 3, X, Y, 'blue'); curve(c, e => e * e, -2, 2, X, Y, 'red');
+    c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; [-2, -1, 1, 2].forEach(e => c.fillText(e.toLocaleString('fa-IR'), X(e), Ht - 2)); };
+
+  // 2) total loss along w (b fixed near its best), both scaled to the same height
+  const bowl = () => { const [c, W, Ht] = sizeCv(document.getElementById('bowl2'), 0.45), B = 323;
+    const mse = w => H.reduce((a, [x, y]) => a + (w * x + B - y) ** 2, 0), mae = w => H.reduce((a, [x, y]) => a + Math.abs(w * x + B - y), 0);
+    const X = w => 10 + (w - 20) / 60 * (W - 20), m1 = Math.max(mse(20), mse(80)), m2 = Math.max(mae(20), mae(80));
+    const Y = v => Ht - 10 - v * (Ht - 20);
+    curve(c, w => mae(w) / m2, 20, 80, X, Y, 'blue'); curve(c, w => mse(w) / m1, 20, 80, X, Y, 'red'); };
+
+  // 3) 3D surface over (w, b); x centred so the bowl is round enough to read
+  const xm = H.reduce((a, h) => a + h[0], 0) / H.length, ym = H.reduce((a, h) => a + h[1], 0) / H.length;
+  let sxy = 0, sxx = 0; H.forEach(([x, y]) => { sxy += (x - xm) * (y - ym); sxx += (x - xm) ** 2; });
+  const W0 = sxy / sxx, B0 = ym;                       // best w, b
+  const uw = u => W0 + u * 40, vb = v => B0 + v * 1800; // plot coords u, v in [-1, 1]
+  const LOSS = { sq: (u, v) => H.reduce((a, [x, y]) => a + (uw(u) * (x - xm) + vb(v) - y) ** 2, 0), abs: (u, v) => H.reduce((a, [x, y]) => a + Math.abs(uw(u) * (x - xm) + vb(v) - y), 0) };
+  const TOP = { sq: Math.max(LOSS.sq(1, 1), LOSS.sq(-1, 1), LOSS.sq(1, -1)), abs: Math.max(LOSS.abs(1, 1), LOSS.abs(-1, 1), LOSS.abs(1, -1)) };
+  let mode = 'sq', rot = 40, path = [];
+  const Z = (u, v) => LOSS[mode](u, v) / TOP[mode];
+  const surf = () => {
+    const [c, W, Ht] = sizeCv(document.getElementById('surf3'), 0.75), th = rot * Math.PI / 180, S = W * 0.33;
+    const P = (u, v, z) => { const x = u * Math.cos(th) - v * Math.sin(th), y = u * Math.sin(th) + v * Math.cos(th); return [W / 2 + S * x, Ht * 0.72 + S * 0.42 * y - S * 1.1 * z]; };
+    const N = 22;
+    for (let d = 0; d < 2; d++) for (let a = 0; a <= N; a++) {
+      c.beginPath();
+      for (let k = 0; k <= N; k++) { const p = -1 + 2 * a / N, q = -1 + 2 * k / N, [u, v] = d ? [p, q] : [q, p], z = Z(u, v), pt = P(u, v, z); k ? c.lineTo(...pt) : c.moveTo(...pt); }
+      c.strokeStyle = css('accent'); c.globalAlpha = 0.55; c.lineWidth = 1; c.stroke(); c.globalAlpha = 1;
+    }
+    c.fillStyle = css('muted'); c.font = '12px Vazirmatn'; c.textAlign = 'center';
+    c.fillText('w', ...P(1.2, 0, 0)); c.fillText('b', ...P(0, 1.2, 0));
+    if (path.length) { c.strokeStyle = css('red'); c.lineWidth = 2; c.beginPath(); path.forEach(([u, v], k) => { const pt = P(u, v, Z(u, v)); k ? c.lineTo(...pt) : c.moveTo(...pt); }); c.stroke();
+      path.forEach(([u, v]) => { c.fillStyle = css('red'); c.beginPath(); c.arc(...P(u, v, Z(u, v)), 2.5, 0, 7); c.fill(); }); }
+    c.fillStyle = css('blue'); c.beginPath(); c.arc(...P(0, 0, Z(0, 0)), 5, 0, 7); c.fill();
+    document.getElementById('s3-info').innerHTML = `نقطه‌ی آبی = کف (بهترین w و b) · ${mode === 'sq' ? 'مربع: کاسه‌ی نرم' : 'قدر مطلق: سطحِ تکه‌تکه با لبه‌های تیز'}` +
+      (path.length ? ` · مسیرِ قرمز: ${path.length - 1} قدم، فاصله‌ی آخر تا کف: <b>${fa(Math.hypot(...path[path.length - 1]) * 100)}٪</b>` : '');
+    ['sq', 'abs'].forEach(m => document.getElementById('s3-' + m).style.fontWeight = mode === m ? 700 : 400);
+  };
+  const go = () => { let u = 0.9, v = -0.85; path = [[u, v]]; const h = 1e-4, lr = mode === 'sq' ? 0.4 : 0.15;
+    for (let k = 0; k < 30; k++) { const gu = (Z(u + h, v) - Z(u - h, v)) / (2 * h), gv = (Z(u, v + h) - Z(u, v - h)) / (2 * h); u -= lr * gu; v -= lr * gv; path.push([u, v]); } surf(); };
+  document.getElementById('s3-sq').onclick = () => { mode = 'sq'; path = []; surf(); };
+  document.getElementById('s3-abs').onclick = () => { mode = 'abs'; path = []; surf(); };
+  document.getElementById('s3-go').onclick = go;
+  document.getElementById('s3-rot').oninput = e => { rot = +e.target.value; surf(); };
+  const cv3 = document.getElementById('surf3'); let drag = null;
+  cv3.addEventListener('pointerdown', e => { drag = [e.clientX, rot]; cv3.setPointerCapture(e.pointerId); });
+  cv3.addEventListener('pointermove', e => { if (!drag) return; rot = (drag[1] + (e.clientX - drag[0]) * 0.6 + 360) % 360; document.getElementById('s3-rot').value = rot; surf(); });
+  cv3.addEventListener('pointerup', () => drag = null);
+  const all = () => { pen(); surf(); }; addEventListener('resize', all); all();
+})();
+</script>
+<details class="drop"><summary><b>قدم ۴. اصلاً چرا توان دو؟</b></summary>
+<p>دویست سال پیش، ستاره‌شناس‌ها مسیرِ سیاره‌ها را اندازه می‌گرفتند. هر اندازه‌گیری کمی خطا داشت. می‌خواستند از میانِ این اندازه‌های ناجور، <b>بهترین</b> مسیر را پیدا کنند. توان دو جوابِ همین مسئله بود، به سه دلیل:</p>
+<div class="kinds">
+<div><p><b>۱. با کاغذ و قلم حل می‌شد</b></p><p class="ex">آدرین-ماری لژاندر <span class="en">(Legendre)</span>، سال ۱۸۰۵: اگر مجموعِ <b>مربعِ</b> خطاها را کمینه کنی، جواب از چند معادله‌ی ساده درمی‌آید. با قدر مطلق چنین راهِ مستقیمی نیست. آن زمان کامپیوتر نبود؛ این خیلی مهم بود.</p></div>
+<div><p><b>۲. به میانگین می‌رسد</b></p><p class="ex">اگر بخواهی <b>یک</b> عدد پیدا کنی که به همه‌ی اندازه‌ها نزدیک باشد: با مربع جوابش <b>میانگین</b> است. با قدر مطلق جوابش <b>میانه</b> است. یعنی توان دو همان «معدل گرفتن» است که همه می‌شناسیم.</p></div>
+<div><p><b>۳. با خطاهای طبیعی، محتمل‌ترین جواب است</b></p><p class="ex">کارل فریدریش گاوس <span class="en">(Gauss)</span>، حدود ۱۸۰۹. پایین توضیح داده شده.</p></div>
+</div>
+
+<p style="margin-top:12px"><b>خطاهای «طبیعی» یعنی چه؟</b></p>
+<p>خطای یک اندازه‌گیری از <b>خیلی دلیلِ کوچک</b> می‌آید: دست کمی لرزید، هوا کمی گرم بود، چشم کمی اشتباه دید. بعضی خطا را بالا می‌برند، بعضی پایین.</p>
+<p>وقتی خیلی چیزِ کوچک و تصادفی با هم جمع شوند، نتیجه تقریباً همیشه یک شکلِ <b>زنگوله‌ای</b> دارد. به این شکل <b>توزیع نرمال</b> <span class="en">(Normal Distribution)</span> می‌گویند:</p>
+<svg viewBox="0 0 200 82" style="width:100%;max-width:340px;display:block;margin:6px auto"><rect x="51" y="64" width="8" height="6" fill="var(--blue)" opacity=".45"/><rect x="68" y="50" width="8" height="20" fill="var(--blue)" opacity=".45"/><rect x="82" y="26" width="8" height="44" fill="var(--blue)" opacity=".45"/><rect x="96" y="14" width="8" height="56" fill="var(--blue)" opacity=".45"/><rect x="110" y="28" width="8" height="42" fill="var(--blue)" opacity=".45"/><rect x="124" y="48" width="8" height="22" fill="var(--blue)" opacity=".45"/><rect x="141" y="63" width="8" height="7" fill="var(--blue)" opacity=".45"/><polyline points="10,70.0 13,70.0 16,70.0 19,70.0 22,70.0 25,70.0 28,69.9 31,69.9 34,69.8 37,69.6 40,69.4 43,69.1 46,68.6 49,67.9 52,66.9 55,65.6 58,63.9 61,61.7 64,58.9 67,55.5 70,51.6 73,47.1 76,42.2 79,37.0 82,31.6 85,26.5 88,21.7 91,17.7 94,14.6 97,12.7 100,12.0 103,12.7 106,14.6 109,17.7 112,21.7 115,26.5 118,31.6 121,37.0 124,42.2 127,47.1 130,51.6 133,55.5 136,58.9 139,61.7 142,63.9 145,65.6 148,66.9 151,67.9 154,68.6 157,69.1 160,69.4 163,69.6 166,69.8 169,69.9 172,69.9 175,70.0 178,70.0 181,70.0 184,70.0 187,70.0 190,70.0" fill="none" stroke="var(--red)" stroke-width="2"/><line x1="10" y1="70" x2="190" y2="70" stroke="var(--line)"/><text x="100" y="80" font-size="7" text-anchor="middle" fill="var(--muted)">خطای صفر</text><text x="30" y="80" font-size="7" text-anchor="middle" fill="var(--muted)">خطای منفی</text><text x="170" y="80" font-size="7" text-anchor="middle" fill="var(--muted)">خطای مثبت</text></svg>
+<ul class="ex">
+<li>خطای نزدیکِ صفر: خیلی زیاد.</li>
+<li>خطای بزرگ: کم.</li>
+<li>خطای خیلی بزرگ: تقریباً هیچ‌وقت.</li>
+</ul>
+<p>این قانون در آمار اسم دارد: <b>قضیه‌ی حد مرکزی</b> <span class="en">(Central Limit Theorem)</span>؛ جمعِ خیلی چیزِ تصادفیِ کوچک، نرمال می‌شود. برای همین قدِ آدم‌ها، نمره‌ها و خطای اندازه‌گیری‌ها اغلب زنگوله‌ای‌اند.</p>
+<p>گاوس نشان داد: <b>اگر خطاها نرمال باشند، خطی که مجموعِ مربعِ خطاها را کمینه می‌کند، محتمل‌ترین خط است.</b> پس توان دو یک انتخابِ دلبخواهی نیست؛ با این فرض، بهترین است.</p>
+<div class="key">در مصاحبه می‌پرسند: «چرا MSE؟» جوابِ کامل: حلِ ساده، رسیدن به میانگین، و این‌که اگر خطاها نرمال باشند، کمینه کردنِ MSE همان پیدا کردنِ محتمل‌ترین مدل است <span class="en">(Maximum Likelihood)</span>. جریمه‌ی سنگینِ خطای بزرگ هم <b>نتیجه</b>ی آن است.</div>
+
+<p style="margin-top:12px"><b>یک فایده‌ی امروزی:</b> مربع نرم است و همه‌جا شیب دارد، پس گرادیان کاهشی راحت کف را پیدا می‌کند (شکل‌های بالا).</p>
+</details>
+<p style="margin-top:12px"><b>قدم ۵. بدی‌اش.</b> اگر خطاها نرمال نباشند، مثلاً یک خانه‌ی خیلی عجیب داشته باشیم، توان دو گول می‌خورد. در شکلِ بالا قیمتِ قصر را بالا ببرید. با <b>مربع</b>، خطِ سبز به طرفِ قصر کشیده می‌شود، چون مربعِ همان یک خانه از همه بزرگ‌تر است و مدل برای کوچک کردنش بقیه را فدا می‌کند. با <b>قدر مطلق</b>، خط تقریباً سرِ جایش می‌ماند.</p>
+<div class="key">اگر داده خانه‌های عجیب (<b>داده‌ی پرت</b>، Outlier) دارد، قدر مطلق امن‌تر است. اگر خطای بزرگ برای ما خیلی گران است، مربع بهتر است.</div>
+<script>
+(() => {
+  const H = [[60, 3300], [75, 4200], [90, 4600], [100, 5300], [140, 7400]], cv = document.getElementById('lossfig'), ctx = cv.getContext('2d'), out = document.getElementById('lm-out');
+  const fa = n => Math.round(n).toLocaleString('fa-IR'), css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+  let mode = 'abs';
+  const pts = () => [...H, [120, +out.value]];
+  const fitSq = P => { const n = P.length, mx = P.reduce((a, p) => a + p[0], 0) / n, my = P.reduce((a, p) => a + p[1], 0) / n;
+    let sxy = 0, sxx = 0; P.forEach(([x, y]) => { sxy += (x - mx) * (y - my); sxx += (x - mx) ** 2; }); const w = sxy / sxx; return [w, my - w * mx]; };
+  const fitAbs = P => { let best = [0, 0, Infinity];
+    for (let w = 0; w <= 100; w += 0.5) for (let b = -2000; b <= 4000; b += 20) { const e = P.reduce((a, [x, y]) => a + Math.abs(w * x + b - y), 0); if (e < best[2]) best = [w, b, e]; }
+    return best; };
+  const draw = () => {
+    const P = pts(), [w, b] = mode === 'sq' ? fitSq(P) : fitAbs(P);
+    const W = Math.max(260, Math.min(cv.parentElement.clientWidth - 28, 532)), Ht = Math.round(W * 0.62), r = devicePixelRatio || 1;
+    cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; ctx.setTransform(r, 0, 0, r, 0, 0);
+    const ymax = 16500, X = x => 30 + (x - 50) / 110 * (W - 40), Y = y => Ht - 20 - y / ymax * (Ht - 28), px = (Ht - 28) / ymax;
+    ctx.clearRect(0, 0, W, Ht);
+    ctx.fillStyle = css('muted'); ctx.font = '11px Vazirmatn'; ctx.textAlign = 'center';
+    for (let x = 60; x <= 140; x += 20) ctx.fillText(fa(x) + ' متر', X(x), Ht - 5);
+    const rows = []; let tot = 0;
+    P.forEach(([x, y], k) => {
+      const yh = w * x + b, e = y - yh, pen = mode === 'sq' ? e * e : Math.abs(e), side = Math.abs(e) * px;
+      tot += pen; rows.push([x, y, yh, e, pen, k === P.length - 1]);
+      ctx.strokeStyle = css('red'); ctx.fillStyle = css('red');
+      if (mode === 'sq') { const top = Math.min(Y(y), Y(yh)); ctx.globalAlpha = 0.18; ctx.fillRect(X(x), top, side, side); ctx.globalAlpha = 1; ctx.lineWidth = 1; ctx.strokeRect(X(x), top, side, side); }
+      else { ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(X(x), Y(y)); ctx.lineTo(X(x), Y(yh)); ctx.stroke(); }
+    });
+    ctx.strokeStyle = css('accent'); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(X(50), Y(w * 50 + b)); ctx.lineTo(X(160), Y(w * 160 + b)); ctx.stroke();
+    P.forEach(([x, y], k) => { ctx.fillStyle = css(k === P.length - 1 ? 'orange' : 'blue'); ctx.beginPath(); ctx.arc(X(x), Y(y), 6, 0, 7); ctx.fill(); });
+    document.getElementById('lm-outv').textContent = fa(+out.value);
+    const big = Math.max(...rows.map(r => r[4]));
+    document.getElementById('lm-tab').innerHTML = '<tr><th>خانه</th><th>واقعی</th><th>حدسِ مدل</th><th>خطا</th><th>جریمه</th><th></th></tr>' +
+      rows.map(([x, y, yh, e, pen, odd]) => `<tr${odd ? ' style="color:var(--orange)"' : ''}><td>${fa(x)} متر</td><td>${fa(y)}</td><td>${fa(yh)}</td><td>${fa(Math.abs(e))}</td><td>${fa(pen)}</td><td style="width:30%"><i class="pbar" style="width:${(pen / big * 100).toFixed(1)}%"></i></td></tr>`).join('');
+    document.getElementById('lm-info').innerHTML = (mode === 'sq' ? 'میانگینِ جریمه‌ها (MSE)' : 'میانگینِ جریمه‌ها (MAE)') + `: <b>${fa(tot / P.length)}</b> · شیبِ خط: هر متر <b>${(Math.round(w * 10) / 10).toLocaleString('fa-IR')}</b> میلیون`;
+    document.getElementById('lm-abs').style.fontWeight = mode === 'abs' ? 700 : 400; document.getElementById('lm-sq').style.fontWeight = mode === 'sq' ? 700 : 400;
+  };
+  document.getElementById('lm-abs').onclick = () => { mode = 'abs'; draw(); };
+  document.getElementById('lm-sq').onclick = () => { mode = 'sq'; draw(); };
+  out.oninput = draw; addEventListener('resize', draw); draw();
+})();
+</script>
+</section>
+
+<section>
+<h2>پیدا کردنِ بهترین وزن، قدم‌به‌قدم</h2>
+<p>برای ساده شدن، b را ثابت نگه می‌داریم و فقط w را عوض می‌کنیم. اگر خطا را برای هر w حساب کنیم، یک <b>کاسه</b> می‌شود:</p>
+<div class="box">
+<canvas id="gd"></canvas>
+<div class="legend"><span><i style="background:var(--accent)"></i>خطا برای هر w</span><span><i style="background:var(--red)"></i>w فعلی</span></div>
+<label>اندازه‌ی قدم (نرخ یادگیری)
+<select id="lr"><option value="0.00001">کوچک</option><option value="0.00007" selected>مناسب</option><option value="0.000105">بزرگ</option></select></label>
+<div class="err" id="gdinfo"></div>
+<button id="gdstep">یک قدم</button> <button id="gdreset">از نو</button>
+</div>
+<p>در هر قدم:</p>
+<ol>
+<li><b>شیب</b> را در نقطه‌ی فعلی حساب کن: اگر w را کمی بیشتر کنیم، خطا بالا می‌رود یا پایین؟</li>
+<li>w را کمی <b>خلافِ</b> شیب ببر.</li>
+</ol>
+<div class="f">\[ w_{\text{new}} = w - \eta \cdot \frac{\partial L}{\partial w} \qquad\qquad \frac{\partial L}{\partial w} = \frac{2}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i)\, x_i \]</div>
+<ul class="sym">
+<li>\(\eta\) (اِتا): نرخ یادگیری، اندازه‌ی قدم</li>
+<li>\(\frac{\partial L}{\partial w}\): شیبِ خطا نسبت به w</li>
+<li>\((\hat{y}_i - y_i)\): خطای خانه‌ی \(i\)</li>
+</ul>
+<p>معنیِ فرمول شیب: هر خانه به اندازه‌ی <b>خطایش</b> و <b>متراژش</b> w را هل می‌دهد. اگر مدل قیمت را زیاد حدس زده، w باید کم شود.</p>
+<div class="key">نرخ یادگیری را امتحان کنید: <b>کوچک</b> خیلی آهسته می‌رود. <b>بزرگ</b> از ته کاسه رد می‌شود و دورتر می‌افتد، و هر قدم بدتر می‌شود. انتخابِ آن یک <b>هایپرپارامتر</b> است.</div>
+<p class="ex">راه دیگر: برای رگرسیون خطی یک فرمولِ مستقیم هم هست که بهترین وزن‌ها را یک‌جا می‌دهد <span class="en">(Normal Equation)</span>. ولی با داده‌ی خیلی بزرگ کند است، و بقیه‌ی مدل‌ها چنین فرمولی ندارند. برای همین گرادیان کاهشی را یاد می‌گیریم.</p>
+<script>
+(() => {
+  const H = [[60, 3300], [75, 4200], [90, 4600], [100, 5300], [120, 6100], [140, 7400]], B = 323;
+  const L = w => H.reduce((s, [x, y]) => s + (w * x + B - y) ** 2, 0) / H.length;
+  const dL = w => H.reduce((s, [x, y]) => s + 2 * (w * x + B - y) * x, 0) / H.length;
+  const cv = document.getElementById('gd'), ctx = cv.getContext('2d'), lr = document.getElementById('lr');
+  const fa = n => Math.round(n).toLocaleString('fa-IR'), css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+  let w = 10, path = [10];
+  const draw = () => {
+    const W = Math.max(260, Math.min(cv.parentElement.clientWidth - 28, 532)), Ht = Math.round(W * 0.5), r = devicePixelRatio || 1;
+    cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; ctx.setTransform(r, 0, 0, r, 0, 0);
+    const X = v => 10 + (v - 0) / 100 * (W - 20), Y = v => Ht - 18 - Math.min(v, 3e7) / 3e7 * (Ht - 26);
+    ctx.clearRect(0, 0, W, Ht);
+    ctx.strokeStyle = css('line'); ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(100), Y(0)); ctx.stroke();
+    ctx.fillStyle = css('muted'); ctx.font = '11px Vazirmatn'; ctx.textAlign = 'center';
+    for (let v = 0; v <= 100; v += 20) ctx.fillText(fa(v), X(v), Ht - 4);
+    ctx.strokeStyle = css('accent'); ctx.lineWidth = 2.5; ctx.beginPath();
+    for (let v = 0; v <= 100; v += 0.5) { const p = [X(v), Y(L(v))]; v ? ctx.lineTo(...p) : ctx.moveTo(...p); } ctx.stroke();
+    ctx.strokeStyle = css('red'); ctx.lineWidth = 1.2; ctx.setLineDash([3, 3]); ctx.beginPath();
+    path.forEach((v, k) => { const p = [X(Math.max(0, Math.min(100, v))), Y(L(v))]; k ? ctx.lineTo(...p) : ctx.moveTo(...p); }); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = css('red'); ctx.beginPath(); ctx.arc(X(Math.max(0, Math.min(100, w))), Y(L(w)), 6, 0, 7); ctx.fill();
+    document.getElementById('gdinfo').innerHTML = `قدم ${fa(path.length - 1)} · w = <b>${(Math.round(w * 10) / 10).toLocaleString('fa-IR')}</b> · خطا = <b>${fa(L(w))}</b>` + (w < 0 || w > 100 ? ' · از نمودار بیرون رفت!' : '');
+  };
+  document.getElementById('gdstep').onclick = () => { w -= +lr.value * dL(w); path.push(w); draw(); };
+  document.getElementById('gdreset').onclick = lr.onchange = () => { w = 10; path = [10]; draw(); };
+  addEventListener('resize', draw); draw();
+})();
+</script>
+</section>
+
+<section>
+<h2>همه‌ی وزن‌ها با هم</h2>
+<p>در عمل فقط w عوض نمی‌شود؛ همه‌ی وزن‌ها و b <b>هم‌زمان</b> یک قدم برمی‌دارند. هر وزن شیبِ خودش را دارد:</p>
+<div class="f">\[ \frac{\partial L}{\partial w_j} = \frac{2}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i)\, x_{ij} \qquad\qquad \frac{\partial L}{\partial b} = \frac{2}{n} \sum_{i=1}^{n} (\hat{y}_i - y_i) \]</div>
+<p>دو نکته‌ی مهم:</p>
+<ul>
+<li><b>هم‌مقیاس کردن ویژگی‌ها:</b> متراژ صدتایی است و تعداد اتاق یکی. بدون هم‌مقیاس کردن، گرادیان کاهشی زیگزاگ می‌رود و دیر می‌رسد.</li>
+<li><b>هر قدم با چقدر داده:</b> همه‌ی داده (Batch)، یک نمونه (SGD)، یا یک تکه (Mini-batch).</li>
+</ul>
+<p class="ex">هر دو با شکل در صفحه‌ی <a href="gradient-descent.html">گرادیان کاهشی</a> هستند.</p>
+<p class="ex">راهِ دوم: برای رگرسیون خطی یک فرمولِ مستقیم هم هست که بهترین وزن‌ها را یک‌جا می‌دهد <span class="en">(Normal Equation)</span>: \(\mathbf{w} = (X^\top X)^{-1} X^\top y\). با چند هزار ویژگی کند می‌شود (وارون کردنِ ماتریس)، و اگر ویژگی‌ها خیلی هم‌بسته باشند ناپایدار است. با داده‌ی کم و ویژگیِ کم، عالی است.</p>
+</section>
+
+<section>
+<h2>جریمه‌ی پیچیدگی: Ridge و Lasso</h2>
+<p><b>اول یک مثال.</b> دو مدلِ قیمت خانه، هر دو با سه ویژگی: متراژ، تعداد اتاق، و <b>شماره‌ی پلاکِ</b> خانه (که هیچ ربطی به قیمت ندارد).</p>
+<div class="kinds">
+<div><p><b>مدلِ الف</b></p><div class="f">\[ \hat{y} = 50\,\text{area} + 100\,\text{rooms} + 0\,\text{plate} \]</div><p class="ex">خطا روی داده‌ی آموزش: ۱۲۰<br>خطا روی خانه‌های جدید: <b>۱۳۰</b></p></div>
+<div><p><b>مدلِ ب</b></p><div class="f">\[ \hat{y} = 48\,\text{area} + 180\,\text{rooms} + 37\,\text{plate} \]</div><p class="ex">خطا روی داده‌ی آموزش: ۱۱۰ (بهتر!)<br>خطا روی خانه‌های جدید: <b>۲۹۰</b> (خیلی بدتر)</p></div>
+</div>
+<p style="margin-top:10px">مدلِ ب روی داده‌ی آموزش کمی بهتر است، چون با شماره‌ی پلاک <b>تصادف‌ها را حفظ کرده</b>. ولی روی خانه‌های جدید خراب است. نشانه‌اش: <b>وزن‌های بزرگ و بی‌معنی</b>.</p>
+<p class="ex">(عددهای خطا ساختگی‌اند، برای نشان دادنِ ایده.)</p>
+
+<p style="margin-top:12px"><b>ایده:</b> به خطا یک <b>جریمه برای اندازه‌ی وزن‌ها</b> اضافه کن. حالا مدل فقط وقتی وزنی را بزرگ می‌کند که واقعاً خطا را کم کند:</p>
+<div class="f">\[ \text{loss} = \text{error} + \lambda \times \text{penalty} \]</div>
+<p>\(\lambda\) (لاندا) می‌گوید جریمه چقدر مهم است. صفر یعنی بدون جریمه؛ بزرگ یعنی وزن‌ها به‌شدت کوچک.</p>
+
+<p style="margin-top:12px"><b>جریمه را چطور حساب کنیم؟ دو راه، کنار هم.</b> فرض کنید وزن‌ها این‌ها باشند: <span dir="ltr">3، 0.5، 0.1</span></p>
+<div class="kinds">
+<div><p><b>Ridge</b> <span class="en">(L2: مربع)</span></p>
+<div class="f">\[ 3^2 + 0.5^2 + 0.1^2 = 9 + 0.25 + 0.01 \]</div>
+<p class="ex">وزنِ کوچکِ <span dir="ltr">0.1</span> فقط <span dir="ltr">0.01</span> جریمه دارد؛ تقریباً مجانی. پس مدل دلیلی ندارد صفرش کند.</p>
+<p><b>نتیجه:</b> همه‌ی وزن‌ها کوچک می‌شوند، ولی تقریباً هیچ‌کدام صفر نمی‌شود.</p></div>
+<div><p><b>Lasso</b> <span class="en">(L1: قدر مطلق)</span></p>
+<div class="f">\[ |3| + |0.5| + |0.1| = 3 + 0.5 + 0.1 \]</div>
+<p class="ex">وزنِ کوچکِ <span dir="ltr">0.1</span> هنوز <span dir="ltr">0.1</span> جریمه دارد. اگر آن ویژگی کمکی نمی‌کند، صفر کردنش جریمه را کم می‌کند.</p>
+<p><b>نتیجه:</b> وزنِ ویژگی‌های بی‌فایده <b>دقیقاً صفر</b> می‌شود؛ یعنی خودش ویژگی انتخاب می‌کند.</p></div>
+</div>
+<p style="margin-top:10px">در مثالِ بالا: Lasso وزنِ «شماره‌ی پلاک» را صفر می‌کند. Ridge کوچکش می‌کند ولی کاملاً حذفش نمی‌کند.</p>
+<p><b>با شکل ببینید.</b> پنج ویژگی داریم؛ فقط سه تا واقعاً روی جواب اثر دارند (۱، ۲ و ۵). لاندا را زیاد کنید:</p>
+<div class="box">
+<canvas id="reg"></canvas>
+<div class="ctl"><button id="rg-r" class="on">Ridge</button><button id="rg-l">Lasso</button></div>
+<label>\(\lambda\) <input id="rg-lam" type="range" min="0" max="100" step="1" value="0"><b id="rg-lv"></b></label>
+<div class="err" id="rg-info"></div>
+</div>
+<p class="ex">با Lasso، ویژگی‌های ۳ و ۴ (که بی‌اثرند) زود صفر می‌شوند. با Ridge وزن‌ها آرام کوچک می‌شوند ولی صفر نمی‌شوند. یک نکته‌ی جالب: ویژگیِ ۴ را شبیهِ ویژگیِ ۱ ساخته‌ایم؛ Ridge وزن را بینِ ویژگی‌های شبیه <b>تقسیم</b> می‌کند، برای همین وزنِ ۴ اول کمی بالا می‌رود. Lasso برعکس، از بینِ ویژگی‌های شبیه یکی را نگه می‌دارد.</p>
+<p class="ex">قبل از Ridge و Lasso، ویژگی‌ها را <b>حتماً</b> هم‌مقیاس کنید؛ وگرنه جریمه با ویژگی‌های مختلف ناعادلانه رفتار می‌کند. ترکیبِ هر دو را <b>Elastic Net</b> می‌گویند.</p>
+</section>
+
+<section>
+<h2>مدل چقدر خوب است؟ MAE، RMSE و R²</h2>
+<div class="kinds">
+<div><p><b>MAE</b></p><div class="f">\[ \frac{1}{n}\sum |y_i - \hat{y}_i| \]</div><p class="ex">به‌طور متوسط چقدر دور حدس زده؛ با همان واحدِ قیمت. ساده و قابل فهم.</p></div>
+<div><p><b>RMSE</b></p><div class="f">\[ \sqrt{\frac{1}{n}\sum (y_i - \hat{y}_i)^2} \]</div><p class="ex">جذرِ MSE، تا واحدش دوباره «میلیون» شود. خطاهای بزرگ را بیشتر نشان می‌دهد.</p></div>
+<div><p><b>R²</b></p><div class="f">\[ 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2} \]</div><p class="ex">مدل چند درصدِ تغییراتِ قیمت را توضیح می‌دهد، در مقایسه با این‌که همیشه فقط «میانگینِ قیمت» را بگوییم. ۱ عالی، ۰ یعنی بهتر از میانگین نیست.</p></div>
+</div>
+
+<p style="margin-top:14px"><b>مثال:</b> همان شش خانه، با بهترین خط (\(\hat{y} = 49.5\,x + 323\)):</p>
+<div dir="ltr"><table>
+<tr><th>area</th><th>y (real)</th><th>ŷ (model)</th><th>e = y − ŷ</th><th>|e|</th><th>e²</th></tr>
+<tr><td>60</td><td>3,300</td><td>3,294</td><td>+6</td><td>6</td><td>36</td></tr><tr><td>75</td><td>4,200</td><td>4,036</td><td>+164</td><td>164</td><td>26,896</td></tr><tr><td>90</td><td>4,600</td><td>4,779</td><td>-179</td><td>179</td><td>32,041</td></tr><tr><td>100</td><td>5,300</td><td>5,274</td><td>+26</td><td>26</td><td>676</td></tr><tr><td>120</td><td>6,100</td><td>6,264</td><td>-164</td><td>164</td><td>26,896</td></tr><tr><td>140</td><td>7,400</td><td>7,254</td><td>+146</td><td>146</td><td>21,316</td></tr>
+</table></div>
+<div class="kinds" style="margin-top:10px">
+<div><p><b>MAE</b></p><p class="ex">میانگینِ ستونِ |e|: <b>۱۱۴</b> میلیون. «به‌طور متوسط ۱۱۴ میلیون اشتباه می‌کند.»</p></div>
+<div><p><b>RMSE</b></p><p class="ex">میانگینِ ستونِ e² می‌شود ۱۷٬۹۴۹؛ جذرش: <b>۱۳۴</b> میلیون. کمی بیشتر از MAE، چون خطاهای بزرگ‌تر وزنِ بیشتری دارند.</p></div>
+<div><p><b>R²</b></p><p class="ex">پایین با شکل: <b>۰٫۹۹</b>. یعنی مدل ۹۹٪ از تفاوتِ قیمت‌ها را توضیح می‌دهد.</p></div>
+</div>
+<p style="margin-top:14px"><b>R² با شکل.</b> دو مدل را مقایسه می‌کنیم: مدلِ ما، و یک «مدلِ تنبل» که برای همه‌ی خانه‌ها فقط <b>میانگینِ قیمت</b> (۵٬۱۵۰) را می‌گوید:</p>
+<div class="kinds">
+<div><p><b>مدلِ تنبل: همیشه میانگین</b></p><canvas id="r2a"></canvas><p class="ex">جمعِ مربعِ خطاها: <b>۱۰٬۶۱۵٬۰۰۰</b></p></div>
+<div><p><b>مدلِ ما: خط</b></p><canvas id="r2b"></canvas><p class="ex">جمعِ مربعِ خطاها: <b>۱۰۷٬۶۹۷</b></p></div>
+</div>
+<div class="f">\[ R^2 = 1 - \frac{107697}{10615000} = 1 - 0.01 = 0.99 \]</div>
+<p class="ex">یعنی مدلِ ما فقط ۱٪ از خطای مدلِ تنبل را دارد. اگر مدل هیچ بهتر از میانگین نبود، کسر ۱ و R² صفر می‌شد.</p>
+<p style="margin-top:10px" class="ex">دامِ R²: با اضافه کردنِ هر ویژگی، حتی بی‌ربط، روی داده‌ی آموزش بالا می‌رود. برای مقایسه‌ی مدل‌هایی با تعدادِ ویژگیِ متفاوت از <b>R² تعدیل‌شده</b> <span class="en">(Adjusted R²)</span> استفاده می‌کنند، یا بهتر: همه را روی داده‌ی سنجش بسنجید.</p>
+</section>
+
+
+<section>
+<h2>وقتی رابطه خطی نیست</h2>
+<p><b>مثال:</b> قیمتِ خانه بر حسبِ فاصله تا مرکزِ شهر. نزدیکِ مرکز گران است، دورتر سریع ارزان می‌شود، و خیلی دور دیگر فرقی نمی‌کند. این یک <b>منحنی</b> است، نه خط.</p>
+<p><b>ترفند:</b> مدل را عوض نکن؛ <b>ویژگیِ جدید بساز</b>. به‌جای فقط \(x\)، به مدل \(x^2\)، \(x^3\)، … را هم بده:</p>
+<div class="f">\[ \hat{y} = w_1 x + w_2 x^2 + w_3 x^3 + \dots + b \]</div>
+<p>هنوز «رگرسیون خطی» است، چون نسبت به <b>وزن‌ها</b> خطی است؛ فقط ویژگی‌ها خم شده‌اند. اسمش <b>رگرسیون چندجمله‌ای</b> <span class="en">(Polynomial Regression)</span> است.</p>
+<div class="box">
+<canvas id="poly"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>خانه‌های آموزش</span><span><i style="background:var(--red)"></i>خانه‌های جدید (آزمون)</span><span><i style="background:var(--accent)"></i>مدل</span></div>
+<label>بالاترین توان <input id="pdeg" type="range" min="1" max="7" step="1" value="1"><b id="pdegv"></b></label>
+<div class="err" id="pinfo"></div>
+</div>
+<p class="ex">توان را از ۱ تا ۷ ببرید: با ۱ (خط) کم‌برازش است؛ با ۲ یا ۳ منحنی را می‌گیرد؛ با توان‌های بالا از روی خانه‌های آموزش رد می‌شود ولی برای خانه‌های جدید بد حدس می‌زند (بیش‌برازش). توان یک <b>هایپرپارامتر</b> است؛ با داده‌ی سنجش انتخابش کنید.</p>
+</section>
+<section>
+<h2>فرض‌ها و دام‌ها</h2>
+<div class="kinds">
+<div><p><b>رابطه باید تقریباً خطی باشد</b></p><svg viewBox="0 0 120 60" style="width:100%;max-width:200px;display:block;margin:4px auto"><circle cx="10.0" cy="52.0" r="2.2" fill="var(--blue)"/><circle cx="20.0" cy="51.5" r="2.2" fill="var(--blue)"/><circle cx="30.0" cy="50.2" r="2.2" fill="var(--blue)"/><circle cx="40.0" cy="48.0" r="2.2" fill="var(--blue)"/><circle cx="50.0" cy="44.8" r="2.2" fill="var(--blue)"/><circle cx="60.0" cy="40.8" r="2.2" fill="var(--blue)"/><circle cx="70.0" cy="35.8" r="2.2" fill="var(--blue)"/><circle cx="80.0" cy="30.0" r="2.2" fill="var(--blue)"/><circle cx="90.0" cy="23.2" r="2.2" fill="var(--blue)"/><circle cx="100.0" cy="15.6" r="2.2" fill="var(--blue)"/><circle cx="110.0" cy="7.0" r="2.2" fill="var(--blue)"/><line x1="8" y1="54" x2="112" y2="6" stroke="var(--accent)" stroke-width="2" /></svg><p class="ex">اگر نیست، ویژگیِ جدید بساز (مثلاً متراژ²، یا لگاریتمِ قیمت) یا مدلِ دیگری انتخاب کن.</p></div>
+<div><p><b>داده‌ی پرت</b> <span class="en">(Outlier)</span></p><svg viewBox="0 0 120 60" style="width:100%;max-width:200px;display:block;margin:4px auto"><circle cx="10.0" cy="46.5" r="2.2" fill="var(--blue)"/><circle cx="20.0" cy="43.0" r="2.2" fill="var(--blue)"/><circle cx="30.0" cy="39.5" r="2.2" fill="var(--blue)"/><circle cx="40.0" cy="36.0" r="2.2" fill="var(--blue)"/><circle cx="50.0" cy="32.5" r="2.2" fill="var(--blue)"/><circle cx="60.0" cy="29.0" r="2.2" fill="var(--blue)"/><circle cx="70.0" cy="25.5" r="2.2" fill="var(--blue)"/><circle cx="80.0" cy="22.0" r="2.2" fill="var(--blue)"/><circle cx="90.0" cy="18.5" r="2.2" fill="var(--blue)"/><circle cx="100.0" cy="15.0" r="2.2" fill="var(--blue)"/><circle cx="108.0" cy="6.0" r="2.2" fill="var(--orange)"/><line x1="8" y1="50" x2="112" y2="8" stroke="var(--accent)" stroke-width="2" /><line x1="8" y1="48" x2="112" y2="14" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="3 3"/></svg><p class="ex">با MSE یک نمونه‌ی عجیب کلِ خط را می‌کشد. پیدا کن، بررسی کن، یا از MAE و Huber استفاده کن.</p></div>
+<div><p><b>ویژگی‌های هم‌بسته</b> <span class="en">(Multicollinearity)</span></p><svg viewBox="0 0 120 60" style="width:100%;max-width:200px;display:block;margin:4px auto"><circle cx="10.0" cy="46.8" r="2.2" fill="var(--blue)"/><circle cx="20.0" cy="48.6" r="2.2" fill="var(--blue)"/><circle cx="30.0" cy="38.4" r="2.2" fill="var(--blue)"/><circle cx="40.0" cy="40.2" r="2.2" fill="var(--blue)"/><circle cx="50.0" cy="30.0" r="2.2" fill="var(--blue)"/><circle cx="60.0" cy="31.8" r="2.2" fill="var(--blue)"/><circle cx="70.0" cy="21.6" r="2.2" fill="var(--blue)"/><circle cx="80.0" cy="23.4" r="2.2" fill="var(--blue)"/><circle cx="90.0" cy="13.2" r="2.2" fill="var(--blue)"/><circle cx="100.0" cy="15.0" r="2.2" fill="var(--blue)"/><circle cx="110.0" cy="4.8" r="2.2" fill="var(--blue)"/><text x="60" y="58" font-size="5" text-anchor="middle" fill="var(--muted)">متراژ</text><text x="4" y="30" font-size="5" fill="var(--muted)">اتاق</text></svg><p class="ex">متراژ و تعداد اتاق تقریباً یک چیز را می‌گویند. پیش‌بینی هنوز خوب است، ولی وزن‌ها ناپایدار و غیرقابل‌اعتماد می‌شوند. تشخیص: ماتریسِ هم‌بستگی یا VIF. درمان: حذفِ یکی، ترکیب، یا Ridge.</p></div>
+<div><p><b>خطاها باید شبیه هم پخش باشند</b></p><svg viewBox="0 0 120 60" style="width:100%;max-width:200px;display:block;margin:4px auto"><circle cx="10.0" cy="47.7" r="2.2" fill="var(--blue)"/><circle cx="16.0" cy="42.5" r="2.2" fill="var(--blue)"/><circle cx="22.0" cy="44.9" r="2.2" fill="var(--blue)"/><circle cx="28.0" cy="36.8" r="2.2" fill="var(--blue)"/><circle cx="34.0" cy="42.2" r="2.2" fill="var(--blue)"/><circle cx="40.0" cy="31.2" r="2.2" fill="var(--blue)"/><circle cx="46.0" cy="39.4" r="2.2" fill="var(--blue)"/><circle cx="52.0" cy="25.6" r="2.2" fill="var(--blue)"/><circle cx="58.0" cy="36.7" r="2.2" fill="var(--blue)"/><circle cx="64.0" cy="19.9" r="2.2" fill="var(--blue)"/><circle cx="70.0" cy="33.9" r="2.2" fill="var(--blue)"/><circle cx="76.0" cy="14.3" r="2.2" fill="var(--blue)"/><circle cx="82.0" cy="31.1" r="2.2" fill="var(--blue)"/><circle cx="88.0" cy="8.6" r="2.2" fill="var(--blue)"/><circle cx="94.0" cy="28.4" r="2.2" fill="var(--blue)"/><circle cx="100.0" cy="3.0" r="2.2" fill="var(--blue)"/><circle cx="106.0" cy="25.6" r="2.2" fill="var(--blue)"/><line x1="8" y1="50" x2="112" y2="12" stroke="var(--accent)" stroke-width="2" /></svg><p class="ex">مستقل از هم، با پراکندگیِ تقریباً یکسان، و تقریباً نرمال. اگر خطا برای خانه‌های گران خیلی بزرگ‌تر است، معمولاً لگاریتم گرفتن از قیمت کمک می‌کند.</p></div>
+<div><p><b>بیرون از محدوده‌ی داده</b> <span class="en">(Extrapolation)</span></p><svg viewBox="0 0 120 60" style="width:100%;max-width:200px;display:block;margin:4px auto"><circle cx="10.0" cy="45.0" r="2.2" fill="var(--blue)"/><circle cx="18.0" cy="41.0" r="2.2" fill="var(--blue)"/><circle cx="26.0" cy="37.0" r="2.2" fill="var(--blue)"/><circle cx="34.0" cy="33.0" r="2.2" fill="var(--blue)"/><circle cx="42.0" cy="29.0" r="2.2" fill="var(--blue)"/><circle cx="50.0" cy="25.0" r="2.2" fill="var(--blue)"/><circle cx="58.0" cy="21.0" r="2.2" fill="var(--blue)"/><line x1="8" y1="50" x2="66" y2="21" stroke="var(--accent)" stroke-width="2" /><line x1="66" y1="21" x2="112" y2="-2" stroke="var(--accent)" stroke-width="2" stroke-dasharray="3 3"/><polyline points="66,21 80,16 95,13 112,12" fill="none" stroke="var(--red)" stroke-width="1.6"/><text x="98" y="26" font-size="5" text-anchor="middle" fill="var(--red)">واقعی</text></svg><p class="ex">مدلی که با خانه‌های ۵۰ تا ۱۵۰ متری ساخته شده، برای قصرِ ۱۰۰۰ متری قابل‌اعتماد نیست.</p></div>
+<div><p><b>هم‌بستگی، نه علت</b></p><svg viewBox="0 0 120 60" style="width:100%;max-width:200px;display:block;margin:4px auto"><polyline points="10,61.7 19,56.2 28,45.6 37,33.2 46,23.0 55,18.1 64,20.3 73,28.6 82,40.6 91,52.4 100,60.3 109,61.7" fill="none" stroke="var(--blue)" stroke-width="1.8"/><polyline points="10,63.7 19,59.3 28,50.6 37,40.4 46,32.1 55,28.1 64,29.8 73,36.7 82,46.5 91,56.2 100,62.6 109,63.7" fill="none" stroke="var(--orange)" stroke-width="1.8"/><text x="60" y="58" font-size="5" text-anchor="middle" fill="var(--muted)">ماه‌های سال</text></svg><p class="ex">فروش بستنی (آبی) و غرق شدن (نارنجی) با هم بالا و پایین می‌روند، ولی یکی علتِ دیگری نیست؛ هر دو به خاطرِ گرمای تابستان‌اند. وزن می‌گوید «با هم تغییر می‌کنند»، نه این‌که «یکی باعثِ دیگری است».</p></div>
+</div>
+</section>
+
+<section>
+<h2>کد</h2>
+<p><b>از صفر با NumPy</b> (گرادیان کاهشی + جریمه‌ی Ridge):</p>
+<pre>import numpy as np
+
+def fit(X, y, lr=0.05, epochs=500, lam=0.0):
+    X = (X - X.mean(0)) / X.std(0)           # standardize features
+    n, d = X.shape
+    w, b = np.zeros(d), 0.0
+    for _ in range(epochs):
+        err = X @ w + b - y                  # y_hat - y
+        w -= lr * (2 * X.T @ err / n + 2 * lam * w)
+        b -= lr * 2 * err.mean()
+    return w, b</pre>
+<p><b>با scikit-learn:</b></p>
+<pre>from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics import mean_absolute_error, r2_score
+
+model = make_pipeline(StandardScaler(), Ridge(alpha=1.0))
+model.fit(X_train, y_train)
+pred = model.predict(X_test)
+print(mean_absolute_error(y_test, pred), r2_score(y_test, pred))</pre>
+<p class="ex">در scikit-learn به لاندا <code>alpha</code> می‌گویند.</p>
+</section>
+
+<section class="qa">
+<h2>سؤال‌های مصاحبه</h2>
+<div dir="ltr" class="en-block">
+<p class="ex">Common questions from prep sites and interview guides. Click a question to see the answer.</p>
+<details><summary>Explain linear regression. When would you use it?</summary><p>It predicts a number as a weighted sum of the features plus a constant:</p>
+<div class="f">\[ \hat{y} = w_1 x_1 + w_2 x_2 + \dots + w_d x_d + b = \mathbf{w}^\top \mathbf{x} + b \]</div>
+<p>The weights are chosen to minimise MSE on the training data. Each weight means: "if this feature goes up by 1 and the others stay the same, the prediction changes by \(w_j\)". Example: \(\hat{y} = 49.5 \cdot \text{area} + 323\) means every extra square metre adds 49.5 million.</p>
+<p><b>Use it</b> when the relationship is roughly linear, when you need to explain the model (each weight is readable), or as a fast baseline before trying complex models.</p></details>
+<details><summary>What are the assumptions of linear regression?</summary><p>Five standard assumptions (each has a picture in the "pitfalls" section above):</p>
+<ol><li><b>Linearity:</b> \(y\) is roughly a linear function of the features.</li>
+<li><b>Independent errors:</b> one house's error tells you nothing about another's (often broken by time series).</li>
+<li><b>Constant variance (homoscedasticity):</b> errors are about the same size everywhere, not a funnel that widens for expensive houses.</li>
+<li><b>Normal errors:</b> needed mainly for p-values and confidence intervals, not for prediction.</li>
+<li><b>No strong multicollinearity:</b> features are not near copies of each other.</li></ol>
+<p>Interview tip: say which ones matter for <i>prediction</i> (linearity, no extreme outliers) versus for <i>inference</i> (normality, constant variance, independence).</p></details>
+<details><summary>Why MSE and not MAE?</summary>
+<p><b>The two losses</b></p>
+<div class="f">\[ \text{MSE} = \frac{1}{n}\sum_{i=1}^{n} (y_i - \hat{y}_i)^2 \qquad\qquad \text{MAE} = \frac{1}{n}\sum_{i=1}^{n} |y_i - \hat{y}_i| \]</div>
+<svg viewBox="0 0 120 46" style="width:100%;max-width:300px;display:block;margin:6px auto">
+<line x1="10" y1="40" x2="110" y2="40" stroke="var(--line)"/><line x1="60" y1="2" x2="60" y2="42" stroke="var(--line)"/>
+<polyline points="10,10.0 12,11.2 14,12.4 16,13.6 18,14.8 20,16.0 22,17.2 24,18.4 26,19.6 28,20.8 30,22.0 32,23.2 34,24.4 36,25.6 38,26.8 40,28.0 42,29.2 44,30.4 46,31.6 48,32.8 50,34.0 52,35.2 54,36.4 56,37.6 58,38.8 60,40.0 62,38.8 64,37.6 66,36.4 68,35.2 70,34.0 72,32.8 74,31.6 76,30.4 78,29.2 80,28.0 82,26.8 84,25.6 86,24.4 88,23.2 90,22.0 92,20.8 94,19.6 96,18.4 98,17.2 100,16.0 102,14.8 104,13.6 106,12.4 108,11.2 110,10.0" fill="none" stroke="var(--blue)" stroke-width="1.6"/><polyline points="10,10.0 12,12.4 14,14.6 16,16.8 18,18.8 20,20.8 22,22.7 24,24.4 26,26.1 28,27.7 30,29.2 32,30.6 34,31.9 36,33.1 38,34.2 40,35.2 42,36.1 44,36.9 46,37.6 48,38.3 50,38.8 52,39.2 54,39.6 56,39.8 58,40.0 60,40.0 62,40.0 64,39.8 66,39.6 68,39.2 70,38.8 72,38.3 74,37.6 76,36.9 78,36.1 80,35.2 82,34.2 84,33.1 86,31.9 88,30.6 90,29.2 92,27.7 94,26.1 96,24.4 98,22.7 100,20.8 102,18.8 104,16.8 106,14.6 108,12.4 110,10.0" fill="none" stroke="var(--red)" stroke-width="1.6"/>
+<text x="104" y="12" font-size="5" fill="var(--blue)">|e|</text><text x="86" y="8" font-size="5" fill="var(--red)">e²</text>
+<text x="60" y="46" font-size="4.5" text-anchor="middle" fill="var(--muted)">error e = 0</text></svg>
+<p class="ex">Blue: MAE penalty |e| (a V with a sharp corner). Red: MSE penalty e² (a smooth U).</p>
+
+<p><b>Reason 1: smooth, so it is easy to optimise.</b> The slope of each penalty:</p>
+<div class="f">\[ \frac{d}{de}\, e^2 = 2e \qquad\qquad \frac{d}{de}\, |e| = \pm 1 \ \ (\text{undefined at } 0) \]</div>
+<p>MSE's slope shrinks as the error shrinks, so gradient descent takes smaller steps near the bottom and settles. MAE's slope is always ±1, so steps do not shrink and it bounces around the bottom.</p>
+
+<p><b>Reason 2: it has a closed-form solution.</b> Setting the MSE gradient to zero gives \(\mathbf{w} = (X^\top X)^{-1} X^\top y\). MAE has no such formula.</p>
+
+<p><b>Reason 3: MSE leads to the mean, MAE to the median.</b> Predict one constant \(c\) for the numbers 2, 3, 4, 5, 100:</p>
+<table>
+<tr><th></th><th>best \(c\)</th><th>why</th></tr>
+<tr><td>MSE</td><td><b>22.8</b> (the mean)</td><td>\(\frac{d}{dc}\sum (y_i - c)^2 = 0 \Rightarrow c = \bar{y}\)</td></tr>
+<tr><td>MAE</td><td><b>4</b> (the median)</td><td>half the points above, half below</td></tr>
+</table>
+<p class="ex">The single outlier (100) drags the MSE answer from about 4 to 22.8. That is exactly the outlier problem.</p>
+
+<p><b>Reason 4: with normal errors, MSE is maximum likelihood.</b> If \(y = \hat{y} + \varepsilon\) with \(\varepsilon \sim \mathcal{N}(0, \sigma^2)\), the likelihood of the data is</p>
+<div class="f">\[ \prod_{i} \frac{1}{\sqrt{2\pi}\sigma} \exp\!\left(-\frac{(y_i - \hat{y}_i)^2}{2\sigma^2}\right) \]</div>
+<p>Taking the log turns the product into a sum, and maximising it is the same as minimising \(\sum (y_i - \hat{y}_i)^2\). So MSE is not arbitrary: it is the "most likely" model under normal noise. (With Laplace-distributed noise, the same argument gives MAE.)</p>
+
+<p><b>When to prefer MAE (or Huber):</b> when the data has outliers you do not want to dominate the model. Huber is MSE for small errors and MAE for large ones:</p>
+<div class="f">\[ \text{Huber}_\delta(e) = \begin{cases} \tfrac{1}{2}e^2 & |e| \le \delta \\ \delta\,(|e| - \tfrac{1}{2}\delta) & |e| > \delta \end{cases} \]</div>
+<p><b>One-line interview answer:</b> MSE is smooth with a closed-form solution, estimates the mean, and is the maximum-likelihood loss under Gaussian noise; its weakness is sensitivity to outliers, where MAE or Huber are more robust.</p>
+</details>
+<details><summary>What is the difference between Ridge and Lasso? Why does Lasso set weights to zero?</summary><div class="f">\[ \text{Ridge: } \text{MSE} + \lambda \sum_j w_j^2 \qquad\qquad \text{Lasso: } \text{MSE} + \lambda \sum_j |w_j| \]</div>
+<p><b>Numbers:</b> for weights (3, 0.5, 0.1), the Ridge penalty is 9 + 0.25 + 0.01 and the Lasso penalty is 3 + 0.5 + 0.1. Under Ridge the small weight costs only 0.01, so there is no pressure to remove it; under Lasso it still costs 0.1, so if it does not help, setting it to 0 lowers the loss.</p>
+<p><b>Slopes:</b> \(\frac{d}{dw} w^2 = 2w\) shrinks to 0 as \(w \to 0\); \(\frac{d}{dw}|w| = \pm 1\) never shrinks, so it keeps pushing until the weight hits exactly 0.</p>
+<p><b>Geometry:</b> the allowed region for the weights is a circle for L2 and a diamond for L1. The loss contours (red) usually first touch the diamond at a corner, where one weight is 0:</p><svg viewBox="0 0 220 100" style="width:100%;max-width:420px;display:block;margin:6px auto">
+<g transform="translate(55,50)"><line x1="-45" y1="0" x2="45" y2="0" stroke="var(--line)"/><line x1="0" y1="-45" x2="0" y2="45" stroke="var(--line)"/>
+<circle r="22" fill="var(--blue)" opacity=".18" stroke="var(--blue)"/><ellipse cx="30" cy="-30" rx="30" ry="14" transform="rotate(-30 30 -30)" fill="none" stroke="var(--red)"/>
+<circle cx="14" cy="-17" r="3" fill="var(--red)"/><text x="0" y="48" font-size="7" text-anchor="middle" fill="var(--ink)">Ridge (L2): circle</text></g>
+<g transform="translate(165,50)"><line x1="-45" y1="0" x2="45" y2="0" stroke="var(--line)"/><line x1="0" y1="-45" x2="0" y2="45" stroke="var(--line)"/>
+<polygon points="0,-24 24,0 0,24 -24,0" fill="var(--blue)" opacity=".18" stroke="var(--blue)"/><ellipse cx="20" cy="-40" rx="28" ry="12" transform="rotate(-15 20 -40)" fill="none" stroke="var(--red)"/>
+<circle cx="0" cy="-24" r="3" fill="var(--red)"/><text x="0" y="48" font-size="7" text-anchor="middle" fill="var(--ink)">Lasso (L1): diamond, hits a corner</text></g></svg><p>Ridge: keeps all features, shrinks them, good with correlated features. Lasso: does feature selection. Elastic Net mixes both.</p></details>
+<details><summary>What is multicollinearity? How do you detect and handle it?</summary><p><b>What:</b> two or more features carry almost the same information, e.g. area and number of rooms.</p>
+<p><b>Why it hurts:</b> the model can trade weight between them almost freely. \(50\cdot\text{area} + 100\cdot\text{rooms}\) and \(30\cdot\text{area} + 400\cdot\text{rooms}\) can give nearly the same predictions, so tiny data changes swing the weights wildly, and signs can even flip. Predictions stay fine; <b>interpretation</b> breaks.</p>
+<p><b>Detect:</b> a correlation matrix, or the Variance Inflation Factor for each feature:</p>
+<div class="f">\[ \text{VIF}_j = \frac{1}{1 - R_j^2} \]</div>
+<p>where \(R_j^2\) is how well the other features predict feature \(j\). VIF above 5 to 10 is a warning.</p>
+<p><b>Fix:</b> drop one feature, combine them (e.g. area per room, or PCA), or use Ridge, which splits the weight between them stably.</p></details>
+<details><summary>What is R²? How is it different from adjusted R²?</summary><div class="f">\[ R^2 = 1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2} \]</div>
+<p>It compares your model's squared error with that of a lazy model that always predicts the mean (see the two pictures in the metrics section). In our house example: \(1 - 107697 / 10615000 = 0.99\).</p>
+<p><b>Problem:</b> on training data, adding any feature, even random noise, can only keep R² the same or raise it. <b>Adjusted R²</b> adds a penalty for the number of features \(d\) with \(n\) samples:</p>
+<div class="f">\[ R^2_{\text{adj}} = 1 - (1 - R^2)\,\frac{n - 1}{n - d - 1} \]</div>
+<p>It only rises if a new feature helps more than chance would. In ML practice, comparing models on a validation set is even better.</p></details>
+<details><summary>Can R² be negative?</summary><p>Yes, on <b>test</b> data. R² compares the model with "always predict the mean". If the model is worse than that, the fraction is above 1 and R² drops below 0.</p>
+<p>Example: the mean-only model has squared error 100 on the test set; an overfitted model has 150. Then \(R^2 = 1 - 150/100 = -0.5\). On the training data of ordinary least squares with a bias term, R² is never negative.</p></details>
+<details><summary>Normal equation or gradient descent?</summary><p>The normal equation sets the gradient of MSE to zero and solves directly:</p>
+<div class="f">\[ \mathbf{w} = (X^\top X)^{-1} X^\top \mathbf{y} \]</div>
+<table><tr><th></th><th>Normal equation</th><th>Gradient descent</th></tr>
+<tr><td>Answer</td><td>exact, one shot</td><td>approximate, many steps</td></tr>
+<tr><td>Cost</td><td>\(O(n d^2 + d^3)\): slow when \(d\) is in the thousands</td><td>\(O(n d)\) per step; scales to huge data with mini-batches</td></tr>
+<tr><td>Tuning</td><td>none</td><td>learning rate, number of steps</td></tr>
+<tr><td>Weak spot</td><td>unstable if features are highly correlated</td><td>needs feature scaling</td></tr></table>
+<p>Rule of thumb: few features and data that fits in memory, use the closed form (libraries use stable variants such as QR or SVD); otherwise gradient descent.</p></details>
+<details><summary>Why scale features before Ridge or Lasso?</summary><p>The penalty \(\lambda \sum w_j^2\) treats every weight the same, but a weight's size depends on its feature's units.</p>
+<p><b>Example:</b> area in square metres gets weight 50. If you measure area in square <i>centimetres</i> instead, the same effect needs a weight of 0.005. The penalty on that weight almost vanishes, so the feature is barely regularised, only because of its unit.</p>
+<p>After standardising (\(x \to (x - \text{mean}) / \text{std}\)) every feature has the same scale, so the penalty is fair. Gradient descent also converges faster on a rounder loss bowl.</p></details>
+<details><summary>How do you handle outliers?</summary><ol><li><b>Look first:</b> is it an error (an extra zero typed in a price) or real (an actual palace)?</li>
+<li><b>Errors:</b> fix or remove them.</li>
+<li><b>Real but rare:</b> reduce their pull: use MAE or Huber loss instead of MSE; log-transform the target (\(\log(\text{price})\) squeezes huge values); or clip extreme values to a percentile.</li>
+<li><b>Real and important:</b> maybe they need their own model or feature.</li></ol>
+<p>Why MSE is sensitive: an error of 1,000 costs 1,000,000 under MSE but only 1,000 under MAE, so one outlier can dominate the total loss.</p></details>
+<details><summary>Implement linear regression from scratch.</summary><p>See the NumPy code above. What interviewers check:</p>
+<ul><li>Vectorised: <code>X @ w</code>, not a Python loop over rows.</li>
+<li>Correct gradients: \(\frac{2}{n} X^\top(\hat{y} - y)\) for \(\mathbf{w}\) and \(\frac{2}{n}\sum(\hat{y} - y)\) for \(b\).</li>
+<li>Feature scaling, and the same scaling applied to test data (fit on train only).</li>
+<li>A convergence check (stop when the loss stops improving) and, if asked, the Ridge term \(2\lambda \mathbf{w}\) in the gradient.</li>
+<li>Bonus: mention the closed form <code>np.linalg.lstsq(X, y)</code> as a sanity check.</li></ul></details>
+<details><summary>What if the relationship is not linear?</summary><p>Two options:</p>
+<ol><li><b>Create new features</b> and keep linear regression: powers (\(x^2, x^3\)), logs (\(\log x\)), products (\(x_1 x_2\)). The model is still linear in the <i>weights</i>, so everything above still works. See the interactive "when the relationship is not linear" section: degree 2 or 3 fits the curve; very high degree overfits.</li>
+<li><b>Switch to a non-linear model:</b> decision trees, random forests, gradient boosting, or neural networks, which learn the shape themselves.</li></ol>
+<p>Check with a residual plot: if errors form a curve instead of random noise, the relationship is not linear.</p></details>
+<p class="ex" style="margin-top:12px">Sources: <a href="https://www.interviewquery.com/p/linear-regression-interview-questions">Interview Query</a> · <a href="https://www.analyticsvidhya.com/blog/2025/11/linear-regression-interview-questions/">Analytics Vidhya</a> · <a href="https://arv-anshul.github.io/blog/regression-interview-questions">Regression Interview Questions</a> · <a href="https://medium.com/@ketki_kinkar/linear-regression-data-scientist-interview-qna-f68e3fc56603">Medium</a></p>
+</div>
+</section>
+</main>
+<script>
+(() => {
+  // 40 samples, 5 standardized features; only features 1, 2 and 5 really matter
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const randn = () => Math.sqrt(-2 * Math.log(rnd())) * Math.cos(2 * Math.PI * rnd());
+  const n = 40, d = 5, TRUE = [3, -2, 0, 0, 1.5];
+  const X = Array.from({ length: n }, () => Array.from({ length: d }, randn));
+  X.forEach(r => { r[3] = 0.7 * r[0] + 0.7 * r[3]; });          // feature 4 looks like feature 1
+  const y = X.map(r => r.reduce((s, v, j) => s + v * TRUE[j], 0) + randn() * 1.2);
+  const ridge = lam => { const A = Array.from({ length: d }, (_, i) => Array.from({ length: d + 1 }, (_, j) => j < d ? X.reduce((s, r) => s + r[i] * r[j], 0) / n + (i === j ? lam : 0) : X.reduce((s, r, k) => s + r[i] * y[k], 0) / n));
+    for (let i = 0; i < d; i++) { let p = i; for (let k = i + 1; k < d; k++) if (Math.abs(A[k][i]) > Math.abs(A[p][i])) p = k; [A[i], A[p]] = [A[p], A[i]];
+      for (let k = 0; k < d; k++) if (k !== i) { const f = A[k][i] / A[i][i]; for (let j = i; j <= d; j++) A[k][j] -= f * A[i][j]; } }
+    return A.map((r, i) => r[d] / r[i]); };
+  const lasso = lam => { const w = Array(d).fill(0);
+    for (let it = 0; it < 300; it++) for (let j = 0; j < d; j++) {
+      let rho = 0, z = 0; X.forEach((r, k) => { const pred = r.reduce((s, v, m) => s + (m === j ? 0 : v * w[m]), 0); rho += r[j] * (y[k] - pred); z += r[j] * r[j]; });
+      rho /= n; z /= n; w[j] = Math.sign(rho) * Math.max(0, Math.abs(rho) - lam / 2) / z; }
+    return w; };
+  let mode = 'r';
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+  const draw = () => {
+    const t = +document.getElementById('rg-lam').value, lam = mode === 'r' ? t / 10 : t / 15;
+    const w = mode === 'r' ? ridge(lam) : lasso(lam);
+    const cv = document.getElementById('reg'), W = Math.max(260, Math.min(cv.parentElement.clientWidth - 28, 532)), Ht = Math.round(W * 0.5), r = devicePixelRatio || 1;
+    cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0);
+    const mid = Ht / 2, sc = (Ht / 2 - 18) / 3.5, bw = W / d;
+    c.strokeStyle = css('line'); c.beginPath(); c.moveTo(0, mid); c.lineTo(W, mid); c.stroke();
+    c.font = '12px Vazirmatn'; c.textAlign = 'center';
+    w.forEach((v, j) => { const x = j * bw + bw * 0.25, h = v * sc;
+      c.fillStyle = css(Math.abs(v) < 1e-3 ? 'muted' : (TRUE[j] ? 'accent' : 'orange')); c.fillRect(x, h > 0 ? mid - h : mid, bw * 0.5, Math.max(1.5, Math.abs(h)));
+      c.fillStyle = css('ink'); c.fillText('ویژگی ' + (j + 1).toLocaleString('fa-IR'), j * bw + bw / 2, Ht - 3);
+      c.fillText((Math.round(v * 100) / 100).toLocaleString('fa-IR'), j * bw + bw / 2, h > 0 ? mid - h - 5 : mid - h + 14); });
+    document.getElementById('rg-lv').textContent = (Math.round(lam * 100) / 100).toLocaleString('fa-IR');
+    const zeros = w.filter(v => Math.abs(v) < 1e-3).length;
+    document.getElementById('rg-info').innerHTML = `وزن‌های دقیقاً صفر: <b>${zeros.toLocaleString('fa-IR')}</b> از ۵ · میله‌ی سبز = ویژگیِ واقعاً مؤثر، نارنجی = بی‌اثر، خاکستری = صفر شده`;
+    ['r', 'l'].forEach(k => document.getElementById('rg-' + k).classList.toggle('on', k === mode));
+  };
+  document.getElementById('rg-r').onclick = () => { mode = 'r'; draw(); };
+  document.getElementById('rg-l').onclick = () => { mode = 'l'; draw(); };
+  document.getElementById('rg-lam').oninput = draw; addEventListener('resize', draw); draw();
+})();
+</script>
+<script>
+(() => {
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+  const mk = (cv, ratio, maxw) => { const W = Math.max(200, Math.min(cv.parentElement.clientWidth - 8, maxw)), Ht = Math.round(W * ratio), r = devicePixelRatio || 1;
+    cv.width = W * r; cv.height = Ht * r; cv.style.width = W + 'px'; cv.style.height = Ht + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+    const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, Ht); return [c, W, Ht]; };
+  // R² pictures
+  const H = [[60, 3300], [75, 4200], [90, 4600], [100, 5300], [120, 6100], [140, 7400]], w = 49.5, b = 323.3, mean = 5150;
+  const r2 = () => [['r2a', () => mean], ['r2b', x => w * x + b]].forEach(([id, f]) => {
+    const [c, W, Ht] = mk(document.getElementById(id), 0.7, 320), X = x => 14 + (x - 50) / 100 * (W - 24), Y = y => Ht - 10 - (y - 2500) / 5500 * (Ht - 20), px = (Ht - 20) / 5500;
+    H.forEach(([x, y]) => { const e = Math.abs(y - f(x)) * px; c.globalAlpha = .18; c.fillStyle = css('red'); c.fillRect(X(x), Math.min(Y(y), Y(f(x))), e, e); c.globalAlpha = 1; });
+    c.strokeStyle = css('accent'); c.lineWidth = 2.5; c.beginPath(); c.moveTo(X(50), Y(f(50))); c.lineTo(X(150), Y(f(150))); c.stroke();
+    c.fillStyle = css('blue'); H.forEach(([x, y]) => { c.beginPath(); c.arc(X(x), Y(y), 4, 0, 7); c.fill(); });
+  });
+  // polynomial regression
+  let seed = 3; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const truth = x => 2000 + 7000 * Math.exp(-x / 2.5);              // price vs distance (km)
+  const train = Array.from({ length: 8 }, (_, k) => { const x = 0.5 + k * 9 / 7; return [x, truth(x) + (rnd() - .5) * 1500]; });
+  const test = Array.from({ length: 7 }, (_, k) => { const x = 0.5 + (k + .5) * 9 / 7; return [x, truth(x) + (rnd() - .5) * 1500]; });
+  const fit = d => { const f = x => Array.from({ length: d + 1 }, (_, p) => (x / 10) ** p), A = Array.from({ length: d + 1 }, () => Array(d + 2).fill(0));
+    train.forEach(([x, y]) => { const v = f(x); for (let i = 0; i <= d; i++) { for (let j = 0; j <= d; j++) A[i][j] += v[i] * v[j]; A[i][d + 1] += v[i] * y; } });
+    for (let i = 0; i <= d; i++) A[i][i] += 1e-12;
+    for (let i = 0; i <= d; i++) { let p = i; for (let k = i + 1; k <= d; k++) if (Math.abs(A[k][i]) > Math.abs(A[p][i])) p = k; [A[i], A[p]] = [A[p], A[i]];
+      for (let k = 0; k <= d; k++) if (k !== i) { const m = A[k][i] / A[i][i]; for (let j = i; j <= d + 1; j++) A[k][j] -= m * A[i][j]; } }
+    const wv = A.map((r, i) => r[d + 1] / r[i]); return x => f(x).reduce((s, v, i) => s + v * wv[i], 0); };
+  const mse = (m, D) => D.reduce((s, [x, y]) => s + (y - m(x)) ** 2, 0) / D.length;
+  const poly = () => { const d = +document.getElementById('pdeg').value, m = fit(d);
+    const [c, W, Ht] = mk(document.getElementById('poly'), 0.6, 532), X = x => 14 + x / 10.2 * (W - 24), Y = y => Ht - 10 - (y - 0) / 10500 * (Ht - 20);
+    c.save(); c.beginPath(); c.rect(0, 0, W, Ht); c.clip();
+    c.strokeStyle = css('accent'); c.lineWidth = 2.5; c.beginPath(); for (let k = 0; k <= 300; k++) { const x = k / 300 * 10.2, y = m(x); k ? c.lineTo(X(x), Y(y)) : c.moveTo(X(x), Y(y)); } c.stroke(); c.restore();
+    c.fillStyle = css('blue'); train.forEach(([x, y]) => { c.beginPath(); c.arc(X(x), Y(y), 4, 0, 7); c.fill(); });
+    c.strokeStyle = css('red'); c.lineWidth = 2; test.forEach(([x, y]) => { c.beginPath(); c.arc(X(x), Y(y), 4, 0, 7); c.stroke(); });
+    c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; c.fillText('فاصله تا مرکز شهر →', W / 2, Ht - 1);
+    const fm = v => Math.round(Math.sqrt(v)).toLocaleString('fa-IR');
+    document.getElementById('pdegv').textContent = d.toLocaleString('fa-IR');
+    document.getElementById('pinfo').innerHTML = `خطا (RMSE) روی آموزش: <b>${fm(mse(m, train))}</b> · روی خانه‌های جدید: <b>${fm(mse(m, test))}</b>` + (d === 1 ? ' · کم‌برازش' : d >= 5 ? ' · بیش‌برازش' : ''); };
+  document.getElementById('pdeg').oninput = poly;
+  const all = () => { r2(); poly(); }; addEventListener('resize', all); all();
+})();
+</script>
+<script src="toc.js"></script>
+</body>
+</html>
