@@ -231,6 +231,72 @@ code { direction: ltr; unicode-bidi: isolate; }
   pal.oninput = draw; addEventListener('resize', draw); draw();
 })();
 </script>
+<h3 style="margin-top:20px">قدم‌به‌قدم: چرا قدر مطلق خط را تکان نمی‌دهد؟</h3>
+<p>ساده‌ترین مدل: \(\hat{y} = a\,x\) (خطی که از صفر رد می‌شود). دنبالِ بهترین شیبِ \(a\) هستیم. چهار خانه:</p>
+<div dir="ltr"><table>
+<tr><th>x</th><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+<tr><th>y (normal)</th><td>2</td><td>4</td><td>6</td><td>8</td></tr>
+<tr><th>y (with outlier)</th><td>2</td><td>4</td><td>6</td><td><b>100</b></td></tr>
+</table></div>
+<p class="ex" style="margin-top:6px">بدونِ پرت، همه دقیقاً روی \(y = 2x\) هستند، پس بهترین شیب ۲ است.</p>
+<div class="kinds" style="margin-top:8px">
+<div><p><b>قدر مطلق</b></p><div class="f">\[ L(a) = |2 - a| + |4 - 2a| + |6 - 3a| + |100 - 4a| \]</div>
+<p class="ex">a = 1 ← 1 + 2 + 3 + 96 = <b>102</b><br>a = 2 ← 0 + 0 + 0 + 92 = <b>92</b> (کمترین)<br>a = 3 ← 1 + 2 + 3 + 88 = <b>94</b></p></div>
+<div><p><b>مربع</b></p><div class="f">\[ L(a) = (2 - a)^2 + (4 - 2a)^2 + (6 - 3a)^2 + (100 - 4a)^2 \]</div>
+<p class="ex">a = 2 ← 0 + 0 + 0 + 8464 = <b>8464</b><br>a = 3 ← 1 + 4 + 9 + 7744 = <b>7758</b><br>a = 14 ← 144 + 576 + 1296 + 1936 = <b>3952</b><br>a = 15 ← 169 + 676 + 1521 + 1600 = <b>3966</b><br>کمترین: \(a = \tfrac{\sum xy}{\sum x^2} = \tfrac{428}{30} \approx 14.27\)</p></div>
+</div>
+<p style="margin-top:12px"><b>حالا یک قدم: شیب را از ۲ به ۳ ببریم.</b> خط به طرفِ خانه‌ی پرت می‌رود؛ آن نزدیک‌تر می‌شود و بقیه دورتر:</p>
+<div dir="ltr"><table>
+<tr><th>point</th><th>x</th><th>|error| change</th><th>error² change</th></tr>
+<tr><td>(1, 2)</td><td>1</td><td>+1 (farther)</td><td>+1</td></tr>
+<tr><td>(2, 4)</td><td>2</td><td>+2 (farther)</td><td>+4</td></tr>
+<tr><td>(3, 6)</td><td>3</td><td>+3 (farther)</td><td>+9</td></tr>
+<tr><td>(4, 100)</td><td>4</td><td><b>−4</b> (closer)</td><td><b>−720</b></td></tr>
+<tr><th>total</th><th></th><th><b>+2</b> → worse, stay</th><th><b>−706</b> → better, keep going</th></tr>
+</table></div>
+<div class="kinds" style="margin-top:10px">
+<div><p><b>قدر مطلق</b></p><p class="ex">وقتی a یک واحد بالا می‌رود، پیش‌بینیِ هر خانه دقیقاً <b>x</b> واحد جابه‌جا می‌شود، پس خطای هر خانه دقیقاً <b>x</b> واحد عوض می‌شود؛ هر قدر هم دور باشد. سه خانه‌ی عادی با هم ۱ + ۲ + ۳ = <b>۶</b> دورتر می‌شوند؛ خانه‌ی پرت فقط <b>۴</b> نزدیک‌تر (۹۲ به ۸۸). ۱۰۰ باشد یا ۱۰۰۰، باز فقط ۴. پس ۶ از ۴ بیشتر است و خط سرِ جایش می‌ماند.</p></div>
+<div><p><b>مربع</b></p><p class="ex">خطای خانه‌ی پرت از 92² = 8464 به 88² = 7744 می‌رسد: <b>۷۲۰</b> کمتر. چون عدد بزرگ است، مربعش خیلی تند کم می‌شود. بقیه فقط ۱۴ بدتر می‌شوند. پس خط باز هم به طرفِ پرت می‌رود، تا حدودِ ۱۴٫۳.</p></div>
+</div>
+<p style="margin-top:12px"><b>خودتان امتحان کنید:</b> شیب و قیمتِ خانه‌ی پرت را عوض کنید. جدول نشان می‌دهد اگر شیب یک واحد بالاتر برود، خطای هر خانه چقدر عوض می‌شود:</p>
+<div class="box">
+<label>شیب a <input id="ax-a" type="range" min="0" max="16" step="1" value="2"><b id="ax-av"></b></label>
+<label>قیمتِ خانه‌ی چهارم <input id="ax-y" type="range" min="8" max="1000" step="1" value="100"><b id="ax-yv"></b></label>
+<canvas id="ax-cv"></canvas>
+<div dir="ltr" id="ax-tab"></div>
+<div class="err" id="ax-info"></div>
+</div>
+<script>
+(() => {
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+  const fa = n => Math.round(n).toLocaleString('fa-IR'), A = document.getElementById('ax-a'), Yi = document.getElementById('ax-y');
+  const draw = () => {
+    const a = +A.value, X = [1, 2, 3, 4], Y = [2, 4, 6, +Yi.value];
+    const cv = document.getElementById('ax-cv'), W = Math.max(220, Math.min(cv.parentElement.clientWidth - 28, 532)), H = Math.round(W * 0.45), r = devicePixelRatio || 1;
+    cv.width = W * r; cv.height = H * r; cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+    const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, H);
+    const top = Math.max(110, Y[3] * 1.1), px = x => 14 + x / 4.6 * (W - 24), py = y => H - 12 - Math.min(y, top) / top * (H - 22);
+    c.strokeStyle = css('line'); c.beginPath(); c.moveTo(px(0), py(0)); c.lineTo(px(4.6), py(0)); c.stroke();
+    X.forEach((x, i) => { c.strokeStyle = css('red'); c.lineWidth = 1.5; c.beginPath(); c.moveTo(px(x), py(Y[i])); c.lineTo(px(x), py(a * x)); c.stroke(); });
+    c.strokeStyle = css('accent'); c.lineWidth = 2.5; c.beginPath(); c.moveTo(px(0), py(0)); c.lineTo(px(4.6), py(a * 4.6)); c.stroke();
+    X.forEach((x, i) => { c.fillStyle = css(i === 3 ? 'orange' : 'blue'); c.beginPath(); c.arc(px(x), py(Y[i]), 5, 0, 7); c.fill(); });
+    let ta = 0, ts = 0, la = 0, ls = 0;
+    const rows = X.map((x, i) => { const e = Y[i] - a * x, e2 = Y[i] - (a + 1) * x, da = Math.abs(e2) - Math.abs(e), ds = e2 * e2 - e * e;
+      ta += da; ts += ds; la += Math.abs(e); ls += e * e;
+      return `<tr><td>(${x}, ${Y[i]})</td><td>${Math.abs(e)}</td><td>${da > 0 ? '+' : ''}${da}</td><td>${e * e}</td><td>${ds > 0 ? '+' : ''}${ds}</td></tr>`; }).join('');
+    document.getElementById('ax-tab').innerHTML = `<table><tr><th>point</th><th>|e| now</th><th>change if a+1</th><th>e² now</th><th>change if a+1</th></tr>${rows}
+      <tr><th>total</th><th>${la}</th><th>${ta > 0 ? '+' : ''}${ta}</th><th>${ls}</th><th>${ts > 0 ? '+' : ''}${ts}</th></tr></table>`;
+    document.getElementById('ax-av').textContent = fa(a); document.getElementById('ax-yv').textContent = fa(+Yi.value);
+    const v = d => d < 0 ? 'بالاتر بردنِ شیب <b>بهتر</b> است' : 'بالاتر بردنِ شیب <b>بدتر</b> است';
+    document.getElementById('ax-info').innerHTML = `قدر مطلق: ${v(ta)} · مربع: ${v(ts)}`;
+  };
+  A.oninput = Yi.oninput = draw; addEventListener('resize', draw); draw();
+})();
+</script>
+<p class="ex">قیمتِ خانه‌ی چهارم را تا ۱۰۰۰ ببرید، با شیبِ ۲: در ستونِ قدر مطلق، تغییرِ آن خانه همیشه <b>−۴</b> می‌ماند و جمع <b>+۲</b>. در ستونِ مربع، عددِ آن خانه هرچه بزرگ‌تر.</p>
+<details class="drop"><summary><b>یک استثنا: وقتی x خیلی بزرگ است (اهرم)</b></summary>
+<p>با قدر مطلق، قدرتِ کششِ هر خانه همان <b>x</b> آن است. اگر خانه‌ی پرت x بزرگی داشت، مثلاً (10, 100) به‌جای (4, 100)، نزدیک شدنش با هر قدم <b>۱۰</b> بود، که از ۶ بیشتر است، و خط به طرفش می‌رفت. یعنی قدر مطلق در برابرِ <b>y</b>ِ عجیب (قیمتِ عجیب) مقاوم است، ولی نه همیشه در برابرِ <b>x</b>ِ عجیب (متراژِ خیلی عجیب). به این دومی <b>اهرم</b> <span class="en">(Leverage)</span> می‌گویند.</p>
+</details>
 <div class="key">اگر داده خانه‌های عجیب (<b>داده‌ی پرت</b>، Outlier) دارد، قدر مطلق امن‌تر است. اگر خطای بزرگ برای ما خیلی گران است، مربع بهتر است.</div>
 <script>
 (() => {
@@ -356,6 +422,12 @@ code { direction: ltr; unicode-bidi: isolate; }
 <p style="margin-top:12px"><b>ایده:</b> به خطا یک <b>جریمه برای اندازه‌ی وزن‌ها</b> اضافه کن. حالا مدل فقط وقتی وزنی را بزرگ می‌کند که واقعاً خطا را کم کند:</p>
 <div class="f">\[ \text{loss} = \text{error} + \lambda \times \text{penalty} \]</div>
 <p>\(\lambda\) (لاندا) می‌گوید جریمه چقدر مهم است. صفر یعنی بدون جریمه؛ بزرگ یعنی وزن‌ها به‌شدت کوچک.</p>
+<div class="key"><b>مثلِ مالیات:</b> مدل حق دارد وزنِ بزرگ داشته باشد، ولی باید <b>مالیاتش</b> را بدهد. λ نرخِ مالیات است. یک ویژگی فقط وقتی وزن می‌گیرد که <b>سودش</b> (چقدر خطا را کم می‌کند) از مالیاتش بیشتر باشد.</div>
+<div class="kinds">
+<div><p><b>Lasso: مالیاتِ با نرخِ ثابت</b></p><p class="ex">هر واحد وزن، از همان اولین واحد، <b>همان</b> مالیات را دارد. اگر سودِ یک ویژگی از نرخِ مالیات کمتر باشد، حتی یک واحد هم نمی‌ارزد، پس وزنش <b>دقیقاً صفر</b> می‌شود و کلاً کنار می‌رود.</p></div>
+<div><p><b>Ridge: مالیاتِ پلکانی</b></p><p class="ex">وزنِ کوچک تقریباً <b>معاف</b> است؛ هرچه وزن بزرگ‌تر، نرخ بیشتر. پس هر ویژگی‌ای که حتی کمی مفید باشد، یک وزنِ کوچک می‌گیرد: <b>کوچک می‌شود، ولی می‌ماند</b>.</p></div>
+</div>
+<p class="ex" style="margin-top:8px"><b>با عدد:</b> داده می‌گوید وزنِ «شماره‌ی پلاک» 0.4 باشد (خطا \((w - 0.4)^2\))، و λ = 1. نزدیکِ صفر، هر واحد وزن خطا را با سرعتِ <b>0.8</b> کم می‌کند (سود). با Lasso مالیاتِ هر واحد <b>1</b> است: سود کمتر از مالیات، پس وزن <b>0</b>. با Ridge، نزدیکِ صفر مالیات تقریباً <b>0</b> است، پس وزن می‌گیرد و به <b>0.2</b> می‌رسد. این عددها را در شکلِ پایین (دکمه‌ی «ویژگیِ ضعیف»، λ = 1) هم می‌بینید.</p>
 
 <p style="margin-top:12px"><b>جریمه را چطور حساب کنیم؟ دو راه، کنار هم.</b> فرض کنید وزن‌ها این‌ها باشند: <span dir="ltr">3، 0.5، 0.1</span></p>
 <div class="kinds">
