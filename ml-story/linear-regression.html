@@ -192,6 +192,45 @@ code { direction: ltr; unicode-bidi: isolate; }
 <p style="margin-top:12px"><b>یک فایده‌ی امروزی:</b> مربع نرم است و همه‌جا شیب دارد، پس گرادیان کاهشی راحت کف را پیدا می‌کند (شکل‌های بالا).</p>
 </details>
 <p style="margin-top:12px"><b>قدم ۵. بدی‌اش.</b> اگر خطاها نرمال نباشند، مثلاً یک خانه‌ی خیلی عجیب داشته باشیم، توان دو گول می‌خورد. در شکلِ بالا قیمتِ قصر را بالا ببرید. با <b>مربع</b>، خطِ سبز به طرفِ قصر کشیده می‌شود، چون مربعِ همان یک خانه از همه بزرگ‌تر است و مدل برای کوچک کردنش بقیه را فدا می‌کند. با <b>قدر مطلق</b>، خط تقریباً سرِ جایش می‌ماند.</p>
+<p style="margin-top:12px"><b>چرا؟ خودِ تابعِ خطا را ببینید.</b> ساده‌ترین حالت: پنج قیمت (۲، ۳، ۴، ۵ و قیمتِ قصر) و یک عددِ ثابتِ <b>c</b> به‌عنوانِ حدس برای همه. محورِ افقی c است و محورِ عمودی خطای کل. نقطه‌ی پایینِ هر منحنی <b>بهترین c</b> است. قیمتِ قصر را تغییر بدهید:</p>
+<div class="box">
+<label>قیمتِ قصر <input id="pal" type="range" min="6" max="200" step="1" value="100"><b id="palv"></b></label>
+<div class="kinds">
+<div><p><b>قدر مطلق</b></p><canvas id="lossA"></canvas><p class="ex" id="lossAi"></p></div>
+<div><p><b>مربع</b></p><canvas id="lossS"></canvas><p class="ex" id="lossSi"></p></div>
+</div>
+<p class="ex" style="margin:4px 0 0">نقطه‌ها روی محورِ افقی: پنج قیمت (نارنجی = قصر). خط‌چین: بهترین c.</p>
+</div>
+<p class="ex">با <b>قدر مطلق</b>، منحنی چند تکه‌ی صاف است و گوشه‌هایش درست روی قیمت‌ها می‌افتند. وقتی قصر دورتر می‌رود، کلِ منحنی بالاتر می‌آید (خطای کل بیشتر می‌شود)، ولی <b>پایین‌ترین نقطه</b> روی ۴ (میانه) می‌ماند. با <b>مربع</b>، منحنی یک کاسه است و کفش روی میانگین است؛ قصر دورتر، کاسه هم با آن جابه‌جا می‌شود.</p>
+<script>
+(() => {
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+  const fa = (n, d = 0) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+  const pal = document.getElementById('pal');
+  const plot = (id, f, best, ys, P) => {
+    const cv = document.getElementById(id), W = Math.max(200, Math.min(cv.parentElement.clientWidth - 8, 320)), H = Math.round(W * 0.7), r = devicePixelRatio || 1;
+    cv.width = W * r; cv.height = H * r; cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+    const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, H);
+    const xmax = 200, X = v => 8 + v / xmax * (W - 16), vals = []; for (let v = 0; v <= xmax; v += 0.5) vals.push([v, f(v)]);
+    const top = Math.max(...vals.map(q => q[1])), Y = v => H - 16 - v / top * (H - 26);
+    c.strokeStyle = css('line'); c.beginPath(); c.moveTo(X(0), Y(0)); c.lineTo(X(xmax), Y(0)); c.stroke();
+    c.strokeStyle = css('accent'); c.lineWidth = 2.5; c.beginPath(); vals.forEach(([v, y], k) => k ? c.lineTo(X(v), Y(y)) : c.moveTo(X(v), Y(y))); c.stroke();
+    c.strokeStyle = css('red'); c.setLineDash([4, 4]); c.lineWidth = 1.5; c.beginPath(); c.moveTo(X(best), Y(0)); c.lineTo(X(best), Y(top)); c.stroke(); c.setLineDash([]);
+    c.fillStyle = css('red'); c.beginPath(); c.arc(X(best), Y(f(best)), 4.5, 0, 7); c.fill();
+    ys.forEach((y, k) => { c.fillStyle = css(k === ys.length - 1 ? 'orange' : 'blue'); c.beginPath(); c.arc(X(y), H - 8, 3.5, 0, 7); c.fill(); });
+  };
+  const draw = () => {
+    const P = +pal.value, ys = [2, 3, 4, 5, P], n = ys.length;
+    const mae = c => ys.reduce((a, y) => a + Math.abs(y - c), 0) / n, mse = c => ys.reduce((a, y) => a + (y - c) ** 2, 0) / n;
+    const med = [...ys].sort((a, b) => a - b)[2], mean = ys.reduce((a, b) => a + b, 0) / n;
+    plot('lossA', mae, med, ys, P); plot('lossS', mse, mean, ys, P);
+    document.getElementById('palv').textContent = fa(P);
+    document.getElementById('lossAi').innerHTML = `بهترین c = <b>${fa(med)}</b> (میانه) · کمترین خطا = ${fa(mae(med), 1)}`;
+    document.getElementById('lossSi').innerHTML = `بهترین c = <b>${fa(mean, 1)}</b> (میانگین) · کمترین خطا = ${fa(mse(mean), 1)}`;
+  };
+  pal.oninput = draw; addEventListener('resize', draw); draw();
+})();
+</script>
 <div class="key">اگر داده خانه‌های عجیب (<b>داده‌ی پرت</b>، Outlier) دارد، قدر مطلق امن‌تر است. اگر خطای بزرگ برای ما خیلی گران است، مربع بهتر است.</div>
 <script>
 (() => {
@@ -330,6 +369,65 @@ code { direction: ltr; unicode-bidi: isolate; }
 <p><b>نتیجه:</b> وزنِ ویژگی‌های بی‌فایده <b>دقیقاً صفر</b> می‌شود؛ یعنی خودش ویژگی انتخاب می‌کند.</p></div>
 </div>
 <p style="margin-top:10px">در مثالِ بالا: Lasso وزنِ «شماره‌ی پلاک» را صفر می‌کند. Ridge کوچکش می‌کند ولی کاملاً حذفش نمی‌کند.</p>
+<h3 style="margin-top:20px">ساده‌ترین حالت: فقط یک وزن</h3>
+<p>بیایید فقط به <b>یک</b> وزن نگاه کنیم. فرض کنید داده می‌گوید بهترین مقدار برای این وزن \(a\) است، و خطا به شکلِ ساده‌ی \((w - a)^2\) است. حالا جریمه را اضافه می‌کنیم:</p>
+<div class="kinds">
+<div><p><b>Ridge</b></p><div class="f">\[ (w - a)^2 + \lambda w^2 \]</div><p class="ex">کمینه‌اش (مشتق را صفر کنیم):</p><div class="f">\[ w^* = \frac{a}{1 + \lambda} \]</div><p class="ex">وزن را <b>تقسیم</b> می‌کند. هرچه λ بزرگ‌تر، کوچک‌تر؛ ولی هیچ‌وقت دقیقاً صفر نمی‌شود.</p></div>
+<div><p><b>Lasso</b></p><div class="f">\[ (w - a)^2 + \lambda |w| \]</div><p class="ex">کمینه‌اش:</p><div class="f">\[ w^* = \max\!\left(0,\ a - \tfrac{\lambda}{2}\right) \]</div><p class="ex">از وزن یک مقدارِ ثابت <b>کم</b> می‌کند. اگر وزن کوچک‌تر از λ/2 باشد، <b>دقیقاً صفر</b> می‌شود.</p></div>
+</div>
+<p style="margin-top:10px"><b>با عدد.</b> دو ویژگی: یکی <b>قوی</b> (داده می‌گوید a = 3، مثلاً متراژ) و یکی <b>ضعیف</b> (a = 0.4، مثلاً شماره‌ی پلاک که فقط تصادفی کمی اثر نشان داده):</p>
+<div dir="ltr"><table>
+<tr><th>λ</th><th>Ridge, strong (a=3)</th><th>Ridge, weak (a=0.4)</th><th>Lasso, strong (a=3)</th><th>Lasso, weak (a=0.4)</th></tr>
+<tr><td>0</td><td>3</td><td>0.4</td><td>3</td><td>0.4</td></tr>
+<tr><td>0.5</td><td>2</td><td>0.27</td><td>2.75</td><td>0.15</td></tr>
+<tr><td>1</td><td>1.5</td><td>0.2</td><td>2.5</td><td><b>0</b></td></tr>
+<tr><td>2</td><td>1</td><td>0.13</td><td>2</td><td><b>0</b></td></tr>
+<tr><td>4</td><td>0.6</td><td>0.08</td><td>1</td><td><b>0</b></td></tr>
+</table></div>
+<div class="kinds" style="margin-top:10px">
+<div><p><b>Ridge</b></p><p class="ex">هر دو وزن را <b>به یک نسبت</b> کوچک می‌کند (با λ = 1 هر دو نصف می‌شوند). ویژگیِ ضعیف کوچک می‌ماند، ولی می‌ماند.</p></div>
+<div><p><b>Lasso</b></p><p class="ex">از هر دو <b>یک مقدارِ ثابت</b> کم می‌کند (با λ = 1، نیم واحد). برای ویژگیِ قوی این کم است؛ ویژگیِ ضعیف را کاملاً <b>حذف</b> می‌کند. یعنی Lasso خودش ویژگیِ بی‌فایده را کنار می‌گذارد.</p></div>
+</div>
+<p style="margin-top:12px"><b>با شکل ببینید.</b> سه منحنی: خطا (آبی)، جریمه (نارنجی) و جمعشان (سبز). کفِ منحنیِ سبز، وزنی است که مدل انتخاب می‌کند:</p>
+<div class="box">
+<div class="ctl"><button id="rl-s" class="on">ویژگیِ قوی (a = 3)</button><button id="rl-w">ویژگیِ ضعیف (a = 0.4)</button></div>
+<label>\(\lambda\) <input id="rl-lam" type="range" min="0" max="8" step="0.1" value="1"><b id="rl-lv"></b></label>
+<div class="kinds">
+<div><p><b>Ridge</b></p><canvas id="rl-r"></canvas><p class="ex" id="rl-ri"></p></div>
+<div><p><b>Lasso</b></p><canvas id="rl-l"></canvas><p class="ex" id="rl-li"></p></div>
+</div>
+<div class="legend"><span><i style="background:var(--blue)"></i>خطا \((w-a)^2\)</span><span><i style="background:var(--orange)"></i>جریمه</span><span><i style="background:var(--accent)"></i>جمع</span><span><i style="background:var(--red)"></i>وزنِ انتخاب‌شده</span></div>
+</div>
+<p class="ex">ویژگیِ ضعیف را انتخاب کنید و λ را از ۰ بالا ببرید. در Lasso، جریمه یک «V» با نوکِ تیز روی صفر است؛ وقتی λ به ۰٫۸ می‌رسد، کفِ منحنیِ سبز درست روی آن نوک می‌افتد و وزن <b>صفر</b> می‌شود. در Ridge، جریمه یک «U» نرم است و کفِ سبز فقط کم‌کم به صفر نزدیک می‌شود.</p>
+<script>
+(() => {
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+  const fa = (n, d = 2) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+  let a = 3; const lam = document.getElementById('rl-lam');
+  const plot = (id, pen, best) => {
+    const cv = document.getElementById(id), W = Math.max(200, Math.min(cv.parentElement.clientWidth - 8, 320)), H = Math.round(W * 0.7), r = devicePixelRatio || 1;
+    cv.width = W * r; cv.height = H * r; cv.style.width = W + 'px'; cv.style.height = H + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+    const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0); c.clearRect(0, 0, W, H);
+    const lo = -1, hi = 4, X = w => 8 + (w - lo) / (hi - lo) * (W - 16), top = 12, Y = v => H - 14 - Math.min(v, top) / top * (H - 22);
+    c.strokeStyle = css('line'); c.beginPath(); c.moveTo(X(lo), Y(0)); c.lineTo(X(hi), Y(0)); c.moveTo(X(0), Y(0)); c.lineTo(X(0), Y(top)); c.stroke();
+    const L = +lam.value, curves = [['blue', w => (w - a) ** 2], ['orange', w => L * pen(w)], ['accent', w => (w - a) ** 2 + L * pen(w)]];
+    curves.forEach(([col, f]) => { c.strokeStyle = css(col); c.lineWidth = col === 'accent' ? 3 : 2; c.beginPath();
+      for (let k = 0; k <= 200; k++) { const w = lo + (hi - lo) * k / 200; k ? c.lineTo(X(w), Y(f(w))) : c.moveTo(X(w), Y(f(w))); } c.stroke(); });
+    c.fillStyle = css('red'); c.beginPath(); c.arc(X(best), Y((best - a) ** 2 + L * pen(best)), 5, 0, 7); c.fill();
+    c.fillStyle = css('muted'); c.font = '11px Vazirmatn'; c.textAlign = 'center'; c.fillText('w', X(hi) - 6, H - 2); c.fillText('۰', X(0), H - 2);
+  };
+  const draw = () => { const L = +lam.value, wr = a / (1 + L), wl = Math.max(0, a - L / 2);
+    plot('rl-r', w => w * w, wr); plot('rl-l', w => Math.abs(w), wl);
+    document.getElementById('rl-lv').textContent = fa(L, 1);
+    document.getElementById('rl-ri').innerHTML = `وزن = ${fa(a, 1)} ÷ (۱ + ${fa(L, 1)}) = <b>${fa(wr)}</b>`;
+    document.getElementById('rl-li').innerHTML = wl > 0 ? `وزن = ${fa(a, 1)} − ${fa(L / 2)} = <b>${fa(wl)}</b>` : `${fa(a, 1)} − ${fa(L / 2)} صفر یا منفی است ← وزن = <b>۰</b> (حذف شد)`; };
+  const pick = (v, id) => { a = v; ['rl-s', 'rl-w'].forEach(k => document.getElementById(k).classList.toggle('on', k === id)); draw(); };
+  document.getElementById('rl-s').onclick = () => pick(3, 'rl-s'); document.getElementById('rl-w').onclick = () => pick(0.4, 'rl-w');
+  lam.oninput = draw; addEventListener('resize', draw); draw();
+})();
+</script>
+
+<h3 style="margin-top:20px">حالا با چند ویژگی</h3>
 <p><b>با شکل ببینید.</b> پنج ویژگی داریم؛ فقط سه تا واقعاً روی جواب اثر دارند (۱، ۲ و ۵). لاندا را زیاد کنید:</p>
 <div class="box">
 <canvas id="reg"></canvas>
