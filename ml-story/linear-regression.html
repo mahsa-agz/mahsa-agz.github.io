@@ -499,6 +499,71 @@ code { direction: ltr; unicode-bidi: isolate; }
 })();
 </script>
 
+<h3 style="margin-top:20px">شکلِ معروف: دایره و لوزی</h3>
+<p>حالا دو وزن داریم: \(w_1\) و \(w_2\). هر نقطه‌ی صفحه یک مدل است.</p>
+<ul>
+<li><b>بیضی‌های آبی</b> = خطِ «خطای برابر». مرکزشان (نقطه‌ی سیاه) کمترین خطاست، یعنی جوابِ بدونِ جریمه.</li>
+<li><b>شکلِ نارنجی</b> = خطِ «مالیاتِ برابر». در Ridge دایره است، در Lasso لوزی، در ترکیبِ هر دو (Elastic Net) لوزیِ گوشه‌گرد.</li>
+<li><b>نقطه‌ی قرمز</b> = جوابِ مدل. جایی است که بیضی و شکلِ نارنجی <b>به هم مماس</b> می‌شوند: کمترین خطا با این مقدار مالیات.</li>
+</ul>
+<div class="box">
+<label>\(\lambda\) <input id="gm-lam" type="range" min="0" max="6" step="0.1" value="2"><b id="gm-lv"></b></label>
+<label>بدونِ جریمه \(w_1\) <input id="gm-c1" type="range" min="-1" max="3.5" step="0.1" value="1.6"><b id="gm-c1v"></b></label>
+<label>بدونِ جریمه \(w_2\) <input id="gm-c2" type="range" min="-1" max="3.5" step="0.1" value="3"><b id="gm-c2v"></b></label>
+<div class="kinds">
+<div><p><b>Ridge (L2)</b></p><canvas id="gm-r"></canvas><p class="ex" id="gm-ri"></p></div>
+<div><p><b>Lasso (L1)</b></p><canvas id="gm-l"></canvas><p class="ex" id="gm-li"></p></div>
+<div><p><b>Elastic Net (L1 + L2)</b></p><canvas id="gm-e"></canvas><p class="ex" id="gm-ei"></p></div>
+</div>
+<div class="legend"><span><i style="background:var(--blue)"></i>خطای برابر</span><span><i style="background:var(--orange)"></i>مالیاتِ برابر</span><span><i style="background:var(--ink)"></i>بدونِ جریمه</span><span><i style="background:var(--red)"></i>جوابِ مدل</span></div>
+</div>
+<div class="kinds">
+<div><p><b>چرا لوزی صفر می‌سازد؟</b></p><p class="ex">لوزی <b>گوشه‌ی تیز</b> دارد و گوشه‌هایش درست روی محورهاست (جایی که یک وزن صفر است). بیضی معمولاً اول به همین گوشه می‌خورد. پس یک وزن دقیقاً <b>۰</b> می‌شود. اسمش «Sparsity»: مدلِ کم‌وزن.</p></div>
+<div><p><b>چرا دایره صفر نمی‌سازد؟</b></p><p class="ex">دایره گوشه ندارد. نقطه‌ی تماس تقریباً هیچ‌وقت دقیقاً روی محور نیست. پس هر دو وزن کوچک می‌شوند ولی می‌مانند. وزن بینِ ویژگی‌ها <b>پخش</b> می‌شود («Weight sharing»).</p></div>
+</div>
+<p><b>Elastic Net</b> سازش است: گوشه دارد (پس هنوز می‌تواند صفر بسازد) ولی گوشه‌اش گِرد است (پس مثلِ Ridge وزن را بینِ ویژگی‌های شبیه به هم پخش می‌کند). در عوض <b>دو</b> عدد را باید تنظیم کنید: مقدارِ λ و سهمِ L1 در برابرِ L2. اینجا نصف‌نصف گذاشته‌ایم.</p>
+<div class="f">\[ \text{loss} = \text{error} + \lambda_1 \sum |w_j| + \lambda_2 \sum w_j^2 \]</div>
+<p class="ex">آزمایش: λ را روی ۱ بگذارید و مرکز را (۳، ۳) کنید؛ Lasso هر دو وزن را نگه می‌دارد. حالا λ را بالا ببرید یا یکی از دو عدد را کم کنید؛ نقطه‌ی قرمزِ Lasso روی محور می‌پرد و یک وزن صفر می‌شود. Ridge هیچ‌وقت این کار را نمی‌کند.</p>
+<script>
+(() => {
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
+  const fa = (n, d = 2) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('fa-IR');
+  const A = [[0.6, -0.35], [-0.35, 0.9]], $ = id => document.getElementById(id);
+  const E = (w, c) => { const d = [w[0] - c[0], w[1] - c[1]]; return A[0][0] * d[0] * d[0] + 2 * A[0][1] * d[0] * d[1] + A[1][1] * d[1] * d[1]; };
+  const solve = (c, l1, l2) => { const w = [0, 0];
+    for (let it = 0; it < 500; it++) for (let j = 0; j < 2; j++) { const i = 1 - j, g = A[j][j] * c[j] - A[j][i] * (w[i] - c[i]);
+      w[j] = Math.sign(g) * Math.max(0, Math.abs(g) - l1 / 2) / (A[j][j] + l2); }
+    return w.map(v => Math.abs(v) < 1e-9 ? 0 : v); };
+  const plot = (id, l1, l2, c) => {
+    const w = solve(c, l1, l2), pen = v => l1 * (Math.abs(v[0]) + Math.abs(v[1])) + l2 * (v[0] * v[0] + v[1] * v[1]);
+    const cv = $(id), W = Math.max(200, Math.min(cv.parentElement.clientWidth - 8, 280)), r = devicePixelRatio || 1;
+    cv.width = W * r; cv.height = W * r; cv.style.width = W + 'px'; cv.style.height = W + 'px'; cv.style.display = 'block'; cv.style.margin = '4px auto';
+    const g = cv.getContext('2d'); g.setTransform(r, 0, 0, r, 0, 0); g.clearRect(0, 0, W, W);
+    const lo = -1.5, hi = 4, X = v => 10 + (v - lo) / (hi - lo) * (W - 20), Y = v => W - 10 - (v - lo) / (hi - lo) * (W - 20);
+    g.strokeStyle = css('line'); g.lineWidth = 1; g.beginPath(); g.moveTo(X(lo), Y(0)); g.lineTo(X(hi), Y(0)); g.moveTo(X(0), Y(lo)); g.lineTo(X(0), Y(hi)); g.stroke();
+    const curve = rad => { g.beginPath(); for (let k = 0; k <= 360; k++) { const t = k / 360 * 2 * Math.PI, u = [Math.cos(t), Math.sin(t)], q = rad(u);
+      k ? g.lineTo(X(q[0]), Y(q[1])) : g.moveTo(X(q[0]), Y(q[1])); } g.closePath(); };
+    const ell = L => u => { const s = Math.sqrt(L / (A[0][0] * u[0] * u[0] + 2 * A[0][1] * u[0] * u[1] + A[1][1] * u[1] * u[1])); return [c[0] + s * u[0], c[1] + s * u[1]]; };
+    const Lw = E(w, c);
+    g.strokeStyle = css('blue'); g.globalAlpha = 0.3; g.lineWidth = 1;
+    [0.25, 0.5, 2, 3].forEach(m => { if (Lw > 1e-6) { curve(ell(Lw * m)); g.stroke(); } }); g.globalAlpha = 1;
+    const k = pen(w);
+    if (k > 1e-9) { curve(u => { let a = 0, b = 20; for (let n = 0; n < 40; n++) { const m = (a + b) / 2; pen([m * u[0], m * u[1]]) < k ? a = m : b = m; } return [a * u[0], a * u[1]]; });
+      g.fillStyle = css('orange'); g.globalAlpha = 0.15; g.fill(); g.globalAlpha = 1; g.strokeStyle = css('orange'); g.lineWidth = 2; g.stroke(); }
+    if (Lw > 1e-6) { curve(ell(Lw)); g.strokeStyle = css('blue'); g.lineWidth = 2; g.stroke(); }
+    g.fillStyle = css('ink'); g.beginPath(); g.arc(X(c[0]), Y(c[1]), 4, 0, 7); g.fill();
+    g.fillStyle = css('red'); g.beginPath(); g.arc(X(w[0]), Y(w[1]), 5.5, 0, 7); g.fill();
+    g.fillStyle = css('muted'); g.font = '11px Vazirmatn'; g.textAlign = 'center'; g.fillText('w1', X(hi) - 10, Y(0) - 4); g.fillText('w2', X(0) + 12, Y(hi) + 8);
+    const z = v => v === 0 ? '<b>۰</b>' : fa(v);
+    return `w1 = ${z(w[0])} ، w2 = ${z(w[1])}` + (w.includes(0) && (c[0] || c[1]) && !(w[0] === 0 && w[1] === 0) ? ' ← یک وزن حذف شد' : w[0] === 0 && w[1] === 0 ? ' ← هر دو حذف شدند' : '');
+  };
+  const draw = () => { const L = +$('gm-lam').value, c = [+$('gm-c1').value, +$('gm-c2').value];
+    $('gm-lv').textContent = fa(L, 1); $('gm-c1v').textContent = fa(c[0], 1); $('gm-c2v').textContent = fa(c[1], 1);
+    $('gm-ri').innerHTML = plot('gm-r', 0, L, c); $('gm-li').innerHTML = plot('gm-l', L, 0, c); $('gm-ei').innerHTML = plot('gm-e', L / 2, L / 2, c); };
+  ['gm-lam', 'gm-c1', 'gm-c2'].forEach(id => $(id).oninput = draw); addEventListener('resize', draw); draw();
+})();
+</script>
+
 <h3 style="margin-top:20px">حالا با چند ویژگی</h3>
 <p><b>با شکل ببینید.</b> پنج ویژگی داریم؛ فقط سه تا واقعاً روی جواب اثر دارند (۱، ۲ و ۵). لاندا را زیاد کنید:</p>
 <div class="box">
