@@ -97,29 +97,42 @@ h3 { font-size: 17px; margin: 0 0 6px; }
 
 <section>
 <h2>تابع خطا: چرا MSE نه؟</h2>
-<p>در رگرسیون خطی از MSE استفاده کردیم. این‌جا از تابعی به اسم <b>Log Loss</b> <span class="en">(یا Binary Cross-Entropy)</span> استفاده می‌کنیم:</p>
-<div class="f">\[ L = -\frac{1}{n} \sum_{i=1}^{n} \Big[\, y_i \log p_i + (1 - y_i) \log (1 - p_i) \,\Big] \]</div>
-<p>ترسناک به نظر می‌رسد، ولی ساده است. برای هر دانش‌آموز فقط <b>یکی</b> از دو تکه فعال است:</p>
+<p><b>سؤال ساده است:</b> مدل یک احتمال گفته. چقدر جریمه‌اش کنیم؟</p>
+<p>یک دانش‌آموز را در نظر بگیرید که <b>واقعاً قبول شده</b>. مدل گفته احتمالِ قبولی‌اش \(p\) است. هر چه \(p\) کمتر باشد، مدل بیشتر اشتباه کرده. دو راه برای جریمه داریم:</p>
 <div class="kinds">
-<div><p><b>اگر واقعاً قبول شده (y = 1)</b></p><div class="f">\[ \text{penalty} = -\log p \]</div></div>
-<div><p><b>اگر واقعاً رد شده (y = 0)</b></p><div class="f">\[ \text{penalty} = -\log (1 - p) \]</div></div>
+<div><p><b>MSE</b></p><div class="f">\[ (1 - p)^2 \]</div><p class="ex">همان فاصله‌ی به توانِ دو. حداکثرش ۱ است.</p></div>
+<div><p><b>Log Loss</b></p><div class="f">\[ -\log p \]</div><p class="ex">«چقدر غافلگیر شدی؟» اگر گفته بودی ۱٪ و اتفاق افتاد، خیلی.</p></div>
 </div>
-<p style="margin-top:10px"><b>با عدد:</b> دانش‌آموزی واقعاً قبول شده. مدل چقدر جریمه می‌شود؟</p>
-<div dir="ltr"><table>
-<tr><th>model's p (pass)</th><th>Log Loss: −log p</th><th>MSE: (1 − p)²</th></tr>
-<tr><td>0.99 (sure, right)</td><td>0.01</td><td>0.0001</td></tr>
-<tr><td>0.9</td><td>0.11</td><td>0.01</td></tr>
-<tr><td>0.5 (unsure)</td><td>0.69</td><td>0.25</td></tr>
-<tr><td>0.1 (wrong)</td><td>2.3</td><td>0.81</td></tr>
-<tr><td>0.01 (sure, wrong)</td><td><b>4.6</b></td><td>0.98</td></tr>
+<div dir="ltr" style="margin-top:10px"><table>
+<tr><th>model's p (pass)</th><th>MSE: (1 − p)²</th><th>Log Loss: −log p</th></tr>
+<tr><td>0.99 (sure, right)</td><td>0.0001</td><td>0.01</td></tr>
+<tr><td>0.5 (unsure)</td><td>0.25</td><td>0.69</td></tr>
+<tr><td>0.1 (wrong)</td><td>0.81</td><td>2.3</td></tr>
+<tr><td>0.01 (sure, wrong)</td><td>0.98</td><td><b>4.6</b></td></tr>
 </table></div>
+<p class="ex" style="margin-top:6px">MSE فرقِ «کمی اشتباه» (۰٫۱) و «با اطمینان اشتباه» (۰٫۰۱) را تقریباً نمی‌بیند: ۰٫۸۱ در برابرِ ۰٫۹۸. Log Loss می‌بیند: ۲٫۳ در برابرِ ۴٫۶ و هر چه p به صفر نزدیک‌تر، بی‌نهایت.</p>
+
+<h3>مشکلِ اصلی: MSE وقتی خیلی اشتباه است، کم هُل می‌دهد</h3>
+<p>آموزش یعنی گرادیان. گرادیان می‌گوید وزن را <b>چقدر</b> عوض کن. برای همان دانش‌آموزِ قبول‌شده (ضریبِ x را کنار گذاشته‌ایم):</p>
+<div class="kinds">
+<div><p><b>MSE بعد از سیگموید</b></p><div class="f">\[ 2\,(p - 1)\; p\,(1 - p) \]</div><p class="ex">تکه‌ی \(p(1-p)\) شیبِ سیگموید است. وقتی p نزدیکِ ۰ است، سیگموید صاف است و این تکه تقریباً <b>صفر</b>.</p></div>
+<div><p><b>Log Loss</b></p><div class="f">\[ p - 1 \]</div><p class="ex">شیبِ سیگموید با شیبِ لگاریتم خنثی می‌شود. فقط «پیش‌بینی منهای واقعی» می‌ماند.</p></div>
+</div>
+<div dir="ltr" style="margin-top:10px"><table>
+<tr><th>model's p (pass)</th><th>push with MSE</th><th>push with Log Loss</th></tr>
+<tr><td>0.5</td><td>0.25</td><td>0.5</td></tr>
+<tr><td>0.1</td><td>0.16</td><td>0.9</td></tr>
+<tr><td>0.01 (worst mistake)</td><td><b>0.02</b></td><td><b>0.99</b></td></tr>
+</table></div>
+<div class="key" style="margin-top:10px">با MSE، هر چه اشتباه <b>بدتر</b> شود، هُل <b>کمتر</b> می‌شود (۰٫۲۵ ← ۰٫۰۲). مدل از بدترین اشتباهش تقریباً چیزی یاد نمی‌گیرد و گیر می‌کند. با Log Loss برعکس است: اشتباهِ بدتر ← هُلِ بیشتر (۰٫۵ ← ۰٫۹۹). این همان دلیلی است که می‌گویند MSE با سیگموید «غیرمحدب» است و Log Loss یک کاسه‌ی تمیز با یک کف.</div>
+
+<h3>فرمولِ کامل</h3>
+<p>برای کسی که رد شده (y = 0)، همین کار را با احتمالِ رد شدن، یعنی \(1 - p\)، می‌کنیم. هر دو حالت در یک فرمول:</p>
+<div class="f">\[ L = -\frac{1}{n} \sum_{i=1}^{n} \Big[\, y_i \log p_i + (1 - y_i) \log (1 - p_i) \,\Big] \]</div>
+<p class="ex">ترسناک نیست: اگر \(y_i = 1\)، تکه‌ی دوم صفر است و فقط \(-\log p_i\) می‌ماند. اگر \(y_i = 0\)، فقط \(-\log(1 - p_i)\). اسمِ دیگرش <span class="en">Binary Cross-Entropy</span> است.</p>
 <canvas id="lossc" style="margin-top:8px"></canvas>
 <div class="legend" style="justify-content:center"><span><i style="background:var(--blue)"></i>−log p (y = 1)</span><span><i style="background:var(--red)"></i>−log(1−p) (y = 0)</span></div>
-<div class="kinds" style="margin-top:8px">
-<div><p><b>دلیل ۱: اشتباهِ مطمئن را خیلی جریمه می‌کند</b></p><p class="ex">وقتی مدل با اطمینان اشتباه می‌کند (p = 0.01 برای کسی که قبول شده)، Log Loss به سمتِ بی‌نهایت می‌رود. MSE حداکثر ۱ است؛ یعنی مدلی که با اطمینان اشتباه می‌کند، تقریباً همان‌قدر جریمه می‌شود که مدلی که فقط کمی اشتباه می‌کند.</p></div>
-<div><p><b>دلیل ۲: یک کاسه‌ی تمیز</b></p><p class="ex">MSE بعد از سیگموید، چند گودال و دشتِ صاف می‌سازد (غیرمحدب) و گرادیان کاهشی گیر می‌کند. Log Loss همیشه یک کاسه با یک کف است (محدب).</p></div>
-</div>
-<details class="drop"><summary><b>دلیل ۳ (عمیق‌تر): Log Loss از کجا آمده؟</b></summary>
+<details class="drop"><summary><b>عمیق‌تر: Log Loss از کجا آمده؟</b></summary>
 <p>مدل برای هر دانش‌آموز می‌گوید احتمالِ قبولی \(p_i\) است. احتمالِ این‌که <b>همین نتیجه‌هایی که واقعاً دیدیم</b> اتفاق بیفتد، ضربِ احتمال‌هاست:</p>
 <div class="f">\[ \prod_{i} p_i^{\,y_i} (1 - p_i)^{\,1 - y_i} \]</div>
 <p>(اگر \(y_i = 1\)، فقط \(p_i\) می‌ماند؛ اگر \(y_i = 0\)، فقط \(1 - p_i\).) بهترین مدل آن است که این عدد را <b>بیشترین</b> کند <span class="en">(Maximum Likelihood)</span>. لگاریتم گرفتن، ضرب را جمع می‌کند، و منفی کردن، «بیشترین» را «کمترین» می‌کند. نتیجه دقیقاً همان Log Loss است. یعنی Log Loss برای دسته‌بندی همان نقشی را دارد که MSE برای خطای نرمال داشت.</p>

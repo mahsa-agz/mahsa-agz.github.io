@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aptitude Practice</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap">
+<link rel="stylesheet" href="story.css">
+<style>
+td, th { text-align: left; }
+.top { font-size: 14px; margin-bottom: 8px; }
+.top a { color: var(--accent); }
+.modes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.modes button { margin-top: 0; }
+button.on { background: var(--accent); color: var(--card); }
+.opts-row { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; font-size: 14px; margin-top: 10px; }
+.opts-row label { margin: 0; flex: none; }
+.opts-row select { font: inherit; font-size: 14px; background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 2px 6px; }
+.q { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-top: 16px; }
+.qhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.tag { background: var(--soft); border-radius: 999px; padding: 2px 10px; }
+.timer { font-variant-numeric: tabular-nums; font-weight: 700; }
+.timer.low { color: var(--red); }
+.tbar { height: 4px; background: var(--soft); border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
+.tbar i { display: block; height: 100%; background: var(--accent); }
+.prompt { font-size: 17px; margin: 10px 0; }
+.data { overflow-x: auto; margin: 8px 0; }
+.data table { font-size: 14px; min-width: 360px; }
+.data caption { text-align: left; font-size: 13px; color: var(--muted); padding-bottom: 4px; }
+.stmt { background: var(--soft); border-radius: 10px; padding: 8px 12px; margin: 6px 0; }
+.choices { display: grid; gap: 8px; margin-top: 12px; }
+.choices.pics { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); }
+.choice { text-align: left; margin: 0; border-color: var(--line); color: var(--ink); display: flex; gap: 10px; align-items: center; padding: 8px 12px; }
+.choice .k { color: var(--muted); font-size: 12px; min-width: 14px; }
+.choice:hover:not(:disabled) { border-color: var(--accent); }
+.choice.ok { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.choice.bad { border-color: var(--red); background: color-mix(in srgb, var(--red) 15%, transparent); }
+.choice:disabled { cursor: default; }
+.choice.sel { border-color: var(--blue); background: color-mix(in srgb, var(--blue) 14%, transparent); }
+#check:disabled { opacity: .45; cursor: default; }
+.pics .choice { justify-content: center; flex-direction: column; gap: 2px; }
+.seqpics { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
+.panel { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); line-height: 0; }
+.panel svg { width: 64px; height: 64px; }
+.panel.qm { width: 66px; height: 66px; display: grid; place-items: center; line-height: 1; font-size: 26px; color: var(--muted); }
+.why { margin-top: 12px; padding: 10px 14px; border-radius: 10px; background: var(--soft); font-size: 15px; }
+.why b.r { color: var(--accent); } .why b.w { color: var(--red); }
+.res { margin-top: 16px; }
+.big { font-size: 34px; font-weight: 700; color: var(--accent); line-height: 1.2; }
+.hist { font-size: 14px; }
+.cheat .kinds > div p { font-size: 14px; }
+.cheat code { font-family: Consolas, monospace; font-size: 13px; background: var(--soft); padding: 1px 5px; border-radius: 4px; }
+.hint { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<div class="top"><a href="index.html">← All lessons</a></div>
+<h1>Aptitude test practice</h1>
+<p class="sub">Numerical and logical reasoning in the style of SHL, Cubiks and other company tests. The questions are generated, so the numbers are new every time. <b>Today's set</b> is 14 mixed questions that change every day. Do it daily and watch your average time drop.</p>
+
+<section style="border-top:0;padding-top:0">
+<div class="modes" id="modes">
+<button data-m="day" class="on">Today's set</button>
+<button data-m="num">Numerical</button>
+<button data-m="log">Logical</button>
+<button data-m="mix">Mixed</button>
+</div>
+<div class="opts-row">
+<label>Questions <select id="len"><option>5</option><option selected>10</option><option>20</option></select></label>
+<label><input type="checkbox" id="timed" checked> Timer (real-test pace)</label>
+<label>Topic <select id="topic"></select></label>
+</div>
+<button id="start">Start</button>
+<p class="hint">Pick an answer, then <b>Check answer</b>. Keys: 1–5 to pick, Enter to check, Enter again for next. Use a calculator for numerical, as in the real test.</p>
+<p id="streak" class="ex"></p>
+<div id="stage"></div>
+</section>
+
+<section class="cheat">
+<h2>Cheat sheet</h2>
+<div class="kinds">
+<div><p><b>Percent change</b></p><p><code>(new − old) ÷ old × 100</code><br>Divide by the <b>old</b> value, always.</p></div>
+<div><p><b>Reverse percent</b></p><p>After +20%: <code>original = new ÷ 1.20</code><br>After −20%: <code>original = new ÷ 0.80</code><br>Not <code>new × 0.80</code>.</p></div>
+<div><p><b>Compound growth</b></p><p><code>value × (1 + r)ⁿ</code><br>Two years of 10% = ×1.21, not ×1.20.<br>Average yearly growth over n years: <code>(end ÷ start)^(1/n) − 1</code></p></div>
+<div><p><b>Share and ratio</b></p><p>Share = <code>part ÷ total × 100</code><br>“A is how many times B” = <code>A ÷ B</code></p></div>
+<div><p><b>Percent vs percentage points</b></p><p>12% → 15% is +3 <b>points</b>, but +25 <b>percent</b> (3 ÷ 12).</p></div>
+<div><p><b>Number sequences: check in this order</b></p><p>1. Differences (+). 2. Ratios (×). 3. Differences of differences. 4. Two rules alternating. 5. Two sequences interleaved. 6. Squares, cubes, sum of previous two.</p></div>
+<div><p><b>Syllogisms</b></p><p>Draw circles. “All A are B” = A inside B. Only answer <b>True</b> if every possible drawing agrees. If one drawing allows it and another doesn't → <b>Cannot say</b>. Ignore real-world knowledge.</p></div>
+<div><p><b>If–then rules</b></p><p>If P then Q.<br>P → Q is True. Not Q → not P is True.<br>Q → P? Cannot say. Not P → not Q? Cannot say.</p></div>
+<div><p><b>Abstract sequences</b></p><p>Track one feature at a time: rotation, count, fill, position, size. Usually two features change at once.</p></div>
+<div><p><b>Pace</b></p><p>Roughly 60–75 s per numerical and 45–60 s per logical question. Skip a question that takes too long; you can't afford to be stuck.</p></div>
+</div>
+</section>
+
+<section>
+<h2>Your history</h2>
+<div id="hist" class="hist"></div>
+</section>
+</main>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+// seedable random: the daily set uses today's date as the seed, so it is the same all day and new tomorrow
+let rnd = Math.random;
+const seeded = str => { let h = 1779033703 ^ str.length; for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+  let a = h >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
+const today = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const R = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+const pick = a => a[R(0, a.length - 1)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = R(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const f = (x, d = 1) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+// numeric options: correct first, then distractors; unique by formatted text
+const numOpts = (ans, ds, d = 1, pre = '', post = '') => {
+  const out = [], seen = new Set(), add = (v, ok) => { const t = pre + f(v, d) + post; if (!isFinite(v) || seen.has(t)) return; seen.add(t); out.push({ t, ok }); };
+  add(ans, true); ds.forEach(v => out.length < 5 && add(v, false));
+  for (const k of [0.1, -0.1, 0.2, -0.2, 0.3, 0.05, -0.05]) if (out.length < 5) add(ans * (1 + k), false);
+  for (const k of [1, -1, 2, -2, 3, 5]) if (out.length < 5) add(ans + k, false);
+  return shuffle(out);
+};
+const textOpts = (ans, all) => all.map(t => ({ t, ok: t === ans }));
+
+// ---------- numerical ----------
+const REG = ['North America', 'Europe', 'Southeast Asia', 'Latin America'], YRS = [2022, 2023, 2024];
+const scenario = () => {
+  const v = REG.map(() => { let x = R(40, 220); return YRS.map((_, i) => i ? (x = Math.round(x * (1 + R(-12, 35) / 100))) : x); });
+  const html = `<div class="data"><table><caption>Video views (millions) by region</caption><tr><th>Region</th>${YRS.map(y => `<th>${y}</th>`).join('')}</tr>` +
+    REG.map((r, i) => `<tr><td>${r}</td>${v[i].map(x => `<td>${x}</td>`).join('')}</tr>`).join('') + '</table></div>';
+  return { v, html };
+};
+const NUM = {
+  'Percent change': () => { const s = scenario(), i = R(0, 3), [y1, y2] = pick([[0, 1], [1, 2], [0, 2]]), a = s.v[i][y1], b = s.v[i][y2], ans = (b - a) / a * 100;
+    return { data: s.html, prompt: `By what percentage did views in <b>${REG[i]}</b> change from ${YRS[y1]} to ${YRS[y2]}?`,
+      opts: numOpts(ans, [(b - a) / b * 100, b / a * 100, ans + 10], 1, '', '%'),
+      why: `(new − old) ÷ old × 100 = (${b} − ${a}) ÷ ${a} × 100 = <b class="r">${f(ans)}%</b>. Divide by the old year, not the new one.` }; },
+  'Share of total': () => { const s = scenario(), i = R(0, 3), y = R(0, 2), v = s.v[i][y], tot = s.v.reduce((a, r) => a + r[y], 0), ans = v / tot * 100;
+    return { data: s.html, prompt: `In ${YRS[y]}, what percentage of all views came from <b>${REG[i]}</b>?`,
+      opts: numOpts(ans, [v / (tot - v) * 100, 25, ans + 5], 1, '', '%'),
+      why: `Total ${YRS[y]} = ${s.v.map(r => r[y]).join(' + ')} = ${tot}. Share = ${v} ÷ ${tot} × 100 = <b class="r">${f(ans)}%</b>.` }; },
+  'Ratio': () => { const s = scenario(), [i, j] = shuffle([0, 1, 2, 3]), y = R(0, 2), a = s.v[i][y], b = s.v[j][y], ans = a / b;
+    return { data: s.html, prompt: `In ${YRS[y]}, views in <b>${REG[i]}</b> were how many times views in <b>${REG[j]}</b>?`,
+      opts: numOpts(ans, [b / a, (a - b) / b, ans + 0.25], 2),
+      why: `${a} ÷ ${b} = <b class="r">${f(ans, 2)}</b>.` }; },
+  'Growth projection': () => { const s = scenario(), i = R(0, 3), a = s.v[i][2], g = R(4, 18), n = R(2, 3), ans = a * (1 + g / 100) ** n;
+    return { data: s.html, prompt: `If views in <b>${REG[i]}</b> grow by ${g}% every year after 2024, how many views (millions) will it have in ${2024 + n}?`,
+      opts: numOpts(ans, [a * (1 + n * g / 100), a * (1 + g / 100) ** (n - 1), a * (1 + g / 100) ** (n + 1)], 1),
+      why: `${a} × ${f(1 + g / 100, 2)}<sup>${n}</sup> = <b class="r">${f(ans)}</b>. Growth compounds: ${n} years of ${g}% is more than ${n * g}% simple growth (${f(a * (1 + n * g / 100))}).` }; },
+  'Reverse percent': () => { const O = R(8, 90) * 5, p = pick([10, 15, 20, 25, 30, 40]), up = rnd() < 0.5, X = O * (1 + (up ? p : -p) / 100);
+    const what = pick([['A creator\'s monthly ad revenue', '$'], ['The price of an ad slot', '$'], ['A team\'s budget', '$']]);
+    return { prompt: `${what[0]} ${up ? 'rose' : 'fell'} by ${p}% to <b>$${f(X, 2)}</b>. What was it before the change?`,
+      opts: numOpts(O, [X * (1 + (up ? -p : p) / 100), up ? X / (1 - p / 100) : X / (1 + p / 100), X], 2, '$'),
+      why: `New = old × ${f(1 + (up ? p : -p) / 100, 2)}, so old = ${f(X, 2)} ÷ ${f(1 + (up ? p : -p) / 100, 2)} = <b class="r">$${f(O, 2)}</b>. Taking ${p}% of the <i>new</i> value is the classic trap.` }; },
+  'Points vs percent': () => { const s1 = R(8, 20), s2 = s1 + R(2, 6), ans = (s2 - s1) / s1 * 100;
+    return { prompt: `An app's market share went from ${s1}% to ${s2}%. By what <b>percent</b> did its market share increase?`,
+      opts: numOpts(ans, [s2 - s1, (s2 - s1) / s2 * 100, s2 / s1 * 100], 1, '', '%'),
+      why: `It rose by ${s2 - s1} percentage <i>points</i>. As a percent: ${s2 - s1} ÷ ${s1} × 100 = <b class="r">${f(ans)}%</b>.` }; },
+  'Table totals': () => { const s = scenario(), [y1, y2] = pick([[0, 1], [1, 2], [0, 2]]), t = y => s.v.reduce((a, r) => a + r[y], 0), ans = t(y2) - t(y1);
+    return { data: s.html, prompt: `By how many million did <b>total</b> views across all regions change from ${YRS[y1]} to ${YRS[y2]}?`,
+      opts: numOpts(ans, [ans + R(5, 15), ans - R(5, 15), t(y2) - t(y1 === 0 ? 1 : 0) || ans + 20], 0),
+      why: `${YRS[y1]} total = ${t(y1)}, ${YRS[y2]} total = ${t(y2)}. Change = <b class="r">${f(ans, 0)}</b> million.` }; },
+  'Average growth rate': () => { const s = scenario(), i = R(0, 3), a = s.v[i][0], b = s.v[i][2], ans = (Math.sqrt(b / a) - 1) * 100;
+    return { data: s.html, prompt: `What was the average <b>yearly</b> (compound) growth rate of views in <b>${REG[i]}</b> from 2022 to 2024?`,
+      opts: numOpts(ans, [(b - a) / a * 100 / 2, (b - a) / a * 100, ans + 3], 1, '', '%'),
+      why: `Two years of growth: (${b} ÷ ${a})<sup>1/2</sup> − 1 = <b class="r">${f(ans)}%</b>. Halving the total change (${f((b - a) / a * 100 / 2)}%) ignores compounding.` }; },
+  'Currency conversion': () => { const C = [['EUR', R(105, 118) / 100], ['GBP', R(122, 132) / 100], ['SGD', R(72, 78) / 100]], [cur, rate] = pick(C), from = Math.round(R(8, 60) * 100 * rate) / rate, usd = R(20, 90) * 100;
+    const html = `<div class="data"><table><caption>Exchange rates (1 unit = US dollars)</caption><tr><th>Currency</th><th>USD per unit</th></tr>${C.map(c => `<tr><td>${c[0]}</td><td>${c[1].toFixed(2)}</td></tr>`).join('')}</table></div>`;
+    const ans = usd / rate;
+    return { data: html, prompt: `A campaign costs <b>$${f(usd, 0)}</b>. How much is that in <b>${cur}</b>?`,
+      opts: numOpts(ans, [usd * rate, ans * 1.1, usd / rate / 1.1 + 50], 0, '', ' ' + cur),
+      why: `1 ${cur} = $${rate.toFixed(2)}, so ${cur} = dollars ÷ ${rate.toFixed(2)} = ${f(usd, 0)} ÷ ${rate.toFixed(2)} = <b class="r">${f(ans, 0)} ${cur}</b>. Sanity check: ${rate > 1 ? `1 ${cur} is worth more than $1, so you need fewer ${cur}` : `1 ${cur} is worth less than $1, so you need more ${cur}`}.` }; },
+  'Weighted average': () => { const n = [R(20, 60), R(20, 60), R(20, 60)], s = [R(55, 95), R(55, 95), R(55, 95)], T = ['Team A', 'Team B', 'Team C'], tot = n[0] + n[1] + n[2], ans = (n[0] * s[0] + n[1] * s[1] + n[2] * s[2]) / tot;
+    const html = `<div class="data"><table><caption>Survey results</caption><tr><th>Team</th><th>People</th><th>Average satisfaction score</th></tr>${T.map((t, i) => `<tr><td>${t}</td><td>${n[i]}</td><td>${s[i]}</td></tr>`).join('')}</table></div>`;
+    return { data: html, prompt: 'What is the average satisfaction score across <b>all</b> people surveyed?',
+      opts: numOpts(ans, [(s[0] + s[1] + s[2]) / 3, ans + 2, ans - 2], 1),
+      why: `Weight each team by its size: (${n.map((x, i) => x + '×' + s[i]).join(' + ')}) ÷ ${tot} = <b class="r">${f(ans)}</b>. The plain average of the three scores (${f((s[0] + s[1] + s[2]) / 3)}) ignores team size.` }; },
+  'Successive percentages': () => { const p = pick([10, 20, 25, 30, 40]), q = pick([10, 15, 20, 25]), up = rnd() < 0.5, m = (1 + (up ? p : -p) / 100) * (1 + (up ? -q : q) / 100), ans = (m - 1) * 100;
+    return { prompt: `A price is ${up ? 'raised' : 'cut'} by ${p}%, then ${up ? 'cut' : 'raised'} by ${q}%. What is the overall change?`,
+      opts: numOpts(ans, [up ? p - q : q - p, ans + 2, ans - 3, -ans], 1, '', '%'),
+      why: `Multiply the factors: ${f(1 + (up ? p : -p) / 100, 2)} × ${f(1 + (up ? -q : q) / 100, 2)} = ${f(m, 3)}, so the change is <b class="r">${f(ans)}%</b>. You can't just add ${up ? '+' + p + ' and −' + q : '−' + p + ' and +' + q}: the second change applies to a new base.` }; },
+  'Unit price': () => { const a = [R(3, 8) * 50, R(6, 15) * 50], c = [R(20, 60) / 10, 0]; c[1] = Math.round(c[0] * a[1] / a[0] * (1 + pick([-15, -10, -8, 8, 10, 15]) / 100) * 10) / 10; if (c[1] / a[1] === c[0] / a[0]) c[1] += 0.3;
+    const best = c[0] / a[0] < c[1] / a[1] ? 0 : 1, saving = Math.abs(c[0] / a[0] - c[1] / a[1]) * 1000;
+    return { prompt: `Pack X has ${a[0]} GB of cloud storage for $${c[0].toFixed(2)}. Pack Y has ${a[1]} GB for $${c[1].toFixed(2)}. How much cheaper per 1,000 GB is the better-value pack?`,
+      opts: numOpts(saving, [Math.abs(c[0] - c[1]), saving * 2, saving / 2], 2, '$'),
+      why: `Per 1,000 GB: X = ${c[0].toFixed(2)} ÷ ${a[0]} × 1000 = $${f(c[0] / a[0] * 1000, 2)}; Y = ${c[1].toFixed(2)} ÷ ${a[1]} × 1000 = $${f(c[1] / a[1] * 1000, 2)}. Pack ${best ? 'Y' : 'X'} is cheaper by <b class="r">$${f(saving, 2)}</b>.` }; },
+  'Rates and time': () => { const a = R(3, 8), b = R(a + 2, 14), ans = a * b / (a + b);
+    return { prompt: `Server A processes a batch of videos in ${a} hours. Server B processes the same batch in ${b} hours. Working together, how long will they take?`,
+      opts: numOpts(ans, [(a + b) / 2, b - a, ans + 1], 2, '', ' h'),
+      why: `Per hour, A does 1/${a} of the batch and B does 1/${b}. Together: 1/${a} + 1/${b} = ${a + b}/${a * b} per hour, so the time is ${a * b} ÷ ${a + b} = <b class="r">${f(ans, 2)} h</b>.` }; },
+};
+
+// ---------- logical ----------
+const intOpts = (ans, ds) => { const o = [ans], seen = new Set(o); ds.forEach(d => !seen.has(d) && o.length < 5 && (seen.add(d), o.push(d)));
+  for (let k = 1; o.length < 5; k++) [ans + k, ans - k].forEach(d => !seen.has(d) && o.length < 5 && (seen.add(d), o.push(d)));
+  return shuffle(o.map((v, i) => ({ t: String(v), ok: i === 0 }))); };
+const SEQ = [
+  () => { const a = R(2, 40), d = pick([-7, -4, 3, 4, 6, 7, 9, 12]); const t = [0, 1, 2, 3, 4].map(i => a + i * d); return [t, a + 5 * d, `Add ${d} each time.`]; },
+  () => { const a = R(1, 5), r = pick([2, 3]); const t = [0, 1, 2, 3, 4].map(i => a * r ** i); return [t, a * r ** 5, `Multiply by ${r} each time.`]; },
+  () => { const a = R(1, 20), d = R(1, 5), k = pick([1, 2, 3]); const t = [a]; for (let i = 0; i < 4; i++) t.push(t[i] + d + i * k); return [t, t[4] + d + 4 * k, `Differences grow by ${k}: ${[0, 1, 2, 3, 4].map(i => '+' + (d + i * k)).join(', ')}.`]; },
+  () => { const a = R(1, 9), p = R(2, 6); const t = [a]; for (let i = 0; i < 4; i++) t.push(i % 2 ? t[i] * 2 : t[i] + p); return [t, t[4] + p, `Two rules alternate: +${p}, ×2, +${p}, ×2 … The next step is +${p}.`]; },
+  () => { const k = R(1, 6), c = pick([0, 0, 1, -1, 2]); const t = [0, 1, 2, 3, 4].map(i => (k + i) ** 2 + c); return [t, (k + 5) ** 2 + c, `Squares ${c ? (c > 0 ? 'plus ' + c : 'minus ' + -c) : ''}: ${k}², ${k + 1}², … ${k + 5}²${c ? (c > 0 ? ' + ' + c : ' − ' + -c) : ''}.`]; },
+  () => { const t = [R(1, 6), R(2, 8)]; for (let i = 2; i < 6; i++) t.push(t[i - 1] + t[i - 2]); return [t, t[4] + t[5], 'Each number is the sum of the two before it.']; },
+  () => { const a = R(1, 10), d = R(2, 5), b = R(30, 50), e = R(2, 6); const t = []; for (let i = 0; i < 3; i++) t.push(a + i * d, b - i * e); return [t, a + 3 * d, `Two sequences interleaved: ${a}, ${a + d}, ${a + 2 * d} (+${d}) and ${b}, ${b - e}, ${b - 2 * e} (−${e}). Next is in the first one.`]; },
+];
+const NAMES = ['Ana', 'Ben', 'Chen', 'Dara', 'Eli', 'Farah', 'Gus', 'Hana', 'Ivo', 'Jules'];
+const TRAIT = [['taller', 'shorter', 'tallest', 'shortest'], ['older', 'younger', 'oldest', 'youngest'], ['faster', 'slower', 'fastest', 'slowest'], ['heavier', 'lighter', 'heaviest', 'lightest']];
+const NONSENSE = ['blips', 'snorks', 'trels', 'vants', 'quorbs', 'zeds', 'glims', 'parns', 'wibs', 'drolls'];
+const SYL = [ // [premises, conclusion, answer, reason]
+  ['All A are B.|All B are C.', 'All A are C.', 'True', 'A sits inside B, and B inside C, so A is inside C.'],
+  ['All A are B.|All B are C.', 'All C are A.', 'Cannot say', 'C may contain things outside A.'],
+  ['All A are B.|No B are C.', 'No A are C.', 'True', 'A is inside B, and B never meets C.'],
+  ['All A are B.|No B are C.', 'Some A are C.', 'False', 'A is inside B, which never meets C, so no A is C.'],
+  ['Some A are B.|All B are C.', 'Some A are C.', 'True', 'The A that are B are also C.'],
+  ['All A are B.|Some B are C.', 'Some A are C.', 'Cannot say', 'The B that are C might all be outside A.'],
+  ['No A are B.|All C are B.', 'No C are A.', 'True', 'C is inside B, and B never meets A.'],
+  ['Some A are B.|No B are C.', 'Some A are not C.', 'True', 'The A that are B can\'t be C.'],
+  ['Some A are B.|Some B are C.', 'Some A are C.', 'Cannot say', 'The overlap with A and the overlap with C may be different parts of B.'],
+  ['All A are B.', 'All B are A.', 'Cannot say', '“All A are B” does not reverse.'],
+  ['No A are B.|Some C are A.', 'Some C are not B.', 'True', 'The C that are A cannot be B.'],
+];
+const RULES = [
+  { rule: 'If a video gets over one million views, its creator receives a bonus.', P: n => `${n}'s video got over one million views.`, nP: n => `${n}'s video did not get over one million views.`, Q: n => `${n} received a bonus.`, nQ: n => `${n} did not receive a bonus.` },
+  { rule: 'If an employee works on Saturday, they get Monday off.', P: n => `${n} worked on Saturday.`, nP: n => `${n} did not work on Saturday.`, Q: n => `${n} gets Monday off.`, nQ: n => `${n} does not get Monday off.` },
+  { rule: 'If a ticket is marked urgent, it is answered within an hour.', P: n => `${n}'s ticket was marked urgent.`, nP: n => `${n}'s ticket was not marked urgent.`, Q: n => `${n}'s ticket was answered within an hour.`, nQ: n => `${n}'s ticket was not answered within an hour.` },
+];
+const COND = [ // [fact, conclusion, answer, reason]
+  ['P', 'Q', 'True', 'The rule applies directly.'],
+  ['nQ', 'nP', 'True', 'If P had happened, Q would have happened. Q didn\'t, so P didn\'t.'],
+  ['Q', 'P', 'Cannot say', 'Q can happen for other reasons; the rule only says P leads to Q.'],
+  ['nP', 'nQ', 'Cannot say', 'The rule says nothing about what happens when P is false.'],
+  ['P', 'nQ', 'False', 'P always leads to Q.'],
+  ['nQ', 'P', 'False', 'If P were true, Q would be true too.'],
+];
+const ARROW = 'M32 8 L48 30 L38 30 L38 52 L26 52 L26 30 L16 30 Z';
+const panel = (rot, dots, fill) => `<svg viewBox="0 0 64 64"><g transform="rotate(${rot} 32 30)"><path d="${ARROW}" fill="${fill ? 'var(--ink)' : 'none'}" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/></g>` +
+  Array.from({ length: dots }, (_, i) => `<circle cx="${32 + (i - (dots - 1) / 2) * 8}" cy="59" r="2.6" fill="var(--accent)"/>`).join('') + '</svg>';
+const LOG = {
+  'Number sequence': () => { const [t, ans, why] = pick(SEQ)(), last = t[t.length - 1], prev = t[t.length - 2];
+    return { prompt: `What comes next? <span class="stmt" style="display:block;font-size:20px;letter-spacing:1px">${t.join(', ')}, ?</span>`,
+      opts: intOpts(ans, [last + (last - prev), ans + 1, ans - 2, ans + (last - prev)]), why: why + ` Answer: <b class="r">${ans}</b>.` }; },
+  'Letter sequence': () => { const s = R(0, 12), k = R(2, 4), inc = rnd() < 0.4, L = i => String.fromCharCode(65 + ((i % 26) + 26) % 26);
+    const pos = [s]; for (let i = 0; i < 5; i++) pos.push(pos[i] + k + (inc ? i : 0));
+    const ans = L(pos[5]), alts = [L(pos[5] + 1), L(pos[5] - 1), L(pos[4] + k), L(pos[5] + 2)];
+    const o = [ans]; alts.forEach(a => !o.includes(a) && o.length < 5 && o.push(a));
+    return { prompt: `What letter comes next? <span class="stmt" style="display:block;font-size:20px;letter-spacing:2px">${pos.slice(0, 5).map(L).join(', ')}, ?</span>`,
+      opts: shuffle(o.map((t, i) => ({ t, ok: i === 0 }))),
+      why: `Positions in the alphabet: ${pos.slice(0, 5).map(p => p + 1).join(', ')}. ${inc ? `The jump grows by one each time (+${k}, +${k + 1}, …).` : `Jump +${k} each time.`} Next: <b class="r">${ans}</b>.` }; },
+  'Syllogism': () => { const [pr, c, ans, why] = pick(SYL), w = shuffle(NONSENSE), sub = s => s.replace(/\bA\b/g, w[0]).replace(/\bB\b/g, w[1]).replace(/\bC\b/g, w[2]);
+    return { prompt: 'Assume the statements are true. Is the conclusion true, false, or impossible to tell?' + pr.split('|').map(p => `<div class="stmt">${sub(p)}</div>`).join('') + `<p style="margin-top:8px"><b>Conclusion:</b> ${sub(c)}</p>`,
+      opts: textOpts(ans, ['True', 'False', 'Cannot say']), why: `<b class="r">${ans}</b>. ${sub(why)}` }; },
+  'If–then': () => { const r = pick(RULES), [fa, co, ans, why] = pick(COND), n = pick(NAMES);
+    return { prompt: `<div class="stmt"><b>Rule:</b> ${r.rule}</div><div class="stmt"><b>Fact:</b> ${r[fa](n)}</div><p style="margin-top:8px"><b>Conclusion:</b> ${r[co](n)}</p>`,
+      opts: textOpts(ans, ['True', 'False', 'Cannot say']), why: `<b class="r">${ans}</b>. ${why}` }; },
+  'Ordering': () => { const n = R(4, 5), ppl = shuffle(NAMES).slice(0, n), tr = pick(TRAIT); // ppl[0] has the most of the trait
+    const facts = shuffle(ppl.slice(0, -1).map((p, i) => rnd() < 0.5 ? `${p} is ${tr[0]} than ${ppl[i + 1]}.` : `${ppl[i + 1]} is ${tr[1]} than ${p}.`));
+    const qs = [[`Who is the ${tr[3]}?`, ppl[n - 1]], [`Who is the second ${tr[2]}?`, ppl[1]], [`Who is the ${tr[2]}?`, ppl[0]], [`Who is the second ${tr[3]}?`, ppl[n - 2]]];
+    const [q, ans] = pick(qs);
+    return { prompt: facts.map(x => `<div class="stmt">${x}</div>`).join('') + `<p style="margin-top:8px"><b>${q}</b></p>`,
+      opts: textOpts(ans, shuffle(ppl)), why: `Order from ${tr[2]} to ${tr[3]}: ${ppl.join(' → ')}. Answer: <b class="r">${ans}</b>.` }; },
+  'Letter code': () => { const W = ['DATA', 'MODEL', 'VIDEO', 'TRAIN', 'LAYER', 'SCORE', 'CLOUD', 'PIXEL', 'MEDIA', 'GRAPH', 'TOKEN', 'QUERY', 'STACK', 'FRAME'];
+    const [w1, w2] = shuffle(W), k = pick([1, 2, 3, -1, -2, 4]), enc = w => [...w].map(c => String.fromCharCode(65 + ((c.charCodeAt(0) - 65 + k) % 26 + 26) % 26)).join('');
+    const ans = enc(w2), alt = s => [...s].map(c => String.fromCharCode(65 + ((c.charCodeAt(0) - 65 + s.length) % 26 + 26) % 26)).join('');
+    const ds = [[...w2].map(c => String.fromCharCode(65 + ((c.charCodeAt(0) - 65 - k) % 26 + 26) % 26)).join(''), [...w2].map(c => String.fromCharCode(65 + ((c.charCodeAt(0) - 65 + k + 1) % 26 + 26) % 26)).join(''), ans.split('').reverse().join('')];
+    const o = [ans]; ds.forEach(d => !o.includes(d) && o.push(d));
+    return { prompt: `In a code, <b>${w1}</b> is written as <b>${enc(w1)}</b>. How is <b>${w2}</b> written?`, opts: shuffle(o.map((t, i) => ({ t, ok: i === 0 }))),
+      why: `Each letter moves ${Math.abs(k)} place${Math.abs(k) > 1 ? 's' : ''} ${k > 0 ? 'forward' : 'back'} in the alphabet (${w1[0]} → ${enc(w1)[0]}). So ${w2} → <b class="r">${ans}</b>.` }; },
+  'Odd one out': () => { const kind = R(0, 2); let good, bad, rule;
+    if (kind === 0) { const m = pick([3, 4, 6, 7, 9]); good = shuffle([...Array(12)].map((_, i) => m * (i + 2))).slice(0, 4); do { bad = R(m * 2, m * 13); } while (bad % m === 0); rule = `all the others are multiples of ${m}`; }
+    else if (kind === 1) { good = shuffle([4, 5, 6, 7, 8, 9, 10, 11, 12].map(x => x * x)).slice(0, 4); do { bad = R(17, 140); } while (Number.isInteger(Math.sqrt(bad))); rule = 'all the others are perfect squares'; }
+    else { const P = [11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53]; good = shuffle(P).slice(0, 4); bad = pick([15, 21, 27, 33, 35, 39, 49, 51, 57]); rule = 'all the others are prime numbers'; }
+    const o = shuffle([...good, bad]);
+    return { prompt: `Which number does <b>not</b> belong? <span class="stmt" style="display:block;font-size:20px;letter-spacing:1px">${o.join(', ')}</span>`,
+      opts: o.map(v => ({ t: String(v), ok: v === bad })), why: `<b class="r">${bad}</b>: ${rule}.` }; },
+  'Abstract sequence': () => { const r0 = pick([0, 45, 90, 180, 270]), rs = pick([45, 90, -45, -90]), c0 = R(1, 2), alt = rnd() < 0.6, f0 = rnd() < 0.5;
+    const at = i => [((r0 + i * rs) % 360 + 360) % 360, c0 + i, alt ? (i % 2 === 0) === f0 : f0];
+    const [ra, ca, fa] = at(4), cands = [[ra, ca, fa], [(ra + rs + 360) % 360, ca, fa], [ra, ca + 1, fa], alt ? [ra, ca, !fa] : [(ra + 180) % 360, ca, fa], [ra, ca - 1, fa]];
+    const o = shuffle(cands.slice(0, 4).map((c, i) => ({ t: panel(...c), ok: i === 0, pic: true })));
+    return { prompt: 'Which picture comes next?<div class="seqpics">' + [0, 1, 2, 3].map(i => `<div class="panel">${panel(...at(i))}</div>`).join('') + '<div class="panel qm">?</div></div>',
+      opts: o, pics: true,
+      why: `The arrow turns ${Math.abs(rs)}° ${rs > 0 ? 'clockwise' : 'anticlockwise'} each step, one dot is added each step${alt ? ', and the fill alternates (filled / empty)' : ', and the fill stays the same'}. So the next one has ${ca} dots.` }; },
+};
+
+// ---------- quiz engine ----------
+const TIME = { num: 75, log: 50 };
+let mode = 'day', Q = [], qi = 0, score = 0, timer = null, left = 0, startT = 0, log = [], sel = -1;
+const topics = () => mode === 'num' ? Object.keys(NUM) : mode === 'log' ? Object.keys(LOG) : [...Object.keys(NUM), ...Object.keys(LOG)];
+const fillTopics = () => { $('topic').innerHTML = '<option value="">All topics</option>' + topics().map(t => `<option>${t}</option>`).join('');
+  const day = mode === 'day'; $('topic').disabled = day; $('len').disabled = day;
+  $('start').textContent = day ? `Start today's set (${today()})` : 'Start'; };
+document.querySelectorAll('#modes button').forEach(b => b.onclick = () => { mode = b.dataset.m; document.querySelectorAll('#modes button').forEach(x => x.classList.toggle('on', x === b)); fillTopics(); });
+fillTopics();
+
+const make = t => { const isNum = t in NUM, q = (isNum ? NUM : LOG)[t](); q.topic = t; q.kind = isNum ? 'num' : 'log'; return q; };
+const start = () => {
+  if (mode === 'day') { // 14 questions: one of every topic type except a few, same all day, new tomorrow
+    rnd = seeded('apt-' + today());
+    const T = shuffle([...shuffle(Object.keys(NUM)).slice(0, 7), ...shuffle(Object.keys(LOG)).slice(0, 7)]);
+    Q = T.map(make);
+  } else {
+    rnd = Math.random; const n = +$('len').value;
+    Q = Array.from({ length: n }, () => make($('topic').value || pick(topics())));
+  }
+  rnd = Math.random; qi = 0; score = 0; log = []; show();
+};
+$('start').onclick = start;
+
+const show = () => {
+  clearInterval(timer); sel = -1; const q = Q[qi], timed = $('timed').checked;
+  $('stage').innerHTML = `<div class="q"><div class="qhead"><span><span class="tag">${q.topic}</span> &nbsp;${qi + 1} / ${Q.length} · score ${score}</span><span class="timer" id="tm"></span></div>
+    ${timed ? '<div class="tbar"><i id="tb"></i></div>' : ''}${q.data || ''}<div class="prompt">${q.prompt}</div>
+    <div class="choices${q.pics ? ' pics' : ''}">${q.opts.map((o, i) => `<button class="choice" data-i="${i}"><span class="k">${i + 1}</span>${o.t}</button>`).join('')}</div>
+    <button id="check" disabled>Check answer</button> <button id="skip" style="border-color:var(--line);color:var(--muted)">Skip</button><div id="after"></div></div>`;
+  document.querySelectorAll('.choice').forEach(b => b.onclick = () => choose(+b.dataset.i));
+  $('check').onclick = () => answer(sel); $('skip').onclick = () => answer(-2);
+  startT = Date.now();
+  if (timed) { const T = TIME[q.kind]; left = T; const tick = () => { $('tm').textContent = left + 's'; $('tm').classList.toggle('low', left <= 10); $('tb').style.width = (left / T * 100) + '%'; if (left-- <= 0) answer(sel >= 0 ? sel : -1); }; tick(); timer = setInterval(tick, 1000); }
+  $('stage').scrollIntoView({ block: 'nearest' });
+};
+const choose = i => { if (Q[qi].done) return; sel = i; document.querySelectorAll('.choice').forEach((b, j) => b.classList.toggle('sel', j === i)); $('check').disabled = false; };
+const answer = i => {
+  const q = Q[qi]; if (q.done) return; q.done = true; clearInterval(timer);
+  const ok = i >= 0 && q.opts[i].ok; if (ok) score++;
+  log.push({ topic: q.topic, kind: q.kind, ok, s: Math.round((Date.now() - startT) / 1000) });
+  document.querySelectorAll('.choice').forEach((b, j) => { b.disabled = true; b.classList.remove('sel'); if (q.opts[j].ok) b.classList.add('ok'); else if (j === i) b.classList.add('bad'); });
+  $('check').remove(); $('skip').remove();
+  const head = ok ? '<b class="r">Correct.</b> ' : i === -1 ? '<b class="w">Time is up.</b> ' : i === -2 ? '<b class="w">Skipped.</b> ' : '<b class="w">Not quite.</b> ';
+  $('after').innerHTML = `<div class="why">${head}${q.why} <span class="ex">(${log[log.length - 1].s}s)</span></div>
+    <button id="next">${qi + 1 < Q.length ? 'Next →' : 'See results'}</button>`;
+  $('next').onclick = next; $('next').focus({ preventScroll: true });
+};
+const next = () => { if (qi + 1 < Q.length) { qi++; show(); } else results(); };
+const load = () => { try { return JSON.parse(localStorage.getItem('apt-hist') || '[]'); } catch (e) { return []; } };
+const streak = H => { const days = new Set(H.filter(h => h.m === 'day').map(h => h.day)); let n = 0; const d = new Date();
+  if (!days.has(today())) d.setDate(d.getDate() - 1);
+  for (;; n++) { const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); if (!days.has(k)) break; d.setDate(d.getDate() - 1); }
+  return n; };
+const results = () => {
+  const by = {}; log.forEach(l => { by[l.topic] = by[l.topic] || [0, 0, 0]; by[l.topic][1]++; by[l.topic][2] += l.s; if (l.ok) by[l.topic][0]++; });
+  const avg = Math.round(log.reduce((a, l) => a + l.s, 0) / log.length);
+  const H = load(); H.unshift({ d: new Date().toLocaleDateString('en-GB'), day: today(), m: mode, s: score, n: log.length, avg });
+  try { localStorage.setItem('apt-hist', JSON.stringify(H.slice(0, 60))); } catch (e) {}
+  const weak = Object.entries(by).filter(([, [a, n]]) => a < n).map(([t]) => t);
+  $('stage').innerHTML = `<div class="q res"><div class="big">${score} / ${log.length}</div><p>${Math.round(score / log.length * 100)}% correct · ${avg}s per question on average${mode === 'day' ? ` · streak: <b>${streak(H)} day${streak(H) === 1 ? '' : 's'}</b>` : ''}</p>
+    <table><tr><th>Topic</th><th>Correct</th><th>Avg time</th></tr>${Object.entries(by).map(([t, [a, n, s]]) => `<tr><td>${t}</td><td>${a} / ${n}</td><td>${Math.round(s / n)}s</td></tr>`).join('')}</table>
+    ${weak.length ? `<p class="ex" style="margin-top:8px">Practise next: ${weak.join(', ')}. Pick it under Numerical or Logical → Topic.</p>` : ''}
+    <button id="again">${mode === 'day' ? 'Extra practice (new random set)' : 'New set'}</button></div>`;
+  $('again').onclick = () => { if (mode === 'day') document.querySelector('#modes [data-m="mix"]').click(); start(); };
+  hist();
+};
+const hist = () => { const H = load(), M = { day: 'Today\'s set', num: 'Numerical', log: 'Logical', mix: 'Mixed' };
+  const s = streak(H), done = H.some(h => h.m === 'day' && h.day === today());
+  $('streak').innerHTML = `${s ? `🔥 <b>${s}-day streak</b>. ` : ''}${done ? 'Today\'s set is done. Extra sets still help.' : 'Today\'s set is waiting.'}`;
+  $('hist').innerHTML = H.length ? `<table><tr><th>Date</th><th>Set</th><th>Score</th><th>Avg time</th></tr>${H.slice(0, 20).map(h => `<tr><td>${h.d}</td><td>${M[h.m]}</td><td>${h.s} / ${h.n}</td><td>${h.avg}s</td></tr>`).join('')}</table>` : '<p class="ex">No sets finished yet. Results are saved in this browser only.</p>'; };
+hist();
+document.addEventListener('keydown', e => { if (!Q.length || /SELECT|INPUT/.test(e.target.tagName)) return; const q = Q[qi];
+  if (!q.done && /^[1-5]$/.test(e.key) && +e.key <= q.opts.length) choose(+e.key - 1);
+  else if (!q.done && e.key === 'Enter' && sel >= 0) { e.preventDefault(); answer(sel); }
+  else if (q.done && e.key === 'Enter' && $('next')) { e.preventDefault(); next(); } });
+window.__apt = { NUM, LOG };
+})();
+</script>
+</body>
+</html>
